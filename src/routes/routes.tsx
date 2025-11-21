@@ -1,10 +1,26 @@
 import type { RouteObject } from "react-router";
-import App from "../App";
+import App from "@/app/App";
+import LoginPage from "@/pages/LoginPage";
+import ProtectedRoute from "@/app/ProtectedRoute";
 
 const routes: RouteObject[] = [
   {
     path: "/",
-    Component: App,
+    element: (
+      <ProtectedRoute>
+        <App />
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        index: true,
+        Component: () => <p>Main page</p>,
+      },
+    ],
+  },
+  {
+    path: "/log-in",
+    Component: LoginPage,
   },
 ];
 
