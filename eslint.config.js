@@ -45,6 +45,7 @@ export default defineConfig([
     rules: {
       ...vitest.configs.all.rules,
       "@typescript-eslint/unbound-method": "off",
+      "vitest/no-hooks": "off",
     },
   },
 ]);
