@@ -3,13 +3,20 @@ import type { PropsWithChildren } from "react";
 import { Navigate } from "react-router";
 
 export default function ProtectedRoute({ children }: PropsWithChildren) {
-  const { data: user, isLoading, isSuccess } = useGetUsersQuery(undefined);
+  const { isError, isLoading, error } = useGetUsersQuery(undefined);
 
   if (isLoading) return <p>Loading...</p>;
 
-  console.log("DATA", user);
-  if (!isSuccess) {
-    return <Navigate to="/log-in" />;
+  if (isError) {
+    if ("status" in error) {
+      if (error.status === 401) {
+        return <Navigate to="/log-in" />;
+      }
+
+      throw new Error(error.data as string);
+    }
+
+    throw new Error(error.message);
   }
 
   return children;
