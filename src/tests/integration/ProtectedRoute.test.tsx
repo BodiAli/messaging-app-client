@@ -2,8 +2,9 @@ import { waitFor, screen } from "@testing-library/react";
 import fetchMock, { manageFetchMockGlobally } from "@fetch-mock/vitest";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { describe, it, expect, beforeAll, beforeEach } from "vitest";
-import routes from "@/routes/routes";
 import renderWithProviders from "@/utils/test-utils";
+import ProtectedRoute from "@/app/ProtectedRoute";
+import routes from "@/routes/routes";
 import type { User } from "@/types/modelsType";
 
 const serverRoute = `${import.meta.env.VITE_SERVER_URL}/auth/get-user`;
@@ -37,9 +38,17 @@ describe("protected-route component", () => {
 
     renderWithProviders(<RouterProvider router={router} />);
 
-    await waitFor(() => {
-      expect(screen.getByText("ErrorBoundary")).toBeVisible();
-    });
+    await expect(screen.findByText("ErrorBoundary")).resolves.toBeVisible();
+  });
+
+  it("should render Loader component on initial render", () => {
+    expect.hasAssertions();
+
+    const router = createMemoryRouter(routes);
+
+    renderWithProviders(<RouterProvider router={router} />);
+
+    expect(screen.getByTestId("loader")).toBeInTheDocument();
   });
 
   it("should redirect to login route when user is not authenticated", async () => {
@@ -56,17 +65,17 @@ describe("protected-route component", () => {
     });
   });
 
-  it("should continue to requested route when user is authenticated", async () => {
+  it("should render children when user is authenticated", async () => {
     expect.hasAssertions();
 
     fetchMock.get(serverRoute, { status: 200, body: mockedUser });
 
-    const router = createMemoryRouter(routes, { initialEntries: ["/friends"] });
+    renderWithProviders(
+      <ProtectedRoute>
+        <p>Protected!</p>
+      </ProtectedRoute>
+    );
 
-    renderWithProviders(<RouterProvider router={router} />);
-
-    await waitFor(() => {
-      expect(router.state.location.pathname).toBe("/friends");
-    });
+    await expect(screen.findByText("Protected!")).resolves.toBeInTheDocument();
   });
 });
