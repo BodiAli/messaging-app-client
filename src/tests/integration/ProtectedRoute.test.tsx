@@ -1,5 +1,5 @@
-import { waitFor } from "@testing-library/react";
-import fetchMock from "@fetch-mock/vitest";
+import { waitFor, screen } from "@testing-library/react";
+import fetchMock, { manageFetchMockGlobally } from "@fetch-mock/vitest";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { describe, it, expect, beforeAll, beforeEach } from "vitest";
 import routes from "@/routes/routes";
@@ -16,13 +16,30 @@ const mockedUser: User = {
   username: "mockUsername",
 };
 
-describe("render App component", () => {
+describe("protected-route component", () => {
   beforeAll(() => {
     fetchMock.mockGlobal();
+    manageFetchMockGlobally();
   });
 
   beforeEach(() => {
-    fetchMock.mockReset();
+    vi.resetAllMocks();
+  });
+
+  it("should throw an error if response rejects with unexpected status", async () => {
+    expect.hasAssertions();
+
+    vi.spyOn(console, "error").mockImplementation(() => null);
+
+    fetchMock.get(serverRoute, 500);
+
+    const router = createMemoryRouter(routes);
+
+    renderWithProviders(<RouterProvider router={router} />);
+
+    await waitFor(() => {
+      expect(screen.getByText("ErrorBoundary")).toBeVisible();
+    });
   });
 
   it("should redirect to login route when user is not authenticated", async () => {
