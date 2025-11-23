@@ -1,3 +1,4 @@
+import Loader from "@/components/Loader";
 import { useGetUsersQuery } from "@/slices/apiSlice";
 import type { PropsWithChildren } from "react";
 import { Navigate } from "react-router";
@@ -5,7 +6,7 @@ import { Navigate } from "react-router";
 export default function ProtectedRoute({ children }: PropsWithChildren) {
   const { isError, isLoading, error } = useGetUsersQuery(undefined);
 
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading) return <Loader />;
 
   if (isError) {
     if ("status" in error) {
