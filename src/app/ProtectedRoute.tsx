@@ -1,23 +1,31 @@
 import Loader from "@/components/Loader";
-import { useGetUsersQuery } from "@/slices/apiSlice";
-import type { PropsWithChildren } from "react";
+import { useEffect, useRef, type PropsWithChildren } from "react";
 import { Navigate } from "react-router";
+import { useAppDispatch, useAppSelector } from "./hooks";
+import { getUser, selectUserError } from "@/slices/authSlice";
+import { getJwtToken } from "@/services/localStorage";
+
+// TODO: check for userStatus instead of userError
 
 export default function ProtectedRoute({ children }: PropsWithChildren) {
-  const { isError, isLoading, error } = useGetUsersQuery(undefined);
+  const jwtTokenRef = useRef(getJwtToken());
+  const dispatch = useAppDispatch();
+  const userError = useAppSelector(selectUserError);
 
-  if (isLoading) return <Loader />;
+  useEffect(() => {
+    if (jwtTokenRef.current) {
+      void dispatch(getUser(jwtTokenRef.current));
+    }
+  }, [dispatch]);
 
-  if (isError) {
-    if ("status" in error) {
-      if (error.status === 401) {
-        return <Navigate to="/log-in" />;
-      }
+  if (!jwtTokenRef.current) return <Navigate to="/log-in" />;
 
-      throw new Error(error.data as string);
+  if (userError) {
+    if (userError === "unauthorized") {
+      return <Navigate to="/log-in" />;
     }
 
-    throw new Error(error.message);
+    throw new Error(userError);
   }
 
   return children;
