@@ -1,6 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "../slices/authSlice";
 import apiSlice from "../slices/apiSlice";
+import { listenerMiddleware } from "./listenerMiddleware";
 
 export default function setupStore() {
   return configureStore({
@@ -9,7 +10,7 @@ export default function setupStore() {
       [apiSlice.reducerPath]: apiSlice.reducer,
     },
     middleware(getDefaultMiddleware) {
-      return getDefaultMiddleware().concat(apiSlice.middleware);
+      return getDefaultMiddleware().prepend(listenerMiddleware.middleware).concat(apiSlice.middleware);
     },
   });
 }
