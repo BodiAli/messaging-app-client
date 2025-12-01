@@ -1,45 +1,60 @@
-import serverUrl from "@/utils/serverUrl";
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
+import apiSlice from "./apiSlice";
+import { setJwtToken } from "@/services/localStorage";
 import type { User } from "@/types/modelsType";
+import type { AppStartListening } from "@/config/listenerMiddleware";
 
-interface RejectedValue {
-  error: string;
-}
+const apiSliceWithAuth = apiSlice.injectEndpoints({
+  endpoints(build) {
+    return {
+      getUser: build.query<{ user: User }, string>({
+        query(token) {
+          return {
+            url: "/auth/get-user",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            responseHandler(response) {
+              if (response.status === 401) {
+                return response.text();
+              }
 
-const getUser = createAsyncThunk<{ user: User }, string, { rejectValue: RejectedValue }>(
-  "auth/getUser",
-  async (token: string, thunkApi) => {
-    const response = await fetch(`${serverUrl}/auth/get-user`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+              return response.json();
+            },
+          };
+        },
+      }),
+      login: build.mutation<{ user: User; token: string }, { username: string; password: string }>({
+        query({ username, password }) {
+          return {
+            url: "/auth/log-in",
+            method: "POST",
+            body: { username, password },
+          };
+        },
+      }),
+    };
+  },
+});
 
-    if (!response.ok) {
-      if (response.status === 401) {
-        return thunkApi.rejectWithValue({ error: response.statusText.toLowerCase() });
-      }
-
-      const data = (await response.json()) as { error: string };
-
-      return thunkApi.rejectWithValue({ error: data.error });
-    }
-
-    const data = (await response.json()) as { user: User };
-
-    return data;
-  }
-);
+const loginListeners = (startAppListening: AppStartListening) => {
+  startAppListening({
+    matcher: apiSliceWithAuth.endpoints.login.matchFulfilled,
+    effect: (action) => {
+      setJwtToken(action.payload.token);
+    },
+  });
+};
 
 interface AuthState {
   user: null | User;
-  status: "idle" | "success" | "loading" | "failed";
-  error?: string | null;
+  loading: boolean;
+  error?: null | string;
 }
 
 const initialState: AuthState = {
   user: null,
-  status: "idle",
+  loading: false,
   error: null,
 };
 
@@ -48,19 +63,32 @@ const authSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers(builder) {
-    builder.addCase(getUser.pending, (state) => {
-      state.status = "loading";
+    builder.addMatcher(apiSliceWithAuth.endpoints.getUser.matchFulfilled, (state, action) => {
+      state.user = action.payload.user;
+      state.loading = false;
     });
-    builder.addCase(getUser.rejected, (state, action) => {
-      state.status = "failed";
-      if (action.payload) {
-        state.error = action.payload.error;
-      } else {
-        state.error = action.error.message;
+    builder.addMatcher(apiSliceWithAuth.endpoints.getUser.matchPending, (state) => {
+      state.loading = true;
+    });
+    builder.addMatcher(apiSliceWithAuth.endpoints.getUser.matchRejected, (state, action) => {
+      state.loading = false;
+
+      const payload = action.payload;
+      if (payload) {
+        if (typeof payload.status === "number") {
+          if (payload.status === 401) {
+            state.error = payload.data as string;
+            return;
+          }
+
+          state.error = (payload.data as { error: string }).error;
+          return;
+        }
+
+        state.error = payload.error;
       }
     });
-    builder.addCase(getUser.fulfilled, (state, action) => {
-      state.status = "success";
+    builder.addMatcher(apiSliceWithAuth.endpoints.login.matchFulfilled, (state, action) => {
       state.user = action.payload.user;
     });
   },
@@ -68,8 +96,8 @@ const authSlice = createSlice({
     selectUser(state) {
       return state.user;
     },
-    selectUserStatus(state) {
-      return state.status;
+    selectUserIsLoading(state) {
+      return state.loading;
     },
     selectUserError(state) {
       return state.error;
@@ -77,8 +105,10 @@ const authSlice = createSlice({
   },
 });
 
-export { getUser };
+export { apiSliceWithAuth, loginListeners };
 
-export const { selectUser, selectUserStatus, selectUserError } = authSlice.selectors;
+export const { useLoginMutation, useGetUserQuery } = apiSliceWithAuth;
+
+export const { selectUser, selectUserIsLoading, selectUserError } = authSlice.selectors;
 
 export default authSlice.reducer;
