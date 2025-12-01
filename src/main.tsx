@@ -4,11 +4,19 @@ import { Provider } from "react-redux";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import setupStore from "./config/store.js";
 import routes from "./routes/routes.js";
+import { apiSliceWithAuth } from "./slices/authSlice.js";
+import { getJwtToken } from "./services/localStorage.js";
 import "./global-styles/reset.css";
 
 const store = setupStore();
 
 const router = createBrowserRouter(routes);
+
+const jwtToken = getJwtToken();
+
+if (jwtToken) {
+  void store.dispatch(apiSliceWithAuth.endpoints.getUser.initiate(jwtToken));
+}
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLDivElement).render(
   <React.StrictMode>
