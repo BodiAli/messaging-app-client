@@ -11,4 +11,30 @@ describe("login-page component", () => {
 
     expect(screen.getByRole("heading", { name: "Log in to your account", level: 1 })).toBeInTheDocument();
   });
+
+  it("should render form", () => {
+    expect.hasAssertions();
+
+    renderWithProviders(<LoginPage />);
+
+    const form = screen.getByRole("form", { name: "Login form" });
+
+    expect(form).toBeInTheDocument();
+  });
+
+  it("should render username, password inputs and a Log in button", () => {
+    expect.hasAssertions();
+
+    renderWithProviders(<LoginPage />);
+
+    const usernameInput = screen.getByRole("textbox", { name: "Username" });
+    const passwordInput = screen.getByLabelText("Password");
+    const logInButton = screen.getByRole("button", { name: "Log in" });
+
+    expect(usernameInput).toBeInTheDocument();
+    expect(passwordInput).toBeInTheDocument();
+    expect(logInButton).toBeInTheDocument();
+  });
+
+  it.todo("should render a validation message");
 });
