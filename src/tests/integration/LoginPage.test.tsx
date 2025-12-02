@@ -15,12 +15,14 @@ describe("login-page component", () => {
           Component: LoginPage,
         },
       ],
-      { initialEntries: ["/log-in"] }
+      { initialEntries: ["/log-in"] },
     );
 
     renderWithProviders(<RouterProvider router={router} />);
 
-    expect(screen.getByRole("heading", { name: "Log in to your account", level: 1 })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Log in to your account", level: 1 }),
+    ).toBeInTheDocument();
   });
 
   it("should render form", () => {
@@ -33,7 +35,7 @@ describe("login-page component", () => {
           Component: LoginPage,
         },
       ],
-      { initialEntries: ["/log-in"] }
+      { initialEntries: ["/log-in"] },
     );
 
     renderWithProviders(<RouterProvider router={router} />);
@@ -52,7 +54,7 @@ describe("login-page component", () => {
           Component: LoginPage,
         },
       ],
-      { initialEntries: ["/log-in"] }
+      { initialEntries: ["/log-in"] },
     );
 
     renderWithProviders(<RouterProvider router={router} />);
