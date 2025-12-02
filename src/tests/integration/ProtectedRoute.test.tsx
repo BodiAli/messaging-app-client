@@ -34,7 +34,7 @@ describe("protected-route component", () => {
     vi.resetAllMocks();
   });
 
-  it("should throw an error when request rejects with unexpected status", async () => {
+  it("should throw an error when request rejects with unexpected status and render error content", async () => {
     expect.hasAssertions();
 
     vi.spyOn(console, "error").mockImplementation(() => null);
@@ -48,7 +48,11 @@ describe("protected-route component", () => {
 
     renderWithProviders(<RouterProvider router={router} />);
 
-    await expect(screen.findByText("ErrorBoundary")).resolves.toBeVisible();
+    await expect(
+      screen.findByText("Unexpected error occurred"),
+    ).resolves.toBeVisible();
+
+    expect(screen.getByText("Internal server error")).toBeInTheDocument();
   });
 
   it("should render Loader component on initial render", () => {
@@ -101,7 +105,7 @@ describe("protected-route component", () => {
     renderWithProviders(
       <ProtectedRoute>
         <p>Protected!</p>
-      </ProtectedRoute>
+      </ProtectedRoute>,
     );
 
     await expect(screen.findByText("Protected!")).resolves.toBeInTheDocument();
