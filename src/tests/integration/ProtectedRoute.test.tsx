@@ -96,7 +96,7 @@ describe("protected-route component", () => {
   it("should render children when user is authenticated", async () => {
     expect.hasAssertions();
 
-    fetchMock.get(serverRoute, { status: 200, body: mockedUser });
+    fetchMock.get(serverRoute, { status: 200, body: { user: mockedUser } });
 
     renderWithProviders(
       <ProtectedRoute>
