@@ -2,25 +2,25 @@ import type { RouteObject } from "react-router";
 import App from "@/app/App";
 import LoginPage from "@/pages/LoginPage";
 import ProtectedRoute from "@/app/ProtectedRoute";
+import AppLayout from "@/app/AppLayout";
 
 const routes: RouteObject[] = [
   {
-    path: "/",
-    element: (
-      <ProtectedRoute>
-        <App />
-      </ProtectedRoute>
-    ),
+    Component: AppLayout,
     children: [
       {
-        index: true,
-        Component: () => <p>Main page</p>,
+        path: "/",
+        element: (
+          <ProtectedRoute>
+            <App />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/log-in",
+        Component: LoginPage,
       },
     ],
-  },
-  {
-    path: "/log-in",
-    Component: LoginPage,
   },
 ];
 
