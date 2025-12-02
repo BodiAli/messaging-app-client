@@ -1,12 +1,15 @@
+import { AppBar, Box, Typography } from "@mui/material";
+
 export default function Header() {
   return (
-    <header>
-      <div>
-        <div>
-          <img src="test" alt="Messaging App Logo" />
-        </div>
-        <h2>Messaging App</h2>
-      </div>
-    </header>
+    <AppBar
+      color="primary"
+      sx={{
+        padding: "20px",
+      }}
+    >
+      <Typography component="h2">Messaging App</Typography>
+      <Box component="img" alt="Messaging App Logo" />
+    </AppBar>
   );
 }

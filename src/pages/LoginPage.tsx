@@ -1,40 +1,31 @@
+import type React from "react";
 import { useLoginMutation } from "@/slices/authSlice";
 import { useNavigate } from "react-router";
+import { Button, FormLabel, Input, Typography } from "@mui/material";
 
 export default function LoginPage() {
   const [login] = useLoginMutation();
   const navigate = useNavigate();
 
+  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+  };
+
   return (
     <main>
-      <h1>Log in to your account</h1>
-
-      <form
-        aria-label="Login form"
-        onSubmit={(e) => {
-          const asyncHandler = async () => {
-            e.preventDefault();
-
-            const username = e.currentTarget.elements.username.value;
-            const password = e.currentTarget.elements.password.value;
-
-            await login({ username, password });
-
-            void navigate("/");
-          };
-
-          void asyncHandler();
-        }}
-      >
-        <label>
+      <Typography variant="h2" component="h1" align="center">
+        Log in to your account
+      </Typography>
+      <form aria-label="Login form">
+        <FormLabel>
           Username
-          <input type="text" name="username" />
-        </label>
-        <label>
+          <Input name="Username" />
+        </FormLabel>
+        <FormLabel>
           Password
-          <input type="password" name="password" />
-        </label>
-        <button type="submit">Log in</button>
+          <Input name="Username" type="password" />
+        </FormLabel>
+        <Button type="submit">Log in</Button>
       </form>
     </main>
   );
