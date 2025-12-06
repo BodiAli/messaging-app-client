@@ -7,7 +7,7 @@ import routes from "./routes/routes.js";
 import { apiSliceWithAuth } from "./slices/authSlice.js";
 import { getJwtToken } from "./services/localStorage.js";
 import { CssBaseline, ThemeProvider } from "@mui/material";
-import initializeTheme from "./config/theme.js";
+import initializeTheme from "./libs/theme.js";
 
 const store = setupStore();
 
