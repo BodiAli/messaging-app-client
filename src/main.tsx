@@ -6,7 +6,8 @@ import setupStore from "./config/store.js";
 import routes from "./routes/routes.js";
 import { apiSliceWithAuth } from "./slices/authSlice.js";
 import { getJwtToken } from "./services/localStorage.js";
-import "./global-styles/reset.css";
+import { CssBaseline, ThemeProvider } from "@mui/material";
+import initializeTheme from "./config/theme.js";
 
 const store = setupStore();
 
@@ -18,10 +19,15 @@ if (jwtToken) {
   void store.dispatch(apiSliceWithAuth.endpoints.getUser.initiate(jwtToken));
 }
 
+const theme = initializeTheme();
+
 ReactDOM.createRoot(document.getElementById("root") as HTMLDivElement).render(
   <React.StrictMode>
     <Provider store={store}>
-      <RouterProvider router={router} />
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <RouterProvider router={router} />
+      </ThemeProvider>
     </Provider>
   </React.StrictMode>,
 );
