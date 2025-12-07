@@ -6,6 +6,7 @@ import renderWithProviders from "@/utils/test-utils";
 import ProtectedRoute from "@/app/ProtectedRoute";
 import routes from "@/routes/routes";
 import { getJwtToken } from "@/services/localStorage";
+import serverUrl from "@/utils/serverUrl";
 import type { User } from "@/types/modelsType";
 
 vi.mock(import("@/services/localStorage"), () => {
@@ -14,7 +15,7 @@ vi.mock(import("@/services/localStorage"), () => {
   };
 });
 
-const serverRoute = `${import.meta.env.VITE_SERVER_URL}/auth/get-user`;
+const serverRoute = `${serverUrl}/auth/get-user`;
 
 const mockedUser: User = {
   id: "mockId",
