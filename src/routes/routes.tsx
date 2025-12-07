@@ -4,6 +4,7 @@ import LoginPage from "@/pages/LoginPage";
 import ProtectedRoute from "@/app/ProtectedRoute";
 import AppLayout from "@/app/AppLayout";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import NotFoundPage from "@/pages/NotFoundPage";
 
 const routes: RouteObject[] = [
   {
@@ -23,6 +24,10 @@ const routes: RouteObject[] = [
           {
             path: "/log-in",
             Component: LoginPage,
+          },
+          {
+            path: "*",
+            Component: NotFoundPage,
           },
         ],
       },
