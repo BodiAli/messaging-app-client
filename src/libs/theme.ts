@@ -24,6 +24,7 @@ export default function initializeTheme() {
       },
       secondary: {
         main: "#f9d5cd",
+        dark: "#ad938eff",
       },
     },
   });
