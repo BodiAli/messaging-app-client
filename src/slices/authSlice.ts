@@ -24,7 +24,10 @@ const apiSliceWithAuth = apiSlice.injectEndpoints({
           };
         },
       }),
-      login: build.mutation<{ user: User; token: string }, { username: string; password: string }>({
+      login: build.mutation<
+        { user: User; token: string },
+        { username: string; password: string }
+      >({
         query({ username, password }) {
           return {
             url: "/auth/log-in",
@@ -63,34 +66,46 @@ const authSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers(builder) {
-    builder.addMatcher(apiSliceWithAuth.endpoints.getUser.matchFulfilled, (state, action) => {
-      state.user = action.payload.user;
-      state.loading = false;
-    });
-    builder.addMatcher(apiSliceWithAuth.endpoints.getUser.matchPending, (state) => {
-      state.loading = true;
-    });
-    builder.addMatcher(apiSliceWithAuth.endpoints.getUser.matchRejected, (state, action) => {
-      state.loading = false;
+    builder.addMatcher(
+      apiSliceWithAuth.endpoints.getUser.matchFulfilled,
+      (state, action) => {
+        state.user = action.payload.user;
+        state.loading = false;
+      },
+    );
+    builder.addMatcher(
+      apiSliceWithAuth.endpoints.getUser.matchPending,
+      (state) => {
+        state.loading = true;
+      },
+    );
+    builder.addMatcher(
+      apiSliceWithAuth.endpoints.getUser.matchRejected,
+      (state, action) => {
+        state.loading = false;
 
-      const payload = action.payload;
-      if (payload) {
-        if (typeof payload.status === "number") {
-          if (payload.status === 401) {
-            state.error = payload.data as string;
+        const payload = action.payload;
+        if (payload) {
+          if (typeof payload.status === "number") {
+            if (payload.status === 401) {
+              state.error = payload.data as string;
+              return;
+            }
+
+            state.error = (payload.data as { error: string }).error;
             return;
           }
 
-          state.error = (payload.data as { error: string }).error;
-          return;
+          state.error = payload.error;
         }
-
-        state.error = payload.error;
-      }
-    });
-    builder.addMatcher(apiSliceWithAuth.endpoints.login.matchFulfilled, (state, action) => {
-      state.user = action.payload.user;
-    });
+      },
+    );
+    builder.addMatcher(
+      apiSliceWithAuth.endpoints.login.matchFulfilled,
+      (state, action) => {
+        state.user = action.payload.user;
+      },
+    );
   },
   selectors: {
     selectUser(state) {
@@ -109,6 +124,7 @@ export { apiSliceWithAuth, loginListeners };
 
 export const { useLoginMutation, useGetUserQuery } = apiSliceWithAuth;
 
-export const { selectUser, selectUserIsLoading, selectUserError } = authSlice.selectors;
+export const { selectUser, selectUserIsLoading, selectUserError } =
+  authSlice.selectors;
 
 export default authSlice.reducer;
