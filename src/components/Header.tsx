@@ -7,6 +7,7 @@ export default function Header() {
       sx={{
         padding: "20px",
       }}
+      position="static"
     >
       <Typography component="h2">Messaging App</Typography>
       <Box component="img" alt="Messaging App Logo" />
