@@ -21,7 +21,11 @@ describe("notfound-page component", () => {
       level: 1,
     });
     const homePageParagraph = screen.getByText((_content, element) => {
-      return element?.textContent === "Click here to return to Home page";
+      if (element?.tagName === "P") {
+        return element.textContent === "Click here to return to Home page";
+      }
+
+      return false;
     });
     const homePageLink = screen.getByRole("link", {
       name: "here",
