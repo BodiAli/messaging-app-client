@@ -1,7 +1,7 @@
 import { configureStore } from "@reduxjs/toolkit";
+import { listenerMiddleware } from "./listenerMiddleware";
 import authReducer from "../slices/authSlice";
 import apiSlice from "../slices/apiSlice";
-import { listenerMiddleware } from "./listenerMiddleware";
 
 export default function setupStore() {
   return configureStore({

@@ -1,6 +1,6 @@
 import { createListenerMiddleware } from "@reduxjs/toolkit";
-import type { AppDispatch, RootState } from "./store";
 import { loginListeners } from "@/slices/authSlice";
+import type { AppDispatch, RootState } from "./store";
 
 const listenerMiddleware = createListenerMiddleware();
 

@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import apiSlice from "./apiSlice";
 import { setJwtToken } from "@/services/localStorage";
+import apiSlice from "./apiSlice";
 import type { User } from "@/types/modelsType";
 import type { AppStartListening } from "@/config/listenerMiddleware";
 

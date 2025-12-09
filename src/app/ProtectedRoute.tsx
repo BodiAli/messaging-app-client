@@ -1,13 +1,13 @@
-import Loader from "@/components/Loader";
 import { useRef, type PropsWithChildren } from "react";
 import { Navigate } from "react-router";
-import { useAppSelector } from "./hooks";
+import Loader from "@/components/Loader";
 import {
   selectUser,
   selectUserError,
   selectUserIsLoading,
 } from "@/slices/authSlice";
 import { getJwtToken } from "@/services/localStorage";
+import { useAppSelector } from "./hooks";
 
 export default function ProtectedRoute({ children }: PropsWithChildren) {
   const jwtTokenRef = useRef(getJwtToken());

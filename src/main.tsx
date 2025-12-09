@@ -1,12 +1,12 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
+import * as React from "react";
+import * as ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
 import { createBrowserRouter, RouterProvider } from "react-router";
+import { CssBaseline, ThemeProvider } from "@mui/material";
 import setupStore from "./config/store.js";
 import routes from "./routes/routes.js";
 import { apiSliceWithAuth } from "./slices/authSlice.js";
 import { getJwtToken } from "./services/localStorage.js";
-import { CssBaseline, ThemeProvider } from "@mui/material";
 import initializeTheme from "./libs/theme.js";
 
 const store = setupStore();

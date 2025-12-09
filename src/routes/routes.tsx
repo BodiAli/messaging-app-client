@@ -1,10 +1,10 @@
-import type { RouteObject } from "react-router";
 import App from "@/app/App";
 import LoginPage from "@/pages/LoginPage";
 import ProtectedRoute from "@/app/ProtectedRoute";
 import AppLayout from "@/app/AppLayout";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import NotFoundPage from "@/pages/NotFoundPage";
+import type { RouteObject } from "react-router";
 
 const routes: RouteObject[] = [
   {

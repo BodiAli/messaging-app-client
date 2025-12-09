@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeAll, afterEach } from "vitest";
 import { screen } from "@testing-library/react";
-import Header from "@/components/Header";
 import { createMemoryRouter, RouterProvider } from "react-router";
-import renderWithProviders from "@/utils/test-utils";
 import userEvent from "@testing-library/user-event";
-import routes from "@/routes/routes";
 import fetchMock, { manageFetchMockGlobally } from "@fetch-mock/vitest";
+import Header from "@/components/Header";
+import renderWithProviders from "@/utils/test-utils";
+import routes from "@/routes/routes";
 import serverUrl from "@/utils/serverUrl";
 import type { User } from "@/types/modelsType";
 
