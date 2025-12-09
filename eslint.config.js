@@ -54,6 +54,7 @@ export default defineConfig([
           ],
         },
       ],
+      "import-x/no-named-as-default-member": "off",
     },
   },
   eslintConfigPrettier,
