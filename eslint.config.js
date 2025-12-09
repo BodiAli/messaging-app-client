@@ -7,6 +7,7 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import jestDom from "eslint-plugin-jest-dom";
 import vitest from "@vitest/eslint-plugin";
 import eslintConfigPrettier from "eslint-config-prettier/flat";
+import { importX } from "eslint-plugin-import-x";
 import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
@@ -20,6 +21,8 @@ export default defineConfig([
       js.configs.recommended,
       tseslint.configs.strictTypeChecked,
       tseslint.configs.stylisticTypeChecked,
+      importX.flatConfigs.recommended,
+      importX.flatConfigs.typescript,
       eslintReact.configs["recommended-type-checked"],
       reactHooks.configs["recommended-latest"],
       reactRefresh.configs.vite,
@@ -34,6 +37,23 @@ export default defineConfig([
         project: ["./tsconfig.node.json", "./tsconfig.app.json"],
         tsconfigRootDir: import.meta.dirname,
       },
+    },
+    rules: {
+      "import-x/order": [
+        "error",
+        {
+          groups: [
+            "builtin",
+            "external",
+            "internal",
+            "index",
+            "sibling",
+            "parent",
+            "object",
+            "type",
+          ],
+        },
+      ],
     },
   },
   eslintConfigPrettier,
