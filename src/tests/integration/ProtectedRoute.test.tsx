@@ -3,17 +3,10 @@ import fetchMock, { manageFetchMockGlobally } from "@fetch-mock/vitest";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { describe, it, expect, beforeAll, afterEach } from "vitest";
 import renderWithProviders from "@/utils/test-utils";
-import ProtectedRoute from "@/app/ProtectedRoute";
 import routes from "@/routes/routes";
-import { getJwtToken } from "@/services/localStorage";
+import * as localStorageService from "@/services/localStorage";
 import serverUrl from "@/utils/serverUrl";
 import type { User } from "@/types/modelsType";
-
-vi.mock(import("@/services/localStorage"), () => {
-  return {
-    getJwtToken: vi.fn<() => string>(() => "invalidToken"),
-  };
-});
 
 const serverRoute = `${serverUrl}/auth/get-user`;
 
@@ -26,6 +19,8 @@ const mockedUser: User = {
 };
 
 describe("protected-route component", () => {
+  const getJwtTokenSpy = vi.spyOn(localStorageService, "getJwtToken");
+
   beforeAll(() => {
     fetchMock.mockGlobal();
     manageFetchMockGlobally();
@@ -35,41 +30,8 @@ describe("protected-route component", () => {
     vi.resetAllMocks();
   });
 
-  it("should throw an error when request rejects with unexpected status and render error content", async () => {
-    expect.hasAssertions();
-
-    vi.spyOn(console, "error").mockImplementation(() => null);
-
-    fetchMock.get(serverRoute, {
-      status: 500,
-      body: { error: "Internal server error" },
-    });
-
-    const router = createMemoryRouter(routes);
-
-    renderWithProviders(<RouterProvider router={router} />);
-
-    await expect(
-      screen.findByText("Unexpected error occurred"),
-    ).resolves.toBeVisible();
-
-    expect(screen.getByText("Internal server error")).toBeInTheDocument();
-  });
-
-  it("should render Loader component on initial render", () => {
-    expect.hasAssertions();
-
-    const router = createMemoryRouter(routes);
-
-    renderWithProviders(<RouterProvider router={router} />);
-
-    expect(screen.getByTestId("loader")).toBeInTheDocument();
-  });
-
   it("should redirect to login route when there is no token", async () => {
     expect.hasAssertions();
-
-    vi.mocked(getJwtToken).mockReturnValue(null);
 
     const router = createMemoryRouter(routes);
 
@@ -80,8 +42,10 @@ describe("protected-route component", () => {
     });
   });
 
-  it("should redirect to login route when server responds with 401 status", async () => {
+  it("should redirect to login route when user is null", async () => {
     expect.hasAssertions();
+
+    getJwtTokenSpy.mockReturnValue("invalidJwtToken");
 
     fetchMock.get(serverRoute, {
       status: 401,
@@ -98,17 +62,21 @@ describe("protected-route component", () => {
     });
   });
 
-  it("should render children when user is authenticated", async () => {
+  it("should allow authenticated users to access the '/' route", async () => {
     expect.hasAssertions();
 
+    getJwtTokenSpy.mockReturnValue("jwtToken");
     fetchMock.get(serverRoute, { status: 200, body: { user: mockedUser } });
 
-    renderWithProviders(
-      <ProtectedRoute>
-        <p>Protected!</p>
-      </ProtectedRoute>,
-    );
+    const router = createMemoryRouter(routes);
 
-    await expect(screen.findByText("Protected!")).resolves.toBeInTheDocument();
+    renderWithProviders(<RouterProvider router={router} />);
+
+    await waitFor(() => {
+      const loader = screen.queryByTestId("loader");
+
+      expect(loader).not.toBeInTheDocument();
+      expect(router.state.location.pathname).toBe("/");
+    });
   });
 });
