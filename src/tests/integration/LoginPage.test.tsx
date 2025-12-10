@@ -1,5 +1,5 @@
 import { createMemoryRouter, RouterProvider } from "react-router";
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import fetchMock, { manageFetchMockGlobally } from "@fetch-mock/vitest";
 import userEvent from "@testing-library/user-event";
 import { describe, it, expect, beforeAll, afterEach } from "vitest";
@@ -7,9 +7,11 @@ import renderWithProviders from "@/utils/test-utils";
 import LoginPage from "@/pages/LoginPage";
 import serverUrl from "@/utils/serverUrl";
 import routes from "@/routes/routes";
+import * as localStorageService from "@/services/localStorage";
 import type { User } from "@/types/modelsType";
 
-const serverRoute = `${serverUrl}/auth/log-in`;
+const logInServerRoute = `${serverUrl}/auth/log-in`;
+const getUserServerRoute = `${serverUrl}/auth/get-user`;
 
 const mockedUser: User = {
   id: "userId",
@@ -20,6 +22,9 @@ const mockedUser: User = {
 };
 
 describe("login-page component", () => {
+  const getJwtTokenSpy = vi.spyOn(localStorageService, "getJwtToken");
+  const setJwtTokenSpy = vi.spyOn(localStorageService, "setJwtToken");
+
   beforeAll(() => {
     fetchMock.mockGlobal();
     manageFetchMockGlobally();
@@ -117,7 +122,7 @@ describe("login-page component", () => {
   it("should render a feedback message when log in fails", async () => {
     expect.hasAssertions();
 
-    fetchMock.post(serverRoute, {
+    fetchMock.post(logInServerRoute, {
       status: 401,
       body: { errors: [{ message: "Incorrect username or password." }] },
     });
@@ -153,7 +158,7 @@ describe("login-page component", () => {
 
     vi.spyOn(console, "error").mockImplementation(() => null);
 
-    fetchMock.post(serverRoute, {
+    fetchMock.post(logInServerRoute, {
       status: 500,
       body: { error: { message: "Server error." } },
     });
@@ -184,7 +189,7 @@ describe("login-page component", () => {
     expect.hasAssertions();
 
     fetchMock.post(
-      serverRoute,
+      logInServerRoute,
       {
         status: 200,
         body: { user: mockedUser },
@@ -208,12 +213,12 @@ describe("login-page component", () => {
     expect(loginButton).toBeDisabled();
   });
 
-  it("should navigate to homepage when submitted with valid inputs", async () => {
+  it("should call setJwtToken and navigate to homepage when submitted with valid inputs", async () => {
     expect.hasAssertions();
 
-    fetchMock.post(serverRoute, {
+    fetchMock.post(logInServerRoute, {
       status: 200,
-      body: { user: mockedUser },
+      body: { user: mockedUser, token: "jwtToken" },
     });
 
     const router = createMemoryRouter(routes, { initialEntries: ["/log-in"] });
@@ -229,6 +234,30 @@ describe("login-page component", () => {
 
     await userEvent.click(loginButton);
 
-    expect(router.state.location.pathname).toBe("/");
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe("/");
+    });
+
+    expect(setJwtTokenSpy).toHaveBeenCalledWith("jwtToken");
+    expect(localStorageService.getJwtToken()).toBe("jwtToken");
+  });
+
+  it("should navigate to home page if user is already logged in", async () => {
+    expect.hasAssertions();
+
+    fetchMock.get(getUserServerRoute, {
+      status: 200,
+      body: { user: mockedUser },
+    });
+
+    getJwtTokenSpy.mockImplementation(() => "jwtToken");
+
+    const router = createMemoryRouter(routes, { initialEntries: ["/log-in"] });
+
+    renderWithProviders(<RouterProvider router={router} />);
+
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe("/");
+    });
   });
 });
