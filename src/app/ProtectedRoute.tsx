@@ -15,7 +15,7 @@ export default function ProtectedRoute({ children }: PropsWithChildren) {
   const userIsLoading = useAppSelector(selectUserIsLoading);
   const userError = useAppSelector(selectUserError);
 
-  if (!jwtTokenRef.current) return <Navigate to="/log-in" />;
+  if (!jwtTokenRef.current) return <Navigate to="/log-in" replace />;
 
   if (userIsLoading) return <Loader />;
 
