@@ -68,5 +68,10 @@ export default defineConfig([
       "@typescript-eslint/unbound-method": "off",
       "vitest/no-hooks": "off",
     },
+    settings: {
+      vitest: {
+        typecheck: true,
+      },
+    },
   },
 ]);
