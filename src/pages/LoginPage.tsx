@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router";
+import { Navigate, useNavigate } from "react-router";
 import {
   Button,
   FormLabel,
@@ -13,7 +13,13 @@ import {
   isServerError,
   type apiClientError,
 } from "@/types/apiResponseTypes";
-import { useLoginMutation } from "@/slices/authSlice";
+import {
+  selectUser,
+  selectUserIsLoading,
+  useLoginMutation,
+} from "@/slices/authSlice";
+import { useAppSelector } from "@/app/hooks";
+import Loader from "@/components/Loader";
 import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
 function isFetchBaseQueryError(error: unknown): error is FetchBaseQueryError {
@@ -35,7 +41,15 @@ export default function LoginPage() {
     [],
   );
   const [fatalError, setFatalError] = useState<string | null>(null);
+  const user = useAppSelector(selectUser);
+  const isUserLoading = useAppSelector(selectUserIsLoading);
   const navigate = useNavigate();
+
+  if (isUserLoading) return <Loader />;
+
+  if (user) {
+    return <Navigate to="/" replace />;
+  }
 
   if (fatalError) {
     throw new Error(fatalError);
