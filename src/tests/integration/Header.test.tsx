@@ -11,12 +11,6 @@ import type { User } from "@/types/modelsType";
 
 const serverRoute = `${serverUrl}/auth/get-user`;
 
-vi.mock(import("@/services/localStorage"), () => {
-  return {
-    getJwtToken: vi.fn<() => string>(() => "jwtToken"),
-  };
-});
-
 const mockedUser: User = {
   id: "mockId",
   imageUrl: null,
@@ -88,14 +82,6 @@ describe("header component", () => {
 
   it("should render Log in and Sign up links when user is not authenticated", async () => {
     expect.hasAssertions();
-
-    fetchMock.get(serverRoute, {
-      status: 401,
-      headers: {
-        "Content-type": "text/plain",
-        body: "Unauthorized",
-      },
-    });
 
     const router = createMemoryRouter(routes);
 
