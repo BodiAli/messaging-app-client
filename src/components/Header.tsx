@@ -111,7 +111,6 @@ export default function Header() {
             </Typography>
           </Box>
         </Stack>
-
         {headerContent}
       </Stack>
     </AppBar>
