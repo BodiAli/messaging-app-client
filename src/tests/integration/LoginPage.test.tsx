@@ -89,7 +89,7 @@ describe("login-page component", () => {
     renderWithProviders(<RouterProvider router={router} />);
 
     const usernameInput = screen.getByRole("textbox", { name: "Username" });
-    const passwordInput = screen.getByLabelText("Password");
+    const passwordInput = screen.getByLabelText(/^Password/);
     const logInButton = screen.getByRole("button", { name: "Log in" });
 
     expect(usernameInput).toBeInTheDocument();
@@ -113,7 +113,7 @@ describe("login-page component", () => {
     renderWithProviders(<RouterProvider router={router} />);
 
     const usernameInput = screen.getByRole("textbox", { name: "Username" });
-    const passwordInput = screen.getByLabelText("Password");
+    const passwordInput = screen.getByLabelText(/^Password/);
 
     expect(usernameInput).toBeRequired();
     expect(passwordInput).toBeRequired();
@@ -140,7 +140,7 @@ describe("login-page component", () => {
     renderWithProviders(<RouterProvider router={router} />);
 
     const usernameInput = screen.getByRole("textbox", { name: "Username" });
-    const passwordInput = screen.getByLabelText("Password");
+    const passwordInput = screen.getByLabelText(/^Password/);
     const loginButton = screen.getByRole("button", { name: "Log in" });
 
     await userEvent.type(usernameInput, "username");
@@ -168,7 +168,7 @@ describe("login-page component", () => {
     renderWithProviders(<RouterProvider router={router} />);
 
     const usernameInput = screen.getByRole("textbox", { name: "Username" });
-    const passwordInput = screen.getByLabelText("Password");
+    const passwordInput = screen.getByLabelText(/^Password/);
     const loginButton = screen.getByRole("button", { name: "Log in" });
 
     await userEvent.type(usernameInput, "username");
@@ -202,7 +202,7 @@ describe("login-page component", () => {
     renderWithProviders(<RouterProvider router={router} />);
 
     const usernameInput = screen.getByRole("textbox", { name: "Username" });
-    const passwordInput = screen.getByLabelText("Password");
+    const passwordInput = screen.getByLabelText(/^Password/);
     const loginButton = screen.getByRole("button", { name: "Log in" });
 
     await userEvent.type(usernameInput, "validUsername");
@@ -226,7 +226,7 @@ describe("login-page component", () => {
     renderWithProviders(<RouterProvider router={router} />);
 
     const usernameInput = screen.getByRole("textbox", { name: "Username" });
-    const passwordInput = screen.getByLabelText("Password");
+    const passwordInput = screen.getByLabelText(/^Password/);
     const loginButton = screen.getByRole("button", { name: "Log in" });
 
     await userEvent.type(usernameInput, "validUsername");
