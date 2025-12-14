@@ -1,10 +1,10 @@
 import { Navigate, useNavigate } from "react-router";
 import {
+  Box,
   Button,
-  FormLabel,
-  Input,
   List,
   ListItem,
+  TextField,
   Typography,
 } from "@mui/material";
 import { useState, type FormEvent } from "react";
@@ -85,28 +85,98 @@ export default function LoginPage() {
   };
 
   return (
-    <main>
+    <Box
+      component="main"
+      sx={{
+        paddingY: 4,
+        display: "grid",
+        gridTemplateColumns: "1fr",
+        justifyItems: "center",
+        gap: 4,
+      }}
+    >
       <Typography variant="h2" component="h1" align="center">
         Log in to your account
       </Typography>
-      <form aria-label="Login form" onSubmit={handleLogin}>
-        <List>
-          {clientErrors.map((error) => {
-            return <ListItem key={error.message}>{error.message}</ListItem>;
-          })}
-        </List>
-        <FormLabel>
-          Username
-          <Input name="username" required />
-        </FormLabel>
-        <FormLabel>
-          Password
-          <Input name="password" type="password" required />
-        </FormLabel>
-        <Button type="submit" disabled={isLoading}>
-          Log in
-        </Button>
-      </form>
-    </main>
+      <Box
+        component="form"
+        aria-label="Login form"
+        onSubmit={handleLogin}
+        sx={{
+          width: "60%",
+          backgroundColor: "#efefef9c",
+          padding: 4,
+          borderRadius: "4px",
+          boxShadow: "0 0 10px #ccc",
+        }}
+      >
+        {clientErrors.length > 0 && (
+          <List
+            sx={{
+              listStyleType: "disc",
+              listStylePosition: "inside",
+              color: (theme) => theme.palette.error.main,
+            }}
+          >
+            {clientErrors.map((error) => {
+              return (
+                <ListItem
+                  key={error.message}
+                  sx={{
+                    display: "list-item",
+                  }}
+                >
+                  {error.message}
+                </ListItem>
+              );
+            })}
+          </List>
+        )}
+        <Box
+          component="div"
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "1fr",
+            gap: 2,
+          }}
+        >
+          <TextField
+            required
+            label="Username"
+            name="username"
+            autoComplete="username"
+            sx={{
+              backgroundColor: "#ffffff71",
+              "& .MuiInputLabel-root": {
+                color: "#000000a9",
+              },
+            }}
+          />
+          <TextField
+            required
+            label="Password"
+            type="password"
+            name="password"
+            sx={{
+              backgroundColor: "#ffffff71",
+              "& .MuiInputLabel-root": {
+                color: "#000000a9",
+              },
+            }}
+          />
+          <Button
+            sx={{
+              justifySelf: "center",
+              paddingX: 5,
+            }}
+            type="submit"
+            disabled={isLoading}
+            variant="contained"
+          >
+            Log in
+          </Button>
+        </Box>
+      </Box>
+    </Box>
   );
 }
