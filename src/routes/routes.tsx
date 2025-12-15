@@ -4,6 +4,7 @@ import ProtectedRoute from "@/app/ProtectedRoute";
 import AppLayout from "@/app/AppLayout";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import NotFoundPage from "@/pages/NotFoundPage";
+import SignupPage from "@/pages/SignupPage";
 import type { RouteObject } from "react-router";
 
 const routes: RouteObject[] = [
@@ -24,6 +25,10 @@ const routes: RouteObject[] = [
           {
             path: "/log-in",
             Component: LoginPage,
+          },
+          {
+            path: "/sign-up",
+            Component: SignupPage,
           },
           {
             path: "*",
