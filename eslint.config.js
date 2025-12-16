@@ -39,6 +39,14 @@ export default defineConfig([
       },
     },
     rules: {
+      "@typescript-eslint/no-misused-promises": [
+        "error",
+        {
+          checksVoidReturn: {
+            attributes: false,
+          },
+        },
+      ],
       "import-x/order": [
         "error",
         {
