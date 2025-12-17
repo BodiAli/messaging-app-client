@@ -36,6 +36,18 @@ const apiSliceWithAuth = apiSlice.injectEndpoints({
           };
         },
       }),
+      signUp: build.mutation<
+        { user: User; token: string },
+        { username: string; password: string; confirmPassword: string }
+      >({
+        query({ confirmPassword, password, username }) {
+          return {
+            url: "/auth/sign-up",
+            method: "POST",
+            body: { username, password, confirmPassword },
+          };
+        },
+      }),
     };
   },
 });
@@ -106,6 +118,12 @@ const authSlice = createSlice({
         state.user = action.payload.user;
       },
     );
+    builder.addMatcher(
+      apiSliceWithAuth.endpoints.signUp.matchFulfilled,
+      (state, action) => {
+        state.user = action.payload.user;
+      },
+    );
   },
   selectors: {
     selectUser(state) {
@@ -122,7 +140,8 @@ const authSlice = createSlice({
 
 export { apiSliceWithAuth, loginListeners };
 
-export const { useLoginMutation, useGetUserQuery } = apiSliceWithAuth;
+export const { useLoginMutation, useGetUserQuery, useSignUpMutation } =
+  apiSliceWithAuth;
 
 export const { selectUser, selectUserIsLoading, selectUserError } =
   authSlice.selectors;
