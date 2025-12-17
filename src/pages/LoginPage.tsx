@@ -1,25 +1,9 @@
 import { Navigate, useNavigate } from "react-router";
-import {
-  Box,
-  Button,
-  List,
-  ListItem,
-  TextField,
-  Typography,
-} from "@mui/material";
-import { useState, type FormEvent } from "react";
-import {
-  isClientError,
-  isServerError,
-  type apiClientError,
-} from "@/types/apiResponseTypes";
+import { Box, Button, List, TextField, Typography } from "@mui/material";
+import { type FormEvent, type ReactElement } from "react";
 import { selectUser, useLoginMutation } from "@/slices/authSlice";
 import { useAppSelector } from "@/app/hooks";
-import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
-
-function isFetchBaseQueryError(error: unknown): error is FetchBaseQueryError {
-  return typeof error === "object" && error !== null && "status" in error;
-}
+import handleError from "@/utils/handleError";
 
 interface LoginFormFields extends HTMLFormControlsCollection {
   username: HTMLInputElement;
@@ -31,11 +15,7 @@ interface LoginFormWithElements extends HTMLFormElement {
 }
 
 export default function LoginPage() {
-  const [login, { isLoading }] = useLoginMutation();
-  const [clientErrors, setClientErrors] = useState<apiClientError["errors"]>(
-    [],
-  );
-  const [fatalError, setFatalError] = useState<string | null>(null);
+  const [login, { isLoading, error }] = useLoginMutation();
   const user = useAppSelector(selectUser);
   const navigate = useNavigate();
 
@@ -43,8 +23,10 @@ export default function LoginPage() {
     return <Navigate to="/" replace />;
   }
 
-  if (fatalError) {
-    throw new Error(fatalError);
+  let errorsList: ReactElement[] | undefined;
+
+  if (error) {
+    errorsList = handleError(error);
   }
 
   const handleLogin = (e: FormEvent<LoginFormWithElements>) => {
@@ -63,22 +45,8 @@ export default function LoginPage() {
         }).unwrap();
 
         void navigate("/");
-      } catch (error) {
-        if (isFetchBaseQueryError(error)) {
-          if (typeof error.status === "number") {
-            if (isClientError(error.data)) {
-              setClientErrors(error.data.errors);
-              return;
-            } else if (isServerError(error.data)) {
-              setFatalError(error.data.error.message);
-              return;
-            }
-          } else {
-            setFatalError(error.error);
-            return;
-          }
-        }
-        setFatalError(String(error));
+      } catch {
+        // empty
       }
     };
     void asyncHandler();
@@ -110,7 +78,7 @@ export default function LoginPage() {
           boxShadow: "0 0 10px #ccc",
         }}
       >
-        {clientErrors.length > 0 && (
+        {error && (
           <List
             sx={{
               listStyleType: "disc",
@@ -118,18 +86,7 @@ export default function LoginPage() {
               color: (theme) => theme.palette.error.main,
             }}
           >
-            {clientErrors.map((error) => {
-              return (
-                <ListItem
-                  key={error.message}
-                  sx={{
-                    display: "list-item",
-                  }}
-                >
-                  {error.message}
-                </ListItem>
-              );
-            })}
+            {errorsList}
           </List>
         )}
         <Box
