@@ -1,12 +1,16 @@
 import { useForm, type SubmitHandler } from "react-hook-form";
-import { Box, Button, TextField, Typography } from "@mui/material";
+import { Box, Button, List, TextField, Typography } from "@mui/material";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserSignupSchema } from "@/libs/schemas";
+import { useSignUpMutation } from "@/slices/authSlice";
+import handleError from "@/utils/handleError";
+import type { ReactElement } from "react";
 
 type FormValues = z.infer<typeof UserSignupSchema>;
 
 export default function SignupPage() {
+  const [signUp, { isLoading, error }] = useSignUpMutation();
   const {
     handleSubmit,
     register,
@@ -17,8 +21,14 @@ export default function SignupPage() {
   });
 
   const onSubmit: SubmitHandler<FormValues> = (data) => {
-    console.log(data);
+    void signUp(data);
   };
+
+  let errorsList: ReactElement[] | undefined;
+
+  if (error) {
+    errorsList = handleError(error);
+  }
 
   return (
     <Box component="main">
@@ -30,6 +40,17 @@ export default function SignupPage() {
         aria-label="Sign up form"
         onSubmit={handleSubmit(onSubmit)}
       >
+        {error && (
+          <List
+            sx={{
+              listStyleType: "disc",
+              listStylePosition: "inside",
+              color: (theme) => theme.palette.error.main,
+            }}
+          >
+            {errorsList}
+          </List>
+        )}
         <TextField
           type="text"
           label="Username"
@@ -55,7 +76,9 @@ export default function SignupPage() {
           error={!!errors.confirmPassword}
           helperText={errors.confirmPassword?.message}
         />
-        <Button type="submit">Create account</Button>
+        <Button type="submit" disabled={isLoading}>
+          Create account
+        </Button>
       </Box>
     </Box>
   );
