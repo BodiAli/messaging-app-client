@@ -1,3 +1,5 @@
+import type { FetchBaseQueryError } from "@reduxjs/toolkit/query";
+
 export interface apiClientError {
   errors: { message: string }[];
 }
@@ -5,6 +7,12 @@ export interface apiServerError {
   error: {
     message: string;
   };
+}
+
+export function isFetchBaseQueryError(
+  error: unknown,
+): error is FetchBaseQueryError {
+  return typeof error === "object" && error !== null && "status" in error;
 }
 
 export function isClientError(data: unknown): data is apiClientError {
