@@ -39,14 +39,36 @@ export default function SignupPage() {
   }
 
   return (
-    <Box component="main">
-      <Typography variant="h2" component="h1">
+    <Box
+      component="main"
+      sx={{
+        paddingY: 4,
+        display: "grid",
+        gridTemplateColumns: "1fr",
+        justifyItems: "center",
+        gap: 4,
+      }}
+    >
+      <Typography
+        variant="h2"
+        component="h1"
+        sx={{
+          textAlign: "center",
+        }}
+      >
         Create a new account
       </Typography>
       <Box
         component="form"
         aria-label="Sign up form"
         onSubmit={handleSubmit(onSubmit)}
+        sx={{
+          width: "60%",
+          backgroundColor: "#efefef9c",
+          padding: 4,
+          borderRadius: "4px",
+          boxShadow: "0 0 10px #ccc",
+        }}
       >
         {error && (
           <List
@@ -59,34 +81,87 @@ export default function SignupPage() {
             {errorsList}
           </List>
         )}
-        <TextField
-          type="text"
-          label="Username"
-          autoComplete="username"
-          required
-          {...register("username")}
-          error={!!errors.username}
-          helperText={errors.username?.message}
-        />
-        <TextField
-          type="password"
-          label="Password"
-          required
-          {...register("password")}
-          error={!!errors.password}
-          helperText={errors.password?.message}
-        />
-        <TextField
-          type="password"
-          label="Confirm password"
-          required
-          {...register("confirmPassword")}
-          error={!!errors.confirmPassword}
-          helperText={errors.confirmPassword?.message}
-        />
-        <Button type="submit" disabled={isLoading}>
-          Create account
-        </Button>
+        <Box
+          component="div"
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "1fr",
+            gap: 2,
+          }}
+        >
+          <TextField
+            type="text"
+            label="Username"
+            autoComplete="username"
+            required
+            {...register("username")}
+            error={!!errors.username}
+            helperText={errors.username?.message}
+            sx={{
+              "& .MuiInputLabel-root": {
+                color: "#000000a9",
+              },
+            }}
+            slotProps={{
+              htmlInput: {
+                sx: {
+                  backgroundColor: "#ffffff71",
+                },
+              },
+            }}
+          />
+          <TextField
+            type="password"
+            label="Password"
+            required
+            {...register("password")}
+            error={!!errors.password}
+            helperText={errors.password?.message}
+            sx={{
+              "& .MuiInputLabel-root": {
+                color: "#000000a9",
+              },
+            }}
+            slotProps={{
+              htmlInput: {
+                sx: {
+                  backgroundColor: "#ffffff71",
+                },
+              },
+            }}
+          />
+          <TextField
+            type="password"
+            label="Confirm password"
+            required
+            {...register("confirmPassword")}
+            error={!!errors.confirmPassword}
+            helperText={errors.confirmPassword?.message}
+            sx={{
+              "& .MuiInputLabel-root": {
+                color: "#000000a9",
+              },
+            }}
+            slotProps={{
+              htmlInput: {
+                sx: {
+                  backgroundColor: "#ffffff71",
+                },
+              },
+            }}
+          />
+          <Button
+            type="submit"
+            sx={{
+              justifySelf: "center",
+              paddingX: 5,
+            }}
+            variant="contained"
+            loading={isLoading}
+          >
+            Create account
+          </Button>
+        </Box>
       </Box>
     </Box>
   );
