@@ -11,6 +11,7 @@ import * as localStorageService from "@/services/localStorage";
 import type { User } from "@/types/modelsType";
 
 const logInServerRoute = `${serverUrl}/auth/log-in`;
+const logInAsGuestServerRoute = `${serverUrl}/auth/guest`;
 const getUserServerRoute = `${serverUrl}/auth/get-user`;
 
 const mockedUser: User = {
@@ -19,6 +20,14 @@ const mockedUser: User = {
   isGuest: false,
   lastSeen: new Date().toDateString(),
   username: "mockUsername",
+};
+
+const mockedGuestUser: User = {
+  id: "guestUserId",
+  imageUrl: null,
+  isGuest: true,
+  lastSeen: new Date().toDateString(),
+  username: "guestUsername",
 };
 
 describe("login-page component", () => {
@@ -32,6 +41,7 @@ describe("login-page component", () => {
 
   afterEach(() => {
     vi.resetAllMocks();
+    localStorage.clear();
   });
 
   it("should render Log in to your account text", () => {
@@ -160,7 +170,7 @@ describe("login-page component", () => {
 
     fetchMock.post(logInServerRoute, {
       status: 500,
-      body: { error: { message: "Server error." } },
+      body: { error: "Server error." },
     });
 
     const router = createMemoryRouter(routes, { initialEntries: ["/log-in"] });
@@ -259,5 +269,30 @@ describe("login-page component", () => {
     await waitFor(() => {
       expect(router.state.location.pathname).toBe("/");
     });
+  });
+
+  it("should log in user as guest", async () => {
+    expect.hasAssertions();
+
+    vi.resetAllMocks();
+
+    fetchMock.get(logInAsGuestServerRoute, {
+      status: 200,
+      body: { user: mockedGuestUser, token: "guestJwtToken" },
+    });
+
+    const router = createMemoryRouter(routes, { initialEntries: ["/log-in"] });
+
+    renderWithProviders(<RouterProvider router={router} />);
+
+    const logInAsGuestButton = screen.getByRole("button", {
+      name: "Continue as a guest",
+    });
+
+    await userEvent.click(logInAsGuestButton);
+
+    expect(setJwtTokenSpy).toHaveBeenCalledWith("guestJwtToken");
+    expect(localStorageService.getJwtToken()).toBe("guestJwtToken");
+    expect(router.state.location.pathname).toBe("/");
   });
 });
