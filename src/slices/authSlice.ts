@@ -1,4 +1,4 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, isAnyOf } from "@reduxjs/toolkit";
 import { setJwtToken } from "@/services/localStorage";
 import apiSlice from "./apiSlice";
 import type { User } from "@/types/modelsType";
@@ -52,9 +52,14 @@ const apiSliceWithAuth = apiSlice.injectEndpoints({
   },
 });
 
-const loginListeners = (startAppListening: AppStartListening) => {
+const authListeners = (startAppListening: AppStartListening) => {
+  const isTokenReceived = isAnyOf(
+    apiSliceWithAuth.endpoints.login.matchFulfilled,
+    apiSliceWithAuth.endpoints.signUp.matchFulfilled,
+  );
+
   startAppListening({
-    matcher: apiSliceWithAuth.endpoints.login.matchFulfilled,
+    matcher: isTokenReceived,
     effect: (action) => {
       setJwtToken(action.payload.token);
     },
@@ -138,7 +143,7 @@ const authSlice = createSlice({
   },
 });
 
-export { apiSliceWithAuth, loginListeners };
+export { apiSliceWithAuth, authListeners };
 
 export const { useLoginMutation, useGetUserQuery, useSignUpMutation } =
   apiSliceWithAuth;
