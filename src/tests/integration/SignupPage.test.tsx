@@ -20,7 +20,6 @@ const mockedUser: User = {
 };
 
 describe("signup page component", () => {
-  const getJwtTokenSpy = vi.spyOn(localStorageService, "getJwtToken");
   const setJwtTokenSpy = vi.spyOn(localStorageService, "setJwtToken");
 
   beforeAll(() => {
@@ -205,6 +204,8 @@ describe("signup page component", () => {
   it("should render ErrorBoundary when server responds with 500 status response", async () => {
     expect.hasAssertions();
 
+    vi.spyOn(console, "error").mockImplementation(() => null);
+
     const router = createMemoryRouter(routes, {
       initialEntries: ["/sign-up"],
     });
@@ -239,7 +240,7 @@ describe("signup page component", () => {
     expect(errorMassage).toBeInTheDocument();
   });
 
-  it.only("should disable submit button on submit", async () => {
+  it("should disable submit button on submit", async () => {
     expect.hasAssertions();
 
     fetchMock.post(
@@ -270,5 +271,32 @@ describe("signup page component", () => {
     await userEvent.click(submitButton);
 
     expect(submitButton).toBeDisabled();
+  });
+
+  it("should call save token to localStorage and navigate to homepage on successful submit", async () => {
+    expect.hasAssertions();
+
+    fetchMock.post(serverRoute, {
+      status: 200,
+      body: { user: mockedUser, token: "jwtToken" },
+    });
+
+    const router = createMemoryRouter(routes, { initialEntries: ["/sign-up"] });
+
+    renderWithProviders(<RouterProvider router={router} />);
+
+    const usernameInput = screen.getByRole("textbox", { name: "Username" });
+    const passwordInput = screen.getByLabelText(/^Password/);
+    const confirmPasswordInput = screen.getByLabelText(/^Confirm password/);
+    const submitButton = screen.getByRole("button", { name: "Create account" });
+
+    await userEvent.type(usernameInput, "username");
+    await userEvent.type(passwordInput, "password");
+    await userEvent.type(confirmPasswordInput, "password");
+    await userEvent.click(submitButton);
+
+    expect(setJwtTokenSpy).toHaveBeenCalledWith("jwtToken");
+    expect(localStorageService.getJwtToken()).toBe("jwtToken");
+    expect(router.state.location.pathname).toBe("/");
   });
 });
