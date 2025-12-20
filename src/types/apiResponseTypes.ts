@@ -4,9 +4,7 @@ export interface apiClientError {
   errors: { message: string }[];
 }
 export interface apiServerError {
-  error: {
-    message: string;
-  };
+  error: string;
 }
 
 export function isFetchBaseQueryError(
@@ -29,8 +27,6 @@ export function isServerError(data: unknown): data is apiServerError {
     typeof data === "object" &&
     data !== null &&
     "error" in data &&
-    typeof data.error === "object" &&
-    data.error !== null &&
-    "message" in data.error
+    typeof data.error === "string"
   );
 }

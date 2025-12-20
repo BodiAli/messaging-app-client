@@ -213,7 +213,7 @@ describe("signup page component", () => {
     fetchMock.post(serverRoute, {
       status: 500,
       body: {
-        error: { message: "Server error." },
+        error: "Server error.",
       },
     });
 

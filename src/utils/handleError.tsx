@@ -29,7 +29,7 @@ export default function handleError(
         });
         return errorsList;
       } else if (isServerError(error.data)) {
-        throw new Error(error.data.error.message);
+        throw new Error(error.data.error);
       }
 
       throw new Error(String(error.data));
