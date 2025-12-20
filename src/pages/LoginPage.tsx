@@ -127,7 +127,7 @@ export default function LoginPage() {
               paddingX: 5,
             }}
             type="submit"
-            disabled={isLoading}
+            loading={isLoading}
             variant="contained"
           >
             Log in
