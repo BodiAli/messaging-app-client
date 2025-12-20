@@ -36,6 +36,11 @@ const apiSliceWithAuth = apiSlice.injectEndpoints({
           };
         },
       }),
+      loginAsGuest: build.mutation<{ user: User; token: string }, undefined>({
+        query() {
+          return "/auth/guest";
+        },
+      }),
       signUp: build.mutation<
         { user: User; token: string },
         { username: string; password: string; confirmPassword: string }
@@ -55,6 +60,7 @@ const apiSliceWithAuth = apiSlice.injectEndpoints({
 const authListeners = (startAppListening: AppStartListening) => {
   const isTokenReceived = isAnyOf(
     apiSliceWithAuth.endpoints.login.matchFulfilled,
+    apiSliceWithAuth.endpoints.loginAsGuest.matchFulfilled,
     apiSliceWithAuth.endpoints.signUp.matchFulfilled,
   );
 
@@ -124,6 +130,12 @@ const authSlice = createSlice({
       },
     );
     builder.addMatcher(
+      apiSliceWithAuth.endpoints.loginAsGuest.matchFulfilled,
+      (state, action) => {
+        state.user = action.payload.user;
+      },
+    );
+    builder.addMatcher(
       apiSliceWithAuth.endpoints.signUp.matchFulfilled,
       (state, action) => {
         state.user = action.payload.user;
@@ -145,8 +157,12 @@ const authSlice = createSlice({
 
 export { apiSliceWithAuth, authListeners };
 
-export const { useLoginMutation, useGetUserQuery, useSignUpMutation } =
-  apiSliceWithAuth;
+export const {
+  useLoginMutation,
+  useGetUserQuery,
+  useSignUpMutation,
+  useLoginAsGuestMutation,
+} = apiSliceWithAuth;
 
 export const { selectUser, selectUserIsLoading, selectUserError } =
   authSlice.selectors;

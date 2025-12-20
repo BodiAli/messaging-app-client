@@ -1,7 +1,11 @@
 import { Navigate, useNavigate } from "react-router";
 import { Box, Button, List, TextField, Typography } from "@mui/material";
 import { type FormEvent, type ReactElement } from "react";
-import { selectUser, useLoginMutation } from "@/slices/authSlice";
+import {
+  selectUser,
+  useLoginAsGuestMutation,
+  useLoginMutation,
+} from "@/slices/authSlice";
 import { useAppSelector } from "@/app/hooks";
 import handleError from "@/utils/handleError";
 
@@ -15,9 +19,13 @@ interface LoginFormWithElements extends HTMLFormElement {
 }
 
 export default function LoginPage() {
-  const [login, { isLoading, error }] = useLoginMutation();
+  const [loginAsGuest, loginState] = useLoginAsGuestMutation();
+  const [login, guestState] = useLoginMutation();
   const user = useAppSelector(selectUser);
   const navigate = useNavigate();
+
+  const error = loginState.error ?? guestState.error;
+  const isLoading = loginState.isLoading || guestState.isLoading;
 
   if (user) {
     return <Navigate to="/" replace />;
@@ -131,6 +139,20 @@ export default function LoginPage() {
             variant="contained"
           >
             Log in
+          </Button>
+          <Button
+            sx={{
+              justifySelf: "center",
+              paddingX: 5,
+            }}
+            type="button"
+            loading={isLoading}
+            variant="contained"
+            onClick={() => {
+              void loginAsGuest(undefined);
+            }}
+          >
+            Continue as a guest
           </Button>
         </Box>
       </Box>
