@@ -129,31 +129,44 @@ export default function LoginPage() {
               },
             }}
           />
-          <Button
+          <Box
             sx={{
-              justifySelf: "center",
-              paddingX: 5,
-            }}
-            type="submit"
-            loading={isLoading}
-            variant="contained"
-          >
-            Log in
-          </Button>
-          <Button
-            sx={{
-              justifySelf: "center",
-              paddingX: 5,
-            }}
-            type="button"
-            loading={isLoading}
-            variant="contained"
-            onClick={() => {
-              void loginAsGuest(undefined);
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 2,
+              flexDirection: "column",
             }}
           >
-            Continue as a guest
-          </Button>
+            <Button
+              sx={{
+                justifySelf: "center",
+                paddingX: 5,
+                width: "25%",
+              }}
+              type="submit"
+              loading={isLoading}
+              variant="contained"
+            >
+              Log in
+            </Button>
+            <Button
+              sx={{
+                justifySelf: "center",
+                paddingX: 5,
+                width: "25%",
+                backgroundColor: (theme) => theme.palette.secondary.dark,
+              }}
+              type="button"
+              loading={isLoading}
+              variant="contained"
+              onClick={() => {
+                void loginAsGuest(undefined);
+              }}
+            >
+              Continue as a guest
+            </Button>
+          </Box>
         </Box>
       </Box>
     </Box>
