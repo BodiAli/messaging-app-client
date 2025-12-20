@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { Box, Button, List, TextField, Typography } from "@mui/material";
 import { z } from "zod";
@@ -20,8 +21,15 @@ export default function SignupPage() {
     mode: "onBlur",
   });
 
-  const onSubmit: SubmitHandler<FormValues> = (data) => {
-    void signUp(data);
+  const navigate = useNavigate();
+
+  const onSubmit: SubmitHandler<FormValues> = async (data) => {
+    try {
+      await signUp(data).unwrap();
+      void navigate("/");
+    } catch {
+      // empty
+    }
   };
 
   let errorsList: ReactElement[] | undefined;
