@@ -1,3 +1,9 @@
+import { Box, Typography } from "@mui/material";
+
 export default function FriendsPage() {
-  return <p>FRIENDS</p>;
+  return (
+    <Box component="main">
+      <Typography variant="h2">Your friends</Typography>
+    </Box>
+  );
 }
