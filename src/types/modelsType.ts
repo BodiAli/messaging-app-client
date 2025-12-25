@@ -5,3 +5,5 @@ export interface User {
   isGuest: boolean;
   imageUrl: null | string;
 }
+
+export type UserFriends = Omit<User, "isGuest">[];
