@@ -1,28 +1,84 @@
-import { Link } from "react-router";
+import { Link as RouterLink } from "react-router";
 import FriendsIcon from "@mui/icons-material/People";
 import GroupsIcon from "@mui/icons-material/Groups";
 import PermIdentityIcon from "@mui/icons-material/PermIdentity";
 import AccountBoxIcon from "@mui/icons-material/AccountBox";
+import { Link, Drawer, Stack } from "@mui/material";
+import type { ReactNode } from "react";
+
+const StyledNavLink = ({
+  children,
+  to,
+}: {
+  children: ReactNode;
+  to: string;
+}) => {
+  return (
+    <Link
+      underline="none"
+      component={RouterLink}
+      to={to}
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 1,
+        paddingLeft: 1,
+        transition: "background-color 200ms",
+        "&:hover": {
+          backgroundColor: "#cad0d8",
+        },
+      }}
+    >
+      {children}
+    </Link>
+  );
+};
+
+const drawerWidth = 220;
 
 export default function NavigationSidebar() {
   return (
-    <nav>
-      <Link to="/friends">
-        <FriendsIcon />
-        Friends
-      </Link>
-      <Link to="/groups">
-        <GroupsIcon />
-        Groups
-      </Link>
-      <Link to="/non-friends">
-        <PermIdentityIcon />
-        Non friends
-      </Link>
-      <Link to="/profile">
-        <AccountBoxIcon />
-        Profile
-      </Link>
-    </nav>
+    <Drawer
+      variant="permanent"
+      sx={{
+        width: drawerWidth,
+      }}
+      slotProps={{
+        paper: {
+          sx: {
+            top: "auto",
+            backgroundColor: "#ffffff53",
+            paddingY: 4,
+            boxSizing: "border-box",
+            width: drawerWidth,
+          },
+        },
+      }}
+    >
+      <Stack
+        component="nav"
+        spacing={4}
+        sx={{
+          fontSize: "1.2rem",
+        }}
+      >
+        <StyledNavLink to="/friends">
+          <FriendsIcon />
+          Friends
+        </StyledNavLink>
+        <StyledNavLink to="/groups">
+          <GroupsIcon />
+          Groups
+        </StyledNavLink>
+        <StyledNavLink to="/non-friends">
+          <PermIdentityIcon />
+          Non friends
+        </StyledNavLink>
+        <StyledNavLink to="/profile">
+          <AccountBoxIcon />
+          Profile
+        </StyledNavLink>
+      </Stack>
+    </Drawer>
   );
 }
