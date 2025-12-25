@@ -1,4 +1,4 @@
-import { Link as RouterLink } from "react-router";
+import { NavLink as RouterLink } from "react-router";
 import FriendsIcon from "@mui/icons-material/People";
 import GroupsIcon from "@mui/icons-material/Groups";
 import PermIdentityIcon from "@mui/icons-material/PermIdentity";
@@ -22,10 +22,14 @@ const StyledNavLink = ({
         display: "flex",
         alignItems: "center",
         gap: 1,
+        paddingY: 1,
         paddingLeft: 1,
         transition: "background-color 200ms",
         "&:hover": {
           backgroundColor: "#cad0d8",
+        },
+        "&.active": {
+          borderBottom: "1px solid black",
         },
       }}
     >
