@@ -1,4 +1,4 @@
-import App from "@/app/App";
+import MainLayout from "@/app/MainLayout";
 import LoginPage from "@/pages/LoginPage";
 import ProtectedRoute from "@/app/ProtectedRoute";
 import AppLayout from "@/app/AppLayout";
@@ -22,7 +22,7 @@ const routes: RouteObject[] = [
             path: "/",
             element: (
               <ProtectedRoute>
-                <App />
+                <MainLayout />
               </ProtectedRoute>
             ),
             children: [
