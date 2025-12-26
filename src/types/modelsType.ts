@@ -1,9 +1,7 @@
-export interface User {
-  id: string;
-  username: string;
+import type { User as PrismaUser } from "prismaTypes";
+
+export interface User extends Omit<PrismaUser, "lastSeen" | "password"> {
   lastSeen: string;
-  isGuest: boolean;
-  imageUrl: null | string;
 }
 
 export type UserFriends = Omit<User, "isGuest">[];
