@@ -24,6 +24,9 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "prismaTypes": [
+        "../messaging-app-api/src/generated/prisma/index.d.ts"
       ]
     },
     /* Linting */
