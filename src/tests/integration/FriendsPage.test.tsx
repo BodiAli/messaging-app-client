@@ -9,6 +9,7 @@ import serverUrl from "@/utils/serverUrl";
 import type { User } from "@/types/modelsType";
 
 const getUserServerRoute = `${serverUrl}/auth/get-user`;
+const getFriendsServerRoute = `${serverUrl}/users/me/friends`;
 
 const mockedUser: User = {
   id: "userId",
@@ -19,6 +20,11 @@ const mockedUser: User = {
 };
 
 describe("friends-page component", () => {
+  const renderFriendsPath = () => {
+    const router = createMemoryRouter(routes, { initialEntries: ["/friends"] });
+    return renderWithProviders(<RouterProvider router={router} />);
+  };
+
   beforeAll(() => {
     fetchMock.mockGlobal();
     manageFetchMockGlobally();
@@ -42,8 +48,7 @@ describe("friends-page component", () => {
   it("should render 'Your friends' heading", async () => {
     expect.hasAssertions();
 
-    const router = createMemoryRouter(routes, { initialEntries: ["/friends"] });
-    renderWithProviders(<RouterProvider router={router} />);
+    renderFriendsPath();
 
     const heading = await screen.findByRole("heading", {
       name: "Your friends",
@@ -52,4 +57,28 @@ describe("friends-page component", () => {
 
     expect(heading).toBeInTheDocument();
   });
+
+  it("should render ErrorBoundary if server does not respond with 2xx status", async () => {
+    expect.hasAssertions();
+
+    vi.spyOn(console, "error").mockImplementation(() => null);
+    fetchMock.get(getFriendsServerRoute, {
+      status: 500,
+      body: {
+        error: "Server error!",
+      },
+    });
+    renderFriendsPath();
+
+    const errorBoundaryHeading = await screen.findByRole("heading", {
+      level: 1,
+      name: "Unexpected error occurred",
+    });
+    const errorMessage = screen.getByText("Server error!");
+
+    expect(errorBoundaryHeading).toBeInTheDocument();
+    expect(errorMessage).toBeInTheDocument();
+  });
+
+  it.todo("should navigate to homepage if user is unauthenticated");
 });
