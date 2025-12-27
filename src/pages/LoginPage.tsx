@@ -7,7 +7,9 @@ import {
   useLoginMutation,
 } from "@/slices/authSlice";
 import { useAppSelector } from "@/app/hooks";
-import handleError from "@/utils/handleError";
+import handleUnexpectedError from "@/utils/handleUnexpectedError";
+import { isClientError, isFetchBaseQueryError } from "@/types/apiResponseTypes";
+import handleClientError from "@/utils/handleClientError";
 
 interface LoginFormFields extends HTMLFormControlsCollection {
   username: HTMLInputElement;
@@ -34,7 +36,11 @@ export default function LoginPage() {
   let errorsList: ReactElement[] | undefined;
 
   if (error) {
-    errorsList = handleError(error);
+    if (isFetchBaseQueryError(error) && isClientError(error.data)) {
+      errorsList = handleClientError(error.data);
+    } else {
+      handleUnexpectedError(error);
+    }
   }
 
   const handleLogin = (e: FormEvent<LoginFormWithElements>) => {

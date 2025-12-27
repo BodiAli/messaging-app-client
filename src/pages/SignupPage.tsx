@@ -5,7 +5,9 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserSignupSchema } from "@/libs/schemas";
 import { useSignUpMutation } from "@/slices/authSlice";
-import handleError from "@/utils/handleError";
+import handleUnexpectedError from "@/utils/handleUnexpectedError";
+import handleClientError from "@/utils/handleClientError";
+import { isClientError, isFetchBaseQueryError } from "@/types/apiResponseTypes";
 import type { ReactElement } from "react";
 
 type FormValues = z.infer<typeof UserSignupSchema>;
@@ -35,7 +37,11 @@ export default function SignupPage() {
   let errorsList: ReactElement[] | undefined;
 
   if (error) {
-    errorsList = handleError(error);
+    if (isFetchBaseQueryError(error) && isClientError(error.data)) {
+      errorsList = handleClientError(error.data);
+    } else {
+      handleUnexpectedError(error);
+    }
   }
 
   return (
