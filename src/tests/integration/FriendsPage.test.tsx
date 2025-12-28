@@ -8,6 +8,12 @@ import * as localStorageService from "@/services/localStorage";
 import serverUrl from "@/utils/serverUrl";
 import type { User } from "@/types/modelsType";
 
+vi.mock(import("@/pages/LoginPage"), () => {
+  return {
+    default: () => <h1>Log in page</h1>,
+  };
+});
+
 const getUserServerRoute = `${serverUrl}/auth/get-user`;
 const getFriendsServerRoute = `${serverUrl}/users/me/friends`;
 
@@ -80,5 +86,24 @@ describe("friends-page component", () => {
     expect(errorMessage).toBeInTheDocument();
   });
 
-  it.todo("should navigate to homepage if user is unauthenticated");
+  it("should navigate to homepage if token expires", async () => {
+    expect.hasAssertions();
+
+    fetchMock.get(getFriendsServerRoute, {
+      status: 401,
+      body: "Unauthorized",
+    });
+    renderFriendsPath();
+
+    const logInPageHeading = await screen.findByRole("heading", {
+      level: 1,
+      name: "Log in page",
+    });
+
+    expect(logInPageHeading).toBeInTheDocument();
+  });
+
+  it.todo("should render user friends", () => {
+    expect.hasAssertions();
+  });
 });
