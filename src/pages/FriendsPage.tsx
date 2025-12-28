@@ -1,4 +1,3 @@
-import { Navigate } from "react-router";
 import { Box, Typography } from "@mui/material";
 import { useGetFriendsQuery } from "@/slices/friendsSlice";
 import handleUnexpectedError from "@/utils/handleUnexpectedError";
@@ -8,12 +7,11 @@ export default function FriendsPage() {
   const { data, isError, error } = useGetFriendsQuery(undefined);
 
   if (isError) {
-    if (isUnauthorized(error)) return <Navigate to="/log-in" />;
-
-    handleUnexpectedError(error);
+    // If error is NOT an unauthorized error i.e., an unexpected error call handleUnexpectedError
+    if (!isUnauthorized(error)) {
+      handleUnexpectedError(error);
+    }
   }
-
-  console.log("FRIENDS PAGE DATA", data);
 
   return (
     <Box component="main">
