@@ -7,7 +7,7 @@ export default function FriendsPage() {
   const { data, isError, error } = useGetFriendsQuery(undefined);
 
   if (isError) {
-    // If error is NOT an unauthorized error i.e., an unexpected error call handleUnexpectedError
+    // If error is NOT an unauthorized error (i.e., an unexpected error) call handleUnexpectedError
     if (!isUnauthorized(error)) {
       handleUnexpectedError(error);
     }
