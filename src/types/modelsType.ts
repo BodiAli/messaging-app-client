@@ -4,4 +4,6 @@ export interface User extends Omit<PrismaUser, "lastSeen" | "password"> {
   lastSeen: string;
 }
 
-export type UserFriends = Omit<User, "isGuest">[];
+export interface UserFriends {
+  friends: Omit<User, "isGuest">[];
+}
