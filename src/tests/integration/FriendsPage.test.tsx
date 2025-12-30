@@ -47,7 +47,7 @@ const mockedUserFriends: UserFriends = {
     {
       id: "idFriend2",
       username: "usernameFriend2",
-      imageUrl: "imageUrl",
+      imageUrl: null,
       lastSeen: new Date().toISOString(),
     },
   ],
@@ -158,5 +158,41 @@ describe("friends-page component", () => {
     expect(friendsLinks).toHaveLength(2);
   });
 
-  it.todo("should render friends username, imageUrl, and lastSeen");
+  it("should render friends username", async () => {
+    expect.hasAssertions();
+
+    fetchMock.get(getFriendsServerRoute, {
+      status: 200,
+      body: mockedUserFriends,
+    });
+    renderFriendsPath();
+
+    const friend1Username = await screen.findByText("usernameFriend1");
+    const friend2Username = screen.getByText("usernameFriend2");
+
+    expect(friend1Username).toBeInTheDocument();
+    expect(friend2Username).toBeInTheDocument();
+  });
+
+  it("should render friends profile pic if present otherwise render default image", async () => {
+    expect.hasAssertions();
+
+    fetchMock.get(getFriendsServerRoute, {
+      status: 200,
+      body: mockedUserFriends,
+    });
+    renderFriendsPath();
+
+    const friend1ProfilePic = await screen.findByRole("img", {
+      name: "usernameFriend1's profile picture",
+    });
+    const friend2ProfilePic = screen.getByTitle(
+      "usernameFriend2's no profile picture",
+    );
+
+    expect(friend1ProfilePic).toBeInTheDocument();
+    expect(friend2ProfilePic).toBeInTheDocument();
+  });
+
+  it.todo("should render wether a friend is online or not");
 });
