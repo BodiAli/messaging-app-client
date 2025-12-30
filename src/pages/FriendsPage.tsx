@@ -1,5 +1,6 @@
 import { Link, Outlet } from "react-router";
-import { Box, Typography } from "@mui/material";
+import { Avatar, Box, Typography } from "@mui/material";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { useGetFriendsQuery } from "@/slices/friendsSlice";
 import handleUnexpectedError from "@/utils/handleUnexpectedError";
 import isUnauthorized from "@/utils/isUnauthorized";
@@ -32,7 +33,19 @@ export default function FriendsPage() {
                 aria-label={`${friend.username} friend`}
                 to={friend.id}
               >
-                <Box>{friend.username}</Box>
+                {friend.imageUrl ? (
+                  <Avatar
+                    src={friend.imageUrl}
+                    alt={`${friend.username}'s profile picture`}
+                  />
+                ) : (
+                  <Avatar>
+                    <AccountCircleIcon
+                      titleAccess={`${friend.username}'s no profile picture`}
+                    />
+                  </Avatar>
+                )}
+                <Typography>{friend.username}</Typography>
               </Link>
             );
           })}
