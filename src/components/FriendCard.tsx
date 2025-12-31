@@ -12,11 +12,17 @@ export default function FriendCard({ friend }: { friend: Friend }) {
     >
       {friend.imageUrl ? (
         <Badge
-          data-testid="online-badge"
           variant="dot"
           color="success"
           overlap="circular"
           invisible={!isOnline(friend.lastSeen)}
+          slotProps={{
+            badge() {
+              return {
+                "data-testid": "online-badge",
+              };
+            },
+          }}
         >
           <Avatar
             src={friend.imageUrl}
@@ -25,11 +31,17 @@ export default function FriendCard({ friend }: { friend: Friend }) {
         </Badge>
       ) : (
         <Badge
-          data-testid="online-badge"
           variant="dot"
           color="success"
           overlap="circular"
           invisible={!isOnline(friend.lastSeen)}
+          slotProps={{
+            badge() {
+              return {
+                "data-testid": "online-badge",
+              };
+            },
+          }}
         >
           <Avatar title="usernameFriend2's no profile picture" />
         </Badge>

@@ -107,9 +107,7 @@ describe("friend-card component", () => {
 
     const onlineBadge = screen.getByTestId("online-badge");
 
-    expect(onlineBadge.querySelector("span")).not.toHaveClass(
-      badgeClasses.invisible,
-    );
+    expect(onlineBadge).not.toHaveClass(badgeClasses.invisible);
   });
 
   it("should not render online badge when more than 5 minutes have passed since last seen", () => {
@@ -127,8 +125,6 @@ describe("friend-card component", () => {
 
     const onlineBadge = screen.getByTestId("online-badge");
 
-    expect(onlineBadge.querySelector("span")).toHaveClass(
-      badgeClasses.invisible,
-    );
+    expect(onlineBadge).toHaveClass(badgeClasses.invisible);
   });
 });
