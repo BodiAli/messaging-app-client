@@ -1,5 +1,5 @@
 import { Outlet } from "react-router";
-import { Box, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import { useGetFriendsQuery } from "@/slices/friendsSlice";
 import handleUnexpectedError from "@/utils/handleUnexpectedError";
 import isUnauthorized from "@/utils/isUnauthorized";
@@ -18,14 +18,19 @@ export default function FriendsPage() {
   if (isLoading) return <p>LOADING...</p>;
 
   return (
-    <Box component="main">
+    <Box
+      component="main"
+      sx={{ display: "grid", gridTemplateColumns: "0.3fr 1fr", flex: 1 }}
+    >
       <Box component="section">
-        <Typography variant="h2">Your friends</Typography>
-        <Box>
+        <Typography variant="h2" sx={{ paddingY: 3, textAlign: "center" }}>
+          Your friends
+        </Typography>
+        <Stack spacing={5}>
           {data?.friends.map((friend) => {
             return <FriendCard key={friend.id} friend={friend} />;
           })}
-        </Box>
+        </Stack>
       </Box>
       <Outlet />
     </Box>
