@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
+import { badgeClasses } from "@mui/material";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import FriendCard from "@/components/FriendCard";
 import type { Friend } from "@/types/modelsType";
@@ -16,6 +17,10 @@ const renderWithRouterProvider = (mockFriend: Friend) => {
 };
 
 describe("friend-card component", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
   it("should render anchor tag with href to be friend id", () => {
     expect.hasAssertions();
 
@@ -87,9 +92,11 @@ describe("friend-card component", () => {
     expect(username).toBeInTheDocument();
   });
 
-  it("should render friend as online 5 minutes or less have passed since lastSeen", () => {
+  it("should render friend as online when 5 minutes or less have passed since last seen", () => {
     expect.hasAssertions();
 
+    const date = new Date("2020-01-01T01:35:00Z");
+    vi.setSystemTime(date);
     const mockFriend: Friend = {
       id: "mockId",
       imageUrl: null,
@@ -100,6 +107,28 @@ describe("friend-card component", () => {
 
     const onlineBadge = screen.getByTestId("online-badge");
 
-    expect(onlineBadge).toBeVisible();
+    expect(onlineBadge.querySelector("span")).not.toHaveClass(
+      badgeClasses.invisible,
+    );
+  });
+
+  it("should not render online badge when more than 5 minutes have passed since last seen", () => {
+    expect.hasAssertions();
+
+    const date = new Date("2020-01-01T01:35:01Z");
+    vi.setSystemTime(date);
+    const mockFriend: Friend = {
+      id: "mockId",
+      imageUrl: null,
+      lastSeen: "2020-01-01T01:30:00Z",
+      username: "mockUsername",
+    };
+    renderWithRouterProvider(mockFriend);
+
+    const onlineBadge = screen.getByTestId("online-badge");
+
+    expect(onlineBadge.querySelector("span")).toHaveClass(
+      badgeClasses.invisible,
+    );
   });
 });
