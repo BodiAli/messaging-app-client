@@ -72,7 +72,7 @@ export default function Header() {
         paddingX: 4,
         paddingY: 1.8,
       }}
-      position="static"
+      position="sticky"
     >
       <Stack
         direction={"row"}
