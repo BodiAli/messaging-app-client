@@ -1,16 +1,12 @@
-import { Link, Outlet } from "react-router";
-import { Avatar, Box, Typography } from "@mui/material";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import { Outlet } from "react-router";
+import { Box, Typography } from "@mui/material";
 import { useGetFriendsQuery } from "@/slices/friendsSlice";
 import handleUnexpectedError from "@/utils/handleUnexpectedError";
 import isUnauthorized from "@/utils/isUnauthorized";
+import FriendCard from "@/components/FriendCard";
 
 export default function FriendsPage() {
   const { data, isError, error, isLoading } = useGetFriendsQuery(undefined);
-
-  // const data = {
-  //   friends: [{ id: "123", username: "username" }],
-  // };
 
   if (isError) {
     // If error is NOT an unauthorized error (i.e., an unexpected error) call handleUnexpectedError
@@ -27,27 +23,7 @@ export default function FriendsPage() {
         <Typography variant="h2">Your friends</Typography>
         <Box>
           {data?.friends.map((friend) => {
-            return (
-              <Link
-                key={friend.id}
-                aria-label={`${friend.username} friend`}
-                to={friend.id}
-              >
-                {friend.imageUrl ? (
-                  <Avatar
-                    src={friend.imageUrl}
-                    alt={`${friend.username}'s profile picture`}
-                  />
-                ) : (
-                  <Avatar>
-                    <AccountCircleIcon
-                      titleAccess={`${friend.username}'s no profile picture`}
-                    />
-                  </Avatar>
-                )}
-                <Typography>{friend.username}</Typography>
-              </Link>
-            );
+            return <FriendCard key={friend.id} friend={friend} />;
           })}
         </Box>
       </Box>
