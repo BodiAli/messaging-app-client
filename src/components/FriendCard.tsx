@@ -1,10 +1,19 @@
-import { Link as RouterLink } from "react-router";
-import { Badge, Avatar, Typography, Link, type LinkProps } from "@mui/material";
+import { NavLink } from "react-router";
+import {
+  Badge,
+  Avatar,
+  Card,
+  CardHeader,
+  CardActionArea,
+  type CardActionAreaProps,
+} from "@mui/material";
 import isOnline from "@/utils/isOnline";
 import type { Friend } from "@/types/modelsType";
 
-const StyledLink = (props: LinkProps<"a", { to: string }>) => {
-  return <Link {...props}></Link>;
+const CustomCardActionArea = (
+  props: CardActionAreaProps<"button", { to: string }>,
+) => {
+  return <CardActionArea {...props} />;
 };
 
 export default function FriendCard({ friend }: { friend: Friend }) {
@@ -46,27 +55,19 @@ export default function FriendCard({ friend }: { friend: Friend }) {
   );
 
   return (
-    <StyledLink
-      underline="none"
-      key={friend.id}
-      component={RouterLink}
-      aria-label={`${friend.username} friend`}
-      to={friend.id}
-      sx={{
-        backgroundColor: "#ffffff70",
-        color: "#000",
-        display: "flex",
-        alignItems: "center",
-        gap: 2,
-        padding: 2,
-        transition: "background-color 200ms",
-        "&:hover": {
-          backgroundColor: "#f0efef5e",
-        },
-      }}
-    >
-      {showProfilePic}
-      <Typography sx={{ fontSize: "1.2rem" }}>{friend.username}</Typography>
-    </StyledLink>
+    <Card>
+      <CustomCardActionArea
+        aria-label={`${friend.username} friend`}
+        LinkComponent={NavLink}
+        to={friend.id}
+        sx={{
+          "&.active": {
+            backgroundColor: "action.selected",
+          },
+        }}
+      >
+        <CardHeader avatar={showProfilePic} title={friend.username} />
+      </CustomCardActionArea>
+    </Card>
   );
 }
