@@ -1,12 +1,24 @@
 import { Outlet } from "react-router";
-import { Box, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Card,
+  CardHeader,
+  Skeleton,
+  Stack,
+  Typography,
+} from "@mui/material";
 import { useGetFriendsQuery } from "@/slices/friendsSlice";
 import handleUnexpectedError from "@/utils/handleUnexpectedError";
 import isUnauthorized from "@/utils/isUnauthorized";
 import FriendCard from "@/components/FriendCard";
 
 export default function FriendsPage() {
-  const { data, isError, error, isLoading } = useGetFriendsQuery(undefined);
+  const {
+    data = { friends: [] },
+    isError,
+    error,
+    isLoading,
+  } = useGetFriendsQuery(undefined);
 
   if (isError) {
     // If error is NOT an unauthorized error (i.e., an unexpected error) call handleUnexpectedError
@@ -14,8 +26,6 @@ export default function FriendsPage() {
       handleUnexpectedError(error);
     }
   }
-
-  if (isLoading) return <p>LOADING...</p>;
 
   return (
     <Box
@@ -26,11 +36,27 @@ export default function FriendsPage() {
         <Typography variant="h2" sx={{ paddingY: 3, textAlign: "center" }}>
           Your friends
         </Typography>
-        <Stack spacing={5}>
-          {data?.friends.map((friend) => {
-            return <FriendCard key={friend.id} friend={friend} />;
-          })}
-        </Stack>
+        {isLoading ? (
+          <Card>
+            <CardHeader
+              avatar={
+                <Skeleton
+                  height={40}
+                  width={40}
+                  variant="circular"
+                  animation="wave"
+                />
+              }
+              title={<Skeleton animation="wave" />}
+            />
+          </Card>
+        ) : (
+          <Stack spacing={5}>
+            {data.friends.map((friend) => {
+              return <FriendCard key={friend.id} friend={friend} />;
+            })}
+          </Stack>
+        )}
       </Box>
       <Outlet />
     </Box>
