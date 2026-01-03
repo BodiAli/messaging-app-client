@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeAll, afterEach } from "vitest";
-import { screen } from "@testing-library/react";
+import { describe, it, expect, beforeAll, afterEach, beforeEach } from "vitest";
+import { screen, within } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import userEvent from "@testing-library/user-event";
+import { Menu } from "@mui/material";
 import fetchMock, { manageFetchMockGlobally } from "@fetch-mock/vitest";
 import Header from "@/components/Header";
 import renderWithProviders from "@/utils/test-utils";
@@ -19,6 +20,18 @@ const mockedUser: User = {
   lastSeen: new Date().toDateString(),
   username: "mockUsername",
 };
+
+vi.mock(import("@/app/MainLayout"), () => {
+  return {
+    default: () => <p>Main layout</p>,
+  };
+});
+
+vi.mock(import("@/components/Notifications"), () => {
+  return {
+    default: ({ open }) => <Menu open={open} />,
+  };
+});
 
 describe("header component", () => {
   beforeAll(() => {
@@ -100,21 +113,49 @@ describe("header component", () => {
     expect(router.state.location.pathname).toBe("/sign-up");
   });
 
-  it("should render notifications icon when user is authenticated", async () => {
-    expect.hasAssertions();
-
-    vi.spyOn(localStorageService, "getJwtToken").mockReturnValue("jwtToken");
-    fetchMock.get(serverRoute, {
-      status: 200,
-      body: {
-        user: mockedUser,
-      },
+  describe("notifications", () => {
+    beforeEach(() => {
+      vi.spyOn(localStorageService, "getJwtToken").mockReturnValue("jwtToken");
+      fetchMock.get(serverRoute, {
+        status: 200,
+        body: {
+          user: mockedUser,
+        },
+      });
     });
-    const router = createMemoryRouter(routes);
-    renderWithProviders(<RouterProvider router={router} />);
 
-    const notificationsButton = await screen.findByTitle("Show notifications");
+    it("should render notifications icon button when user is authenticated", async () => {
+      expect.hasAssertions();
 
-    expect(notificationsButton).toBeInTheDocument();
+      const router = createMemoryRouter(routes);
+      renderWithProviders(<RouterProvider router={router} />);
+
+      const notificationsButton = await screen.findByRole("button", {
+        name: "Show notifications",
+      });
+      const notificationsIcon = within(notificationsButton).getByRole("img", {
+        name: "Show notifications",
+      });
+
+      expect(notificationsButton).toBeInTheDocument();
+      expect(notificationsIcon).toBeInTheDocument();
+    });
+
+    it("should display Notifications menu when notifications icon is clicked", async () => {
+      expect.hasAssertions();
+
+      const router = createMemoryRouter(routes);
+      renderWithProviders(<RouterProvider router={router} />);
+
+      const notificationsButton = await screen.findByRole("button", {
+        name: "Show notifications",
+      });
+      const notificationsMenu = screen.queryByRole("menu");
+      await userEvent.click(notificationsButton);
+      const notificationsMenuVisible = screen.getByRole("menu");
+
+      expect(notificationsMenu).not.toBeInTheDocument();
+      expect(notificationsMenuVisible).toBeInTheDocument();
+    });
   });
 });
