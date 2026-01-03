@@ -1,13 +1,32 @@
-import { AppBar, Box, Button, Stack, Typography } from "@mui/material";
+import { useRef, useState } from "react";
+import {
+  AppBar,
+  Box,
+  Button,
+  IconButton,
+  Stack,
+  Typography,
+} from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { Link as RouterLink, NavLink } from "react-router";
 import { useAppSelector } from "@/app/hooks";
 import { selectUser } from "@/slices/authSlice";
+import Notifications from "./Notifications";
 
 export default function Header() {
   const user = useAppSelector(selectUser);
+  const [open, setOpen] = useState(false);
+  const anchorElement = useRef<HTMLButtonElement>(null);
 
   let headerContent: React.ReactElement;
+
+  const handleMenuOpen = () => {
+    setOpen(true);
+  };
+
+  const handleMenuClose = () => {
+    setOpen(false);
+  };
 
   if (!user) {
     headerContent = (
@@ -63,7 +82,29 @@ export default function Header() {
       </Box>
     );
   } else {
-    headerContent = <NotificationsIcon titleAccess="Show notifications" />;
+    headerContent = (
+      <>
+        <IconButton
+          ref={anchorElement}
+          onClick={handleMenuOpen}
+          sx={{
+            color: "#fff",
+          }}
+        >
+          <NotificationsIcon
+            titleAccess="Show notifications"
+            fontSize="large"
+          />
+        </IconButton>
+        {anchorElement.current && (
+          <Notifications
+            onClose={handleMenuClose}
+            open={open}
+            anchorElement={anchorElement.current}
+          />
+        )}
+      </>
+    );
   }
 
   return (
