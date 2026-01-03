@@ -7,6 +7,7 @@ import Header from "@/components/Header";
 import renderWithProviders from "@/utils/test-utils";
 import routes from "@/routes/routes";
 import serverUrl from "@/utils/serverUrl";
+import * as localStorageService from "@/services/localStorage";
 import type { User } from "@/types/modelsType";
 
 const serverRoute = `${serverUrl}/auth/get-user`;
@@ -99,27 +100,21 @@ describe("header component", () => {
     expect(router.state.location.pathname).toBe("/sign-up");
   });
 
-  it.todo(
-    "should render notifications icon with number of notifications when user is authenticated",
-    async () => {
-      expect.hasAssertions();
+  it("should render notifications icon when user is authenticated", async () => {
+    expect.hasAssertions();
 
-      fetchMock.get(serverRoute, {
-        status: 200,
-        body: {
-          user: mockedUser,
-        },
-      });
+    vi.spyOn(localStorageService, "getJwtToken").mockReturnValue("jwtToken");
+    fetchMock.get(serverRoute, {
+      status: 200,
+      body: {
+        user: mockedUser,
+      },
+    });
+    const router = createMemoryRouter(routes);
+    renderWithProviders(<RouterProvider router={router} />);
 
-      const router = createMemoryRouter(routes);
+    const notificationsButton = await screen.findByTitle("Show notifications");
 
-      renderWithProviders(<RouterProvider router={router} />);
-
-      const notificationsButton = await screen.findByRole("img", {
-        name: "See notifications",
-      });
-
-      expect(notificationsButton).toBeInTheDocument();
-    },
-  );
+    expect(notificationsButton).toBeInTheDocument();
+  });
 });

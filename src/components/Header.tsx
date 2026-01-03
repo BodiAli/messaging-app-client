@@ -1,4 +1,5 @@
 import { AppBar, Box, Button, Stack, Typography } from "@mui/material";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 import { Link as RouterLink, NavLink } from "react-router";
 import { useAppSelector } from "@/app/hooks";
 import { selectUser } from "@/slices/authSlice";
@@ -62,7 +63,7 @@ export default function Header() {
       </Box>
     );
   } else {
-    headerContent = <Box component={"img"} alt="See notifications" />;
+    headerContent = <NotificationsIcon titleAccess="Show notifications" />;
   }
 
   return (
