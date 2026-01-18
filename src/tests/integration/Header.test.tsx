@@ -11,6 +11,10 @@ import serverUrl from "@/utils/serverUrl";
 import * as localStorageService from "@/services/localStorage";
 import type { User } from "@/types/modelsType";
 
+function assertIsElement(element: unknown): asserts element is Element {
+  if (!(element instanceof Element)) throw new Error("Not an element");
+}
+
 const serverRoute = `${serverUrl}/auth/get-user`;
 
 const mockedUser: User = {
@@ -29,7 +33,7 @@ vi.mock(import("@/app/MainLayout"), () => {
 
 vi.mock(import("@/components/Notifications"), () => {
   return {
-    default: ({ open }) => <Menu open={open} />,
+    default: ({ open, onClose }) => <Menu open={open} onClose={onClose} />,
   };
 });
 
@@ -156,6 +160,28 @@ describe("header component", () => {
 
       expect(notificationsMenu).not.toBeInTheDocument();
       expect(notificationsMenuVisible).toBeInTheDocument();
+    });
+
+    it("should close Notifications menu when clicking away", async () => {
+      expect.hasAssertions();
+
+      const router = createMemoryRouter(routes);
+      renderWithProviders(<RouterProvider router={router} />);
+
+      const notificationsButton = await screen.findByRole("button", {
+        name: "Show notifications",
+      });
+      await userEvent.click(notificationsButton);
+
+      const notificationsMenu = screen.getByRole("menu");
+      const notificationsMenuBackdrop =
+        screen.getByRole("presentation").firstChild;
+
+      assertIsElement(notificationsMenuBackdrop);
+
+      await userEvent.click(notificationsMenuBackdrop);
+
+      expect(notificationsMenu).not.toBeInTheDocument();
     });
   });
 });
