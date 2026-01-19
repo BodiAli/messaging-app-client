@@ -7,6 +7,7 @@ import renderWithProviders from "@/utils/test-utils";
 import Notifications from "@/components/Notifications";
 import serverUrl from "@/utils/serverUrl";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import type { UserNotifications } from "@/types/userNotifications";
 
 const notificationsRoute = `${serverUrl}/notifications/me`;
 
@@ -19,6 +20,44 @@ vi.mock(import("@/app/MainLayout"), () => {
 function assertIsElement(val: unknown): asserts val is Element {
   if (!(val instanceof Element)) throw new Error("Not an element");
 }
+
+const userNotifications = {
+  notifications: [
+    {
+      type: "GROUP_INVITATION",
+      friendRequest: null,
+      createdAt: new Date("2020-01-01T01:00").toString(),
+      id: "notification1Id",
+      groupChatInvitation: {
+        createdAt: new Date().toDateString(),
+        id: "groupInvitationId",
+        name: "groupName",
+        admin: {
+          id: "adminId",
+          imageUrl: null,
+          username: "adminUsername",
+        },
+      },
+    },
+    {
+      type: "FRIEND_REQUEST",
+      groupChatInvitation: null,
+      createdAt: new Date("2020-02-01T22:30").toString(),
+      id: "notification2Id",
+      friendRequest: {
+        createdAt: new Date().toDateString(),
+        id: "friendRequestId",
+        status: "PENDING",
+        receiverId: "receiverId",
+        sender: {
+          id: "senderId",
+          imageUrl: null,
+          username: "senderUsername",
+        },
+      },
+    },
+  ],
+} satisfies UserNotifications;
 
 describe("notifications component", () => {
   const onClose = vi.fn<() => void>();
@@ -173,5 +212,34 @@ describe("notifications component", () => {
     const emptyText = await screen.findByText("No current notifications");
 
     expect(emptyText).toBeInTheDocument();
+  });
+
+  it("should render user notifications", async () => {
+    expect.hasAssertions();
+
+    fetchMock.get(notificationsRoute, {
+      status: 200,
+      body: userNotifications,
+    });
+    renderNotificationsComponent();
+
+    const notifications = await screen.findAllByRole("menuitem");
+
+    expect(notifications).toHaveLength(2);
+  });
+
+  it("should render notification createdAt date", async () => {
+    expect.hasAssertions();
+
+    fetchMock.get(notificationsRoute, {
+      status: 200,
+      body: userNotifications,
+    });
+    renderNotificationsComponent();
+
+    const notificationsDate = await screen.findAllByRole("time");
+
+    expect(notificationsDate[0]).toHaveTextContent("Jan 1, 2020, 01:00 AM");
+    expect(notificationsDate[1]).toHaveTextContent("Feb 1, 2020, 10:30 PM");
   });
 });
