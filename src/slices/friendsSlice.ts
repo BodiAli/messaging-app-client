@@ -5,17 +5,7 @@ const apiSliceWithFriends = apiSlice.injectEndpoints({
   endpoints(build) {
     return {
       getFriends: build.query<UserFriends, undefined>({
-        query: () => {
-          return {
-            url: "/users/me/friends",
-            responseHandler(response) {
-              if (response.status === 401) {
-                return response.text();
-              }
-              return response.json();
-            },
-          };
-        },
+        query: () => "/users/me/friends",
       }),
     };
   },

@@ -33,6 +33,9 @@ const apiSliceWithAuth = apiSlice.injectEndpoints({
             url: "/auth/log-in",
             method: "POST",
             body: { username, password },
+            responseHandler(response) {
+              return response.json();
+            },
           };
         },
       }),

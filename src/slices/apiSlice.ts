@@ -26,6 +26,12 @@ const baseQuery = fetchBaseQuery({
       headers.set("Authorization", `Bearer ${jwtToken}`);
     }
   },
+  responseHandler(response) {
+    if (response.status === 401) {
+      return response.text();
+    }
+    return response.json();
+  },
 });
 
 const baseQueryWithLogout: BaseQueryFn<
