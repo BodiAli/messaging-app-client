@@ -1,27 +1,24 @@
-import type {
-  Friendship,
-  GroupChat,
-  NotificationType,
-  User,
-} from "prismaTypes";
+import type { Friendship, GroupChat, User } from "prismaTypes";
 
 interface GroupInviteNotification {
   id: string;
-  createdAt: Date;
-  type: NotificationType;
+  createdAt: string;
+  type: "GROUP_INVITATION";
   friendRequest: null;
-  groupChatInvitation: Omit<GroupChat, "adminId"> & {
+  groupChatInvitation: Omit<GroupChat, "adminId" | "createdAt"> & {
     admin: Pick<User, "username" | "imageUrl" | "id">;
+    createdAt: string;
   };
 }
 
 interface FriendRequestNotification {
   id: string;
-  createdAt: Date;
-  type: NotificationType;
+  createdAt: string;
+  type: "FRIEND_REQUEST";
   groupChatInvitation: null;
-  friendRequest: Omit<Friendship, "senderId"> & {
+  friendRequest: Omit<Friendship, "senderId" | "createdAt"> & {
     sender: Pick<User, "username" | "imageUrl" | "id">;
+    createdAt: string;
   };
 }
 
