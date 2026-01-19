@@ -1,7 +1,8 @@
-import { Menu } from "@mui/material";
+import { Menu, MenuItem } from "@mui/material";
 import { useGetNotificationsQuery } from "@/slices/notificationsSlice";
 import isUnauthorized from "@/utils/isUnauthorized";
 import handleUnexpectedError from "@/utils/handleUnexpectedError";
+import formatDate from "@/utils/formatDate";
 import Loader from "./Loader/Loader";
 
 export default function Notifications({
@@ -13,8 +14,12 @@ export default function Notifications({
   anchorElement: HTMLButtonElement;
   onClose: () => void;
 }) {
-  const { data, isLoading, error, isError } =
-    useGetNotificationsQuery(undefined);
+  const {
+    data = { notifications: [] },
+    isLoading,
+    error,
+    isError,
+  } = useGetNotificationsQuery(undefined);
 
   if (isLoading) return <Loader />;
 
@@ -22,10 +27,22 @@ export default function Notifications({
     handleUnexpectedError(error);
   }
 
+  const notificationContent =
+    data.notifications.length === 0 ? (
+      <p>No current notifications</p>
+    ) : (
+      data.notifications.map((notification) => {
+        return (
+          <MenuItem key={notification.id}>
+            <time>{formatDate(notification.createdAt)}</time>
+          </MenuItem>
+        );
+      })
+    );
+
   return (
     <Menu onClose={onClose} open={open} anchorEl={anchorElement}>
-      <li>Notifications</li>
-      {data?.notifications.length === 0 && <p>No current notifications</p>}
+      {notificationContent}
     </Menu>
   );
 }
