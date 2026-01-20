@@ -1,4 +1,4 @@
-import { Avatar, MenuItem } from "@mui/material";
+import { Avatar, Box, Button, MenuItem, Typography } from "@mui/material";
 import formatDate from "@/utils/formatDate";
 import type { UserNotifications } from "@/types/userNotifications";
 import type { JSX } from "react";
@@ -44,16 +44,28 @@ export default function NotificationItem({
 
   if (notification.type === "GROUP_INVITATION") {
     notificationContent = (
-      <p>
-        {notification.groupChatInvitation.admin.username} invited you to join{" "}
-        {notification.groupChatInvitation.name}
-      </p>
+      <>
+        <Typography>
+          {notification.groupChatInvitation.admin.username} invited you to join{" "}
+          {notification.groupChatInvitation.name}
+        </Typography>
+        <Box>
+          <Button>Accept</Button>
+          <Button>Decline</Button>
+        </Box>
+      </>
     );
   } else {
     notificationContent = (
-      <p>
-        {notification.friendRequest.sender.username} sent you a friend request
-      </p>
+      <>
+        <Typography>
+          {notification.friendRequest.sender.username} sent you a friend request
+        </Typography>
+        <Box>
+          <Button>Accept</Button>
+          <Button>Decline</Button>
+        </Box>
+      </>
     );
   }
 

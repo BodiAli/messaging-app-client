@@ -117,7 +117,7 @@ describe("notification-item component", () => {
     });
   });
 
-  describe("group invite decline button", () => {
+  describe("group invite buttons", () => {
     describe("given group invitation menu item", () => {
       it("should render a decline button", () => {
         expect.hasAssertions();
@@ -127,6 +127,40 @@ describe("notification-item component", () => {
         const declineButton = screen.getByRole("button", { name: "Decline" });
 
         expect(declineButton).toBeInTheDocument();
+      });
+
+      it("should render an accept button", () => {
+        expect.hasAssertions();
+
+        render(<NotificationItem notification={mockGroupInvite} />);
+
+        const acceptButton = screen.getByRole("button", { name: "Accept" });
+
+        expect(acceptButton).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("friend request buttons", () => {
+    describe("given friend request menu item", () => {
+      it("should render a decline button", () => {
+        expect.hasAssertions();
+
+        render(<NotificationItem notification={mockFriendRequest} />);
+
+        const declineButton = screen.getByRole("button", { name: "Decline" });
+
+        expect(declineButton).toBeInTheDocument();
+      });
+
+      it("should render an accept button", () => {
+        expect.hasAssertions();
+
+        render(<NotificationItem notification={mockFriendRequest} />);
+
+        const acceptButton = screen.getByRole("button", { name: "Accept" });
+
+        expect(acceptButton).toBeInTheDocument();
       });
     });
   });
