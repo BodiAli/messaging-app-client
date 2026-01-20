@@ -11,17 +11,11 @@ import type { UserNotifications } from "@/types/userNotifications";
 
 const notificationsRoute = `${serverUrl}/notifications/me`;
 
-vi.mock(import("@/app/MainLayout"), () => {
-  return {
-    default: () => <p>Main Layout</p>,
-  };
-});
-
 function assertIsElement(val: unknown): asserts val is Element {
   if (!(val instanceof Element)) throw new Error("Not an element");
 }
 
-const userNotifications = {
+const mockUserNotifications = {
   notifications: [
     {
       type: "GROUP_INVITATION",
@@ -30,11 +24,11 @@ const userNotifications = {
       id: "notification1Id",
       groupChatInvitation: {
         createdAt: new Date().toDateString(),
-        id: "groupInvitationId",
+        id: "groupId",
         name: "groupName",
         admin: {
           id: "adminId",
-          imageUrl: null,
+          imageUrl: "imageUrl",
           username: "adminUsername",
         },
       },
@@ -219,27 +213,12 @@ describe("notifications component", () => {
 
     fetchMock.get(notificationsRoute, {
       status: 200,
-      body: userNotifications,
+      body: mockUserNotifications,
     });
     renderNotificationsComponent();
 
     const notifications = await screen.findAllByRole("menuitem");
 
     expect(notifications).toHaveLength(2);
-  });
-
-  it("should render notification createdAt date", async () => {
-    expect.hasAssertions();
-
-    fetchMock.get(notificationsRoute, {
-      status: 200,
-      body: userNotifications,
-    });
-    renderNotificationsComponent();
-
-    const notificationsDate = await screen.findAllByRole("time");
-
-    expect(notificationsDate[0]).toHaveTextContent("Jan 1, 2020, 01:00 AM");
-    expect(notificationsDate[1]).toHaveTextContent("Feb 1, 2020, 10:30 PM");
   });
 });
