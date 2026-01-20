@@ -1,9 +1,9 @@
-import { Menu, MenuItem } from "@mui/material";
+import { Menu } from "@mui/material";
 import { useGetNotificationsQuery } from "@/slices/notificationsSlice";
 import isUnauthorized from "@/utils/isUnauthorized";
 import handleUnexpectedError from "@/utils/handleUnexpectedError";
-import formatDate from "@/utils/formatDate";
 import Loader from "./Loader/Loader";
+import NotificationItem from "./NotificationItem";
 
 export default function Notifications({
   open,
@@ -27,22 +27,20 @@ export default function Notifications({
     handleUnexpectedError(error);
   }
 
-  const notificationContent =
-    data.notifications.length === 0 ? (
-      <p>No current notifications</p>
-    ) : (
-      data.notifications.map((notification) => {
-        return (
-          <MenuItem key={notification.id}>
-            <time>{formatDate(notification.createdAt)}</time>
-          </MenuItem>
-        );
-      })
-    );
-
   return (
     <Menu onClose={onClose} open={open} anchorEl={anchorElement}>
-      {notificationContent}
+      {data.notifications.length > 0 ? (
+        data.notifications.map((notification) => {
+          return (
+            <NotificationItem
+              key={notification.id}
+              notification={notification}
+            />
+          );
+        })
+      ) : (
+        <p>No current notifications</p>
+      )}
     </Menu>
   );
 }
