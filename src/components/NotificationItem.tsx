@@ -1,19 +1,61 @@
-import { Avatar, Box, Button, MenuItem, Typography } from "@mui/material";
+import {
+  Avatar,
+  Box,
+  Button,
+  MenuItem,
+  Stack,
+  Typography,
+  type ButtonProps,
+  type StackProps,
+} from "@mui/material";
 import formatDate from "@/utils/formatDate";
 import type { UserNotifications } from "@/types/userNotifications";
 import type { JSX } from "react";
 
 type Flatten<Type> = Type extends (infer Item)[] ? Item : Type;
 
+const StyledStack = (props: StackProps) => {
+  return (
+    <Stack
+      direction="row"
+      sx={{
+        alignItems: "center",
+        gap: 1,
+      }}
+    >
+      {props.children}
+    </Stack>
+  );
+};
+
+const StyledNotificationStack = (props: StackProps) => {
+  return <Stack gap={2}>{props.children}</Stack>;
+};
+
+const StyledButtonStack = (props: StackProps) => {
+  return (
+    <Stack direction="row" gap={1}>
+      {props.children}
+    </Stack>
+  );
+};
+
+const StyledButton = (props: ButtonProps) => {
+  return (
+    <Button variant="outlined" {...props}>
+      {props.children}
+    </Button>
+  );
+};
+
 export default function NotificationItem({
   notification,
 }: {
   notification: Flatten<UserNotifications["notifications"]>;
 }) {
-  let notificationContent: JSX.Element;
-
-  const renderAvatar = () => {
+  const renderNotificationContent = () => {
     let avatar: JSX.Element;
+    let notificationContent: JSX.Element;
 
     if (notification.type === "GROUP_INVITATION") {
       avatar = notification.groupChatInvitation.admin.imageUrl ? (
@@ -26,6 +68,36 @@ export default function NotificationItem({
           title={`${notification.groupChatInvitation.admin.username} no profile picture`}
         />
       );
+
+      notificationContent = (
+        <StyledNotificationStack>
+          <StyledStack>
+            {avatar}
+            <Typography>
+              {notification.groupChatInvitation.admin.username} invited you to
+              join {notification.groupChatInvitation.name}
+            </Typography>
+          </StyledStack>
+          <StyledButtonStack>
+            <StyledButton
+              sx={{
+                flex: 1,
+                color: (theme) => theme.palette.success.dark,
+              }}
+            >
+              Accept
+            </StyledButton>
+            <StyledButton
+              sx={{
+                flex: 1,
+                color: (theme) => theme.palette.error.main,
+              }}
+            >
+              Decline
+            </StyledButton>
+          </StyledButtonStack>
+        </StyledNotificationStack>
+      );
     } else {
       avatar = notification.friendRequest.sender.imageUrl ? (
         <Avatar
@@ -37,43 +109,59 @@ export default function NotificationItem({
           title={`${notification.friendRequest.sender.username} no profile picture`}
         />
       );
+      notificationContent = (
+        <StyledNotificationStack>
+          <StyledStack>
+            {avatar}
+            <Typography>
+              {notification.friendRequest.sender.username} sent you a friend
+              request
+            </Typography>
+          </StyledStack>
+          <StyledButtonStack>
+            <StyledButton
+              sx={{
+                flex: 1,
+                color: (theme) => theme.palette.success.dark,
+              }}
+            >
+              Accept
+            </StyledButton>
+            <StyledButton
+              sx={{
+                flex: 1,
+                color: (theme) => theme.palette.error.main,
+              }}
+            >
+              Decline
+            </StyledButton>
+          </StyledButtonStack>
+        </StyledNotificationStack>
+      );
     }
 
-    return avatar;
+    return notificationContent;
   };
 
-  if (notification.type === "GROUP_INVITATION") {
-    notificationContent = (
-      <>
-        <Typography>
-          {notification.groupChatInvitation.admin.username} invited you to join{" "}
-          {notification.groupChatInvitation.name}
-        </Typography>
-        <Box>
-          <Button>Accept</Button>
-          <Button>Decline</Button>
-        </Box>
-      </>
-    );
-  } else {
-    notificationContent = (
-      <>
-        <Typography>
-          {notification.friendRequest.sender.username} sent you a friend request
-        </Typography>
-        <Box>
-          <Button>Accept</Button>
-          <Button>Decline</Button>
-        </Box>
-      </>
-    );
-  }
-
   return (
-    <MenuItem>
-      <time>{formatDate(notification.createdAt)}</time>
-      {notificationContent}
-      {renderAvatar()}
+    <MenuItem
+      divider
+      disableRipple
+      sx={{
+        cursor: "initial",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "initial",
+        padding: 2,
+        "&:hover": {
+          backgroundColor: "transparent",
+        },
+      }}
+    >
+      <Box component="time" sx={{ alignSelf: "end" }}>
+        {formatDate(notification.createdAt)}
+      </Box>
+      {renderNotificationContent()}
     </MenuItem>
   );
 }

@@ -1,4 +1,4 @@
-import { Menu } from "@mui/material";
+import { Menu, MenuItem } from "@mui/material";
 import { useGetNotificationsQuery } from "@/slices/notificationsSlice";
 import isUnauthorized from "@/utils/isUnauthorized";
 import handleUnexpectedError from "@/utils/handleUnexpectedError";
@@ -39,7 +39,9 @@ export default function Notifications({
           );
         })
       ) : (
-        <p>No current notifications</p>
+        <MenuItem sx={{ fontSize: "1.1rem", padding: 2 }}>
+          No current notifications
+        </MenuItem>
       )}
     </Menu>
   );
