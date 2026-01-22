@@ -3,14 +3,15 @@ import {
   Box,
   Button,
   MenuItem,
+  Skeleton,
   Stack,
   Typography,
   type ButtonProps,
+  type SkeletonProps,
   type StackProps,
 } from "@mui/material";
 import formatDate from "@/utils/formatDate";
 import type { UserNotifications } from "@/types/userNotifications";
-import type { JSX } from "react";
 
 type Flatten<Type> = Type extends (infer Item)[] ? Item : Type;
 
@@ -48,100 +49,88 @@ const StyledButton = (props: ButtonProps) => {
   );
 };
 
-export default function NotificationItem({
-  notification,
-}: {
+interface NotificationLoading {
+  isLoading: true;
+  notification: undefined;
+}
+
+interface NotificationNotLoading {
+  isLoading: false;
   notification: Flatten<UserNotifications["notifications"]>;
-}) {
-  const renderNotificationContent = () => {
-    let avatar: JSX.Element;
-    let notificationContent: JSX.Element;
+}
 
-    if (notification.type === "GROUP_INVITATION") {
-      avatar = notification.groupChatInvitation.admin.imageUrl ? (
-        <Avatar
-          src={notification.groupChatInvitation.admin.imageUrl}
-          alt={`${notification.groupChatInvitation.admin.username}'s profile picture`}
-        />
-      ) : (
-        <Avatar
-          title={`${notification.groupChatInvitation.admin.username} no profile picture`}
-        />
-      );
+type NotificationItemProps = NotificationLoading | NotificationNotLoading;
 
-      notificationContent = (
+const SkeletonWithTestId = (props: SkeletonProps) => {
+  return (
+    <Skeleton {...props} data-testid="skeleton">
+      {props.children}
+    </Skeleton>
+  );
+};
+
+const skeletonWidth = 170;
+
+export default function NotificationItem({
+  isLoading,
+  notification,
+}: NotificationItemProps) {
+  if (isLoading) {
+    return (
+      <MenuItem
+        divider
+        disableRipple
+        sx={{
+          cursor: "initial",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "initial",
+          padding: 2,
+          "&:hover": {
+            backgroundColor: "transparent",
+          },
+        }}
+      >
+        <SkeletonWithTestId
+          sx={{ alignSelf: "end", width: "40%" }}
+        ></SkeletonWithTestId>
+
         <StyledNotificationStack>
           <StyledStack>
-            {avatar}
-            <Typography>
-              {notification.groupChatInvitation.admin.username} invited you to
-              join {notification.groupChatInvitation.name}
-            </Typography>
+            <SkeletonWithTestId variant="circular">
+              <Avatar />
+            </SkeletonWithTestId>
+            <SkeletonWithTestId width="100%">
+              <Typography>.</Typography>
+            </SkeletonWithTestId>
           </StyledStack>
           <StyledButtonStack>
-            <StyledButton
-              sx={{
-                flex: 1,
-                color: (theme) => theme.palette.success.dark,
-              }}
-            >
-              Accept
-            </StyledButton>
-            <StyledButton
-              sx={{
-                flex: 1,
-                color: (theme) => theme.palette.error.main,
-              }}
-            >
-              Decline
-            </StyledButton>
+            <SkeletonWithTestId
+              data-testid="123"
+              width={skeletonWidth}
+              sx={{ paddingTop: "36px" }}
+            />
+            <SkeletonWithTestId width={skeletonWidth} />
           </StyledButtonStack>
         </StyledNotificationStack>
-      );
-    } else {
-      avatar = notification.friendRequest.sender.imageUrl ? (
-        <Avatar
-          src={notification.friendRequest.sender.imageUrl}
-          alt={`${notification.friendRequest.sender.username}'s profile picture`}
-        />
-      ) : (
-        <Avatar
-          title={`${notification.friendRequest.sender.username} no profile picture`}
-        />
-      );
-      notificationContent = (
-        <StyledNotificationStack>
-          <StyledStack>
-            {avatar}
-            <Typography>
-              {notification.friendRequest.sender.username} sent you a friend
-              request
-            </Typography>
-          </StyledStack>
-          <StyledButtonStack>
-            <StyledButton
-              sx={{
-                flex: 1,
-                color: (theme) => theme.palette.success.dark,
-              }}
-            >
-              Accept
-            </StyledButton>
-            <StyledButton
-              sx={{
-                flex: 1,
-                color: (theme) => theme.palette.error.main,
-              }}
-            >
-              Decline
-            </StyledButton>
-          </StyledButtonStack>
-        </StyledNotificationStack>
-      );
-    }
+      </MenuItem>
+    );
+  }
 
-    return notificationContent;
-  };
+  const notificationData =
+    notification.type === "GROUP_INVITATION"
+      ? {
+          message: `${notification.groupChatInvitation.admin.username} invited you to
+                join ${notification.groupChatInvitation.name}`,
+          imageUrl: notification.groupChatInvitation.admin.imageUrl,
+          username: notification.groupChatInvitation.admin.username,
+        }
+      : {
+          message: `${notification.friendRequest.sender.username} sent you a friend
+                request`,
+          imageUrl: notification.friendRequest.sender.imageUrl,
+          username: notification.friendRequest.sender.username,
+        };
 
   return (
     <MenuItem
@@ -161,7 +150,47 @@ export default function NotificationItem({
       <Box component="time" sx={{ alignSelf: "end" }}>
         {formatDate(notification.createdAt)}
       </Box>
-      {renderNotificationContent()}
+      <StyledNotificationStack>
+        <StyledStack>
+          <NotificationAvatar
+            imageUrl={notificationData.imageUrl}
+            username={notificationData.username}
+          />
+          <Typography>{notificationData.message}</Typography>
+        </StyledStack>
+        <StyledButtonStack>
+          <StyledButton
+            sx={{
+              flex: 1,
+              color: (theme) => theme.palette.success.dark,
+            }}
+          >
+            Accept
+          </StyledButton>
+          <StyledButton
+            sx={{
+              flex: 1,
+              color: (theme) => theme.palette.error.main,
+            }}
+          >
+            Decline
+          </StyledButton>
+        </StyledButtonStack>
+      </StyledNotificationStack>
     </MenuItem>
+  );
+}
+
+function NotificationAvatar({
+  imageUrl,
+  username,
+}: {
+  imageUrl: null | string;
+  username: string;
+}) {
+  return imageUrl ? (
+    <Avatar src={imageUrl} alt={`${username}'s profile picture`} />
+  ) : (
+    <Avatar title={`${username} no profile picture`} />
   );
 }

@@ -2,8 +2,9 @@ import { Menu, MenuItem } from "@mui/material";
 import { useGetNotificationsQuery } from "@/slices/notificationsSlice";
 import isUnauthorized from "@/utils/isUnauthorized";
 import handleUnexpectedError from "@/utils/handleUnexpectedError";
-import Loader from "./Loader/Loader";
 import NotificationItem from "./NotificationItem";
+
+const NOTIFICATION_SKELETONS = ["SKELETON1", "SKELETON2"];
 
 export default function Notifications({
   open,
@@ -21,18 +22,27 @@ export default function Notifications({
     isError,
   } = useGetNotificationsQuery(undefined);
 
-  if (isLoading) return <Loader />;
-
   if (isError && !isUnauthorized(error)) {
     handleUnexpectedError(error);
   }
 
   return (
     <Menu onClose={onClose} open={open} anchorEl={anchorElement}>
-      {data.notifications.length > 0 ? (
+      {isLoading ? (
+        NOTIFICATION_SKELETONS.map((v) => {
+          return (
+            <NotificationItem
+              key={v}
+              isLoading={isLoading}
+              notification={undefined}
+            />
+          );
+        })
+      ) : data.notifications.length > 0 ? (
         data.notifications.map((notification) => {
           return (
             <NotificationItem
+              isLoading={isLoading}
               key={notification.id}
               notification={notification}
             />
