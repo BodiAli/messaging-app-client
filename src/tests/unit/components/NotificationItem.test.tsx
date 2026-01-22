@@ -41,12 +41,52 @@ const mockGroupInvite = {
 } satisfies Flatten<UserNotifications["notifications"]>;
 
 describe("notification-item component", () => {
+  describe("loading state", () => {
+    describe("given isLoading prop to be true", () => {
+      it("should render skeleton", () => {
+        expect.hasAssertions();
+
+        render(<NotificationItem isLoading notification={undefined} />);
+
+        const loadingSkeleton = screen.getAllByTestId("skeleton");
+
+        expect(loadingSkeleton.length).toBeGreaterThan(0);
+      });
+    });
+
+    describe("given isLoading prop to be false", () => {
+      it("should render notification details", () => {
+        expect.hasAssertions();
+
+        render(
+          <NotificationItem
+            isLoading={false}
+            notification={mockFriendRequest}
+          />,
+        );
+
+        const loadingSkeleton = screen.queryAllByTestId("skeleton");
+        const friendRequestMessage = screen.getByText(
+          "senderUsername sent you a friend request",
+        );
+
+        expect(loadingSkeleton).toHaveLength(0);
+        expect(friendRequestMessage).toBeInTheDocument();
+      });
+    });
+  });
+
   describe("format createdAt", () => {
     describe("given ISO date string", () => {
       it("should render formatted createdAt date", () => {
         expect.hasAssertions();
 
-        render(<NotificationItem notification={mockFriendRequest} />);
+        render(
+          <NotificationItem
+            notification={mockFriendRequest}
+            isLoading={false}
+          />,
+        );
 
         const notificationsDate = screen.getByRole("time");
 
@@ -60,7 +100,9 @@ describe("notification-item component", () => {
       it("should render a message indicating a group invite by admin", () => {
         expect.hasAssertions();
 
-        render(<NotificationItem notification={mockGroupInvite} />);
+        render(
+          <NotificationItem notification={mockGroupInvite} isLoading={false} />,
+        );
 
         const groupInviteMessage = screen.getByText(
           "adminUsername invited you to join groupName",
@@ -76,7 +118,12 @@ describe("notification-item component", () => {
       it("should render a message indicating a friend request with sender's username", () => {
         expect.hasAssertions();
 
-        render(<NotificationItem notification={mockFriendRequest} />);
+        render(
+          <NotificationItem
+            notification={mockFriendRequest}
+            isLoading={false}
+          />,
+        );
 
         const friendRequestMessage = screen.getByText(
           "senderUsername sent you a friend request",
@@ -92,7 +139,9 @@ describe("notification-item component", () => {
       it("should render default avatar", () => {
         expect.hasAssertions();
 
-        render(<NotificationItem notification={mockGroupInvite} />);
+        render(
+          <NotificationItem notification={mockGroupInvite} isLoading={false} />,
+        );
 
         const adminProfilePic = screen.getByTitle(
           "adminUsername no profile picture",
@@ -106,7 +155,12 @@ describe("notification-item component", () => {
       it("should render avatar with expected alt text", () => {
         expect.hasAssertions();
 
-        render(<NotificationItem notification={mockFriendRequest} />);
+        render(
+          <NotificationItem
+            notification={mockFriendRequest}
+            isLoading={false}
+          />,
+        );
 
         const senderProfilePic = screen.getByRole("img", {
           name: "senderUsername's profile picture",
@@ -122,7 +176,9 @@ describe("notification-item component", () => {
       it("should render a decline button", () => {
         expect.hasAssertions();
 
-        render(<NotificationItem notification={mockGroupInvite} />);
+        render(
+          <NotificationItem notification={mockGroupInvite} isLoading={false} />,
+        );
 
         const declineButton = screen.getByRole("button", { name: "Decline" });
 
@@ -132,7 +188,9 @@ describe("notification-item component", () => {
       it("should render an accept button", () => {
         expect.hasAssertions();
 
-        render(<NotificationItem notification={mockGroupInvite} />);
+        render(
+          <NotificationItem notification={mockGroupInvite} isLoading={false} />,
+        );
 
         const acceptButton = screen.getByRole("button", { name: "Accept" });
 
@@ -146,7 +204,12 @@ describe("notification-item component", () => {
       it("should render a decline button", () => {
         expect.hasAssertions();
 
-        render(<NotificationItem notification={mockFriendRequest} />);
+        render(
+          <NotificationItem
+            notification={mockFriendRequest}
+            isLoading={false}
+          />,
+        );
 
         const declineButton = screen.getByRole("button", { name: "Decline" });
 
@@ -156,7 +219,12 @@ describe("notification-item component", () => {
       it("should render an accept button", () => {
         expect.hasAssertions();
 
-        render(<NotificationItem notification={mockFriendRequest} />);
+        render(
+          <NotificationItem
+            notification={mockFriendRequest}
+            isLoading={false}
+          />,
+        );
 
         const acceptButton = screen.getByRole("button", { name: "Accept" });
 
