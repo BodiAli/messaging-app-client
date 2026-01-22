@@ -1,4 +1,4 @@
-import { screen, waitForElementToBeRemoved } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { describe, it, expect, beforeAll, afterEach } from "vitest";
 import userEvent from "@testing-library/user-event";
@@ -76,7 +76,7 @@ describe("notifications component", () => {
     vi.resetAllMocks();
   });
 
-  it("should render Menu when open is true", async () => {
+  it("should render Menu when open is true", () => {
     expect.hasAssertions();
 
     fetchMock.get(notificationsRoute, {
@@ -89,12 +89,12 @@ describe("notifications component", () => {
       <Notifications open anchorElement={anchorElement} onClose={onClose} />,
     );
 
-    const menu = await screen.findByRole("menu");
+    const menu = screen.getByRole("menu");
 
     expect(menu).toBeInTheDocument();
   });
 
-  it("should not render Menu when open is false", async () => {
+  it("should not render Menu when open is false", () => {
     expect.hasAssertions();
 
     fetchMock.get(notificationsRoute, {
@@ -111,7 +111,6 @@ describe("notifications component", () => {
       />,
     );
 
-    await waitForElementToBeRemoved(screen.getByTestId("loader"));
     const menu = screen.queryByRole("menu");
 
     expect(menu).not.toBeInTheDocument();
@@ -141,7 +140,7 @@ describe("notifications component", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("should render Loader component when data is loading", () => {
+  it("should render two skeletons component when data is loading", () => {
     expect.hasAssertions();
 
     fetchMock.get(notificationsRoute, {
@@ -152,9 +151,16 @@ describe("notifications component", () => {
     });
     renderNotificationsComponent();
 
-    const loader = screen.getByTestId("loader");
+    const menuItems = screen.getAllByRole("menuitem");
+    assertIsElement(menuItems[0]);
+    assertIsElement(menuItems[1]);
 
-    expect(loader).toBeVisible();
+    const skeleton1 = within(menuItems[0]).queryAllByTestId("skeleton");
+    const skeleton2 = within(menuItems[1]).queryAllByTestId("skeleton");
+
+    expect(menuItems.length).toBeGreaterThan(0);
+    expect(skeleton1.length).toBeGreaterThan(0);
+    expect(skeleton2.length).toBeGreaterThan(0);
   });
 
   it("should throw error when an unexpected error occurs", async () => {
