@@ -32,6 +32,8 @@ vi.mock(import("@/pages/LoginPage"), () => {
 });
 
 describe("log-out button", () => {
+  const mockRemoveJwtToken = vi.spyOn(localStorageService, "removeJwtToken");
+
   beforeEach(() => {
     vi.spyOn(localStorageService, "getJwtToken").mockReturnValue("jwtToken");
     fetchMock.mockGlobal();
@@ -84,6 +86,7 @@ describe("log-out button", () => {
       await userEvent.click(logOutButton);
       const loginPage = screen.getByText("Login page");
 
+      expect(mockRemoveJwtToken).toHaveBeenCalledTimes(1);
       expect(loginPage).toBeInTheDocument();
       expect(router.state.location.pathname).toBe("/log-in");
     });
