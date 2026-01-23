@@ -1,5 +1,5 @@
 import { createSlice, isAnyOf } from "@reduxjs/toolkit";
-import { setJwtToken } from "@/services/localStorage";
+import { removeJwtToken, setJwtToken } from "@/services/localStorage";
 import apiSlice from "./apiSlice";
 import type { User } from "@/types/modelsType";
 import type { AppStartListening } from "@/config/listenerMiddleware";
@@ -71,6 +71,13 @@ const authListeners = (startAppListening: AppStartListening) => {
     matcher: isTokenReceived,
     effect: (action) => {
       setJwtToken(action.payload.token);
+    },
+  });
+
+  startAppListening({
+    actionCreator: logOut,
+    effect: () => {
+      removeJwtToken();
     },
   });
 };
