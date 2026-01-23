@@ -70,8 +70,6 @@ describe("header component", () => {
   it("should navigate to home page when website name or logo is clicked", async () => {
     expect.hasAssertions();
 
-    expect.hasAssertions();
-
     const router = createMemoryRouter(
       [
         {
@@ -115,6 +113,26 @@ describe("header component", () => {
     await userEvent.click(signUpLink);
 
     expect(router.state.location.pathname).toBe("/sign-up");
+  });
+
+  it("should render a log out button when user is authenticated", async () => {
+    expect.hasAssertions();
+
+    vi.spyOn(localStorageService, "getJwtToken").mockReturnValue("jwtToken");
+    fetchMock.get(serverRoute, {
+      status: 200,
+      body: {
+        user: mockedUser,
+      },
+    });
+    const router = createMemoryRouter(routes);
+    renderWithProviders(<RouterProvider router={router} />);
+
+    const logOutButton = await screen.findByRole("button", {
+      name: "log out",
+    });
+
+    expect(logOutButton).toBeInTheDocument();
   });
 
   describe("notifications", () => {
