@@ -12,6 +12,7 @@ import { Link as RouterLink, NavLink } from "react-router";
 import { useAppSelector } from "@/app/hooks";
 import { selectUser } from "@/slices/authSlice";
 import Notifications from "./Notifications";
+import LogoutButton from "./LogoutButton";
 
 export default function Header() {
   const user = useAppSelector(selectUser);
@@ -83,7 +84,7 @@ export default function Header() {
     );
   } else {
     headerContent = (
-      <>
+      <Stack direction={"row"} gap={1}>
         <IconButton
           ref={anchorElement}
           onClick={handleMenuOpen}
@@ -103,7 +104,8 @@ export default function Header() {
             anchorElement={anchorElement.current}
           />
         )}
-      </>
+        <LogoutButton />
+      </Stack>
     );
   }
 
