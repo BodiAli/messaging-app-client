@@ -11,8 +11,13 @@ export default function LogoutButton() {
   };
 
   return (
-    <IconButton onClick={handleLogOut} aria-label="log out">
-      <LogoutIcon />
+    <IconButton
+      size="large"
+      onClick={handleLogOut}
+      aria-label="log out"
+      sx={{ color: "#fff" }}
+    >
+      <LogoutIcon fontSize="inherit" />
     </IconButton>
   );
 }
