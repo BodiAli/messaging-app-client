@@ -6,9 +6,20 @@ const apiSliceWithNotifications = apiSlice.injectEndpoints({
     return {
       getNotifications: build.query<UserNotifications, undefined>({
         query: () => "/notifications/me",
+        providesTags: ["Notification"],
+      }),
+      rejectGroupInvite: build.mutation<undefined, string>({
+        query: (groupId) => {
+          return {
+            url: `/users/me/groups/${groupId}/notifications`,
+            method: "DELETE",
+          };
+        },
+        invalidatesTags: ["Notification"],
       }),
     };
   },
 });
 
-export const { useGetNotificationsQuery } = apiSliceWithNotifications;
+export const { useGetNotificationsQuery, useRejectGroupInviteMutation } =
+  apiSliceWithNotifications;
