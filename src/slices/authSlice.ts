@@ -76,7 +76,8 @@ const authListeners = (startAppListening: AppStartListening) => {
 
   startAppListening({
     actionCreator: logOut,
-    effect: () => {
+    effect: (_, api) => {
+      api.dispatch(apiSliceWithAuth.util.resetApiState());
       removeJwtToken();
     },
   });
