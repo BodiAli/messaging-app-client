@@ -10,6 +10,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import type { UserNotifications } from "@/types/userNotifications";
 
 const notificationsRoute = `${serverUrl}/notifications/me`;
+const respondToGroupInviteRoute = `${serverUrl}/users/me/groups/groupId/notifications`;
 
 function assertIsElement(val: unknown): asserts val is Element {
   if (!(val instanceof Element)) throw new Error("Not an element");
@@ -226,5 +227,48 @@ describe("notifications component", () => {
     const notifications = await screen.findAllByRole("menuitem");
 
     expect(notifications).toHaveLength(2);
+  });
+
+  describe("accepting or rejecting an group", () => {
+    it.todo(
+      "should throw an error when an unexpected error occurs when rejecting an invite",
+      async () => {
+        expect.hasAssertions();
+
+        fetchMock.getOnce(notificationsRoute, {
+          status: 200,
+          body: mockUserNotifications,
+        });
+        fetchMock.getOnce(notificationsRoute, {
+          status: 200,
+          body: {
+            notifications: [mockUserNotifications.notifications[1]],
+          },
+        });
+        fetchMock.delete(respondToGroupInviteRoute, {
+          status: 204,
+        });
+        renderNotificationsComponent();
+
+        const notifications = await screen.findAllByRole("menuitem", {
+          name: /Decline/,
+        });
+        assertIsElement(notifications[0]);
+        const declineButton = within(notifications[0]).getByRole("button", {
+          name: "Decline",
+        });
+
+        await userEvent.click(declineButton);
+
+        const updatedNotifications = screen.getAllByRole("menuitem", {
+          name: /Decline/,
+        });
+
+        expect(notifications).toHaveLength(2);
+        expect(updatedNotifications).toHaveLength(1);
+        expect(fetchMock).toHaveDeleted(respondToGroupInviteRoute);
+        expect(fetchMock).toHaveGotTimes(2, notificationsRoute);
+      },
+    );
   });
 });
