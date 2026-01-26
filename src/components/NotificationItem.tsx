@@ -52,11 +52,13 @@ const StyledButton = (props: ButtonProps) => {
 interface NotificationLoading {
   isLoading: true;
   notification: undefined;
+  onDeclineClick: undefined;
 }
 
 interface NotificationNotLoading {
   isLoading: false;
   notification: Flatten<UserNotifications["notifications"]>;
+  onDeclineClick: (groupId: string) => () => void;
 }
 
 type NotificationItemProps = NotificationLoading | NotificationNotLoading;
@@ -74,6 +76,7 @@ const skeletonWidth = 170;
 export default function NotificationItem({
   isLoading,
   notification,
+  onDeclineClick,
 }: NotificationItemProps) {
   if (isLoading) {
     return (
@@ -124,12 +127,14 @@ export default function NotificationItem({
                 join ${notification.groupChatInvitation.name}`,
           imageUrl: notification.groupChatInvitation.admin.imageUrl,
           username: notification.groupChatInvitation.admin.username,
+          id: notification.groupChatInvitation.id,
         }
       : {
           message: `${notification.friendRequest.sender.username} sent you a friend
-                request`,
+          request`,
           imageUrl: notification.friendRequest.sender.imageUrl,
           username: notification.friendRequest.sender.username,
+          id: notification.friendRequest.id,
         };
 
   return (
@@ -168,6 +173,7 @@ export default function NotificationItem({
             Accept
           </StyledButton>
           <StyledButton
+            onClick={onDeclineClick(notificationData.id)}
             sx={{
               flex: 1,
               color: (theme) => theme.palette.error.main,
