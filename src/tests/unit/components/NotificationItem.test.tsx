@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
+import userEvent from "@testing-library/user-event";
 import NotificationItem from "@/components/NotificationItem";
 import type { UserNotifications } from "@/types/userNotifications";
 
@@ -41,12 +42,24 @@ const mockGroupInvite = {
 } satisfies Flatten<UserNotifications["notifications"]>;
 
 describe("notification-item component", () => {
+  const onDeclineClickMock = vi.fn<(groupId: string) => () => void>();
+
+  afterEach(() => {
+    onDeclineClickMock.mockClear();
+  });
+
   describe("loading state", () => {
     describe("given isLoading prop to be true", () => {
       it("should render skeleton", () => {
         expect.hasAssertions();
 
-        render(<NotificationItem isLoading notification={undefined} />);
+        render(
+          <NotificationItem
+            isLoading
+            notification={undefined}
+            onDeclineClick={undefined}
+          />,
+        );
 
         const loadingSkeleton = screen.getAllByTestId("skeleton");
 
@@ -62,6 +75,7 @@ describe("notification-item component", () => {
           <NotificationItem
             isLoading={false}
             notification={mockFriendRequest}
+            onDeclineClick={onDeclineClickMock}
           />,
         );
 
@@ -85,6 +99,7 @@ describe("notification-item component", () => {
           <NotificationItem
             notification={mockFriendRequest}
             isLoading={false}
+            onDeclineClick={onDeclineClickMock}
           />,
         );
 
@@ -101,7 +116,11 @@ describe("notification-item component", () => {
         expect.hasAssertions();
 
         render(
-          <NotificationItem notification={mockGroupInvite} isLoading={false} />,
+          <NotificationItem
+            notification={mockGroupInvite}
+            isLoading={false}
+            onDeclineClick={onDeclineClickMock}
+          />,
         );
 
         const groupInviteMessage = screen.getByText(
@@ -122,6 +141,7 @@ describe("notification-item component", () => {
           <NotificationItem
             notification={mockFriendRequest}
             isLoading={false}
+            onDeclineClick={onDeclineClickMock}
           />,
         );
 
@@ -140,7 +160,11 @@ describe("notification-item component", () => {
         expect.hasAssertions();
 
         render(
-          <NotificationItem notification={mockGroupInvite} isLoading={false} />,
+          <NotificationItem
+            notification={mockGroupInvite}
+            isLoading={false}
+            onDeclineClick={onDeclineClickMock}
+          />,
         );
 
         const adminProfilePic = screen.getByTitle(
@@ -159,6 +183,7 @@ describe("notification-item component", () => {
           <NotificationItem
             notification={mockFriendRequest}
             isLoading={false}
+            onDeclineClick={onDeclineClickMock}
           />,
         );
 
@@ -172,12 +197,16 @@ describe("notification-item component", () => {
   });
 
   describe("group invite buttons", () => {
-    describe("given group invitation menu item", () => {
+    describe("given decline button", () => {
       it("should render a decline button", () => {
         expect.hasAssertions();
 
         render(
-          <NotificationItem notification={mockGroupInvite} isLoading={false} />,
+          <NotificationItem
+            notification={mockGroupInvite}
+            isLoading={false}
+            onDeclineClick={onDeclineClickMock}
+          />,
         );
 
         const declineButton = screen.getByRole("button", { name: "Decline" });
@@ -185,11 +214,34 @@ describe("notification-item component", () => {
         expect(declineButton).toBeInTheDocument();
       });
 
+      it("should call onDeclineClick when decline button is clicked", async () => {
+        expect.hasAssertions();
+
+        render(
+          <NotificationItem
+            notification={mockGroupInvite}
+            isLoading={false}
+            onDeclineClick={onDeclineClickMock}
+          />,
+        );
+
+        const declineButton = screen.getByRole("button", { name: "Decline" });
+        await userEvent.click(declineButton);
+
+        expect(onDeclineClickMock).toHaveBeenCalledExactlyOnceWith("groupId");
+      });
+    });
+
+    describe("given accept button", () => {
       it("should render an accept button", () => {
         expect.hasAssertions();
 
         render(
-          <NotificationItem notification={mockGroupInvite} isLoading={false} />,
+          <NotificationItem
+            notification={mockGroupInvite}
+            isLoading={false}
+            onDeclineClick={onDeclineClickMock}
+          />,
         );
 
         const acceptButton = screen.getByRole("button", { name: "Accept" });
@@ -200,7 +252,7 @@ describe("notification-item component", () => {
   });
 
   describe("friend request buttons", () => {
-    describe("given friend request menu item", () => {
+    describe("given decline button", () => {
       it("should render a decline button", () => {
         expect.hasAssertions();
 
@@ -208,6 +260,7 @@ describe("notification-item component", () => {
           <NotificationItem
             notification={mockFriendRequest}
             isLoading={false}
+            onDeclineClick={onDeclineClickMock}
           />,
         );
 
@@ -216,6 +269,27 @@ describe("notification-item component", () => {
         expect(declineButton).toBeInTheDocument();
       });
 
+      it("should call onDeclineClick when decline button is clicked", async () => {
+        expect.hasAssertions();
+
+        render(
+          <NotificationItem
+            notification={mockFriendRequest}
+            isLoading={false}
+            onDeclineClick={onDeclineClickMock}
+          />,
+        );
+
+        const declineButton = screen.getByRole("button", { name: "Decline" });
+        await userEvent.click(declineButton);
+
+        expect(onDeclineClickMock).toHaveBeenCalledExactlyOnceWith(
+          "friendRequestId",
+        );
+      });
+    });
+
+    describe("given accept button", () => {
       it("should render an accept button", () => {
         expect.hasAssertions();
 
@@ -223,6 +297,7 @@ describe("notification-item component", () => {
           <NotificationItem
             notification={mockFriendRequest}
             isLoading={false}
+            onDeclineClick={onDeclineClickMock}
           />,
         );
 
