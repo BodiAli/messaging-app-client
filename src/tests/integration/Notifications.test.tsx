@@ -230,45 +230,93 @@ describe("notifications component", () => {
   });
 
   describe("accepting or rejecting an group", () => {
-    it.todo(
-      "should throw an error when an unexpected error occurs when rejecting an invite",
-      async () => {
-        expect.hasAssertions();
+    it("should throw an error when an unexpected error occurs when rejecting an invite", async () => {
+      expect.hasAssertions();
 
-        fetchMock.getOnce(notificationsRoute, {
-          status: 200,
-          body: mockUserNotifications,
-        });
-        fetchMock.getOnce(notificationsRoute, {
-          status: 200,
-          body: {
-            notifications: [mockUserNotifications.notifications[1]],
-          },
-        });
-        fetchMock.delete(respondToGroupInviteRoute, {
-          status: 204,
-        });
-        renderNotificationsComponent();
+      vi.spyOn(console, "error").mockImplementation(() => null);
+      fetchMock.get(notificationsRoute, {
+        status: 200,
+        body: mockUserNotifications,
+      });
+      fetchMock.delete(respondToGroupInviteRoute, {
+        status: 500,
+        body: {
+          error: "Server error",
+        },
+      });
+      const router = createMemoryRouter([
+        {
+          ErrorBoundary: ErrorBoundary,
+          children: [
+            {
+              path: "/",
+              element: (
+                <Notifications
+                  open={true}
+                  onClose={onClose}
+                  anchorElement={anchorElement}
+                />
+              ),
+            },
+          ],
+        },
+      ]);
+      renderWithProviders(<RouterProvider router={router} />);
+      const notifications = await screen.findAllByRole("menuitem", {
+        name: /Decline/,
+      });
+      assertIsElement(notifications[0]);
+      const declineButton = within(notifications[0]).getByRole("button", {
+        name: "Decline",
+      });
 
-        const notifications = await screen.findAllByRole("menuitem", {
-          name: /Decline/,
-        });
-        assertIsElement(notifications[0]);
-        const declineButton = within(notifications[0]).getByRole("button", {
-          name: "Decline",
-        });
+      await userEvent.click(declineButton);
+      const errorBoundaryHeading = screen.getByRole("heading", {
+        level: 1,
+        name: "Unexpected error occurred",
+      });
+      const errorMessage = screen.getByText("Server error");
 
-        await userEvent.click(declineButton);
+      expect(errorBoundaryHeading).toBeInTheDocument();
+      expect(errorMessage).toBeInTheDocument();
+    });
 
-        const updatedNotifications = screen.getAllByRole("menuitem", {
-          name: /Decline/,
-        });
+    it.todo("a", async () => {
+      expect.hasAssertions();
 
-        expect(notifications).toHaveLength(2);
-        expect(updatedNotifications).toHaveLength(1);
-        expect(fetchMock).toHaveDeleted(respondToGroupInviteRoute);
-        expect(fetchMock).toHaveGotTimes(2, notificationsRoute);
-      },
-    );
+      fetchMock.getOnce(notificationsRoute, {
+        status: 200,
+        body: mockUserNotifications,
+      });
+      fetchMock.getOnce(notificationsRoute, {
+        status: 200,
+        body: {
+          notifications: [mockUserNotifications.notifications[1]],
+        },
+      });
+      fetchMock.delete(respondToGroupInviteRoute, {
+        status: 204,
+      });
+      renderNotificationsComponent();
+
+      const notifications = await screen.findAllByRole("menuitem", {
+        name: /Decline/,
+      });
+      assertIsElement(notifications[0]);
+      const declineButton = within(notifications[0]).getByRole("button", {
+        name: "Decline",
+      });
+
+      await userEvent.click(declineButton);
+
+      const updatedNotifications = screen.getAllByRole("menuitem", {
+        name: /Decline/,
+      });
+
+      expect(notifications).toHaveLength(2);
+      expect(updatedNotifications).toHaveLength(1);
+      expect(fetchMock).toHaveDeleted(respondToGroupInviteRoute);
+      expect(fetchMock).toHaveGotTimes(2, notificationsRoute);
+    });
   });
 });
