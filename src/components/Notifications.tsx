@@ -1,5 +1,8 @@
 import { Menu, MenuItem } from "@mui/material";
-import { useGetNotificationsQuery } from "@/slices/notificationsSlice";
+import {
+  useGetNotificationsQuery,
+  useRejectGroupInviteMutation,
+} from "@/slices/notificationsSlice";
 import isUnauthorized from "@/utils/isUnauthorized";
 import handleUnexpectedError from "@/utils/handleUnexpectedError";
 import NotificationItem from "./NotificationItem";
@@ -18,11 +21,20 @@ export default function Notifications({
   const {
     data = { notifications: [] },
     isLoading,
-    error,
-    isError,
+    error: queryError,
   } = useGetNotificationsQuery(undefined);
+  const [rejectGroupInvite, { error: rejectGroupInviteError }] =
+    useRejectGroupInviteMutation();
 
-  if (isError && !isUnauthorized(error)) {
+  const error = queryError ?? rejectGroupInviteError;
+
+  function handleRejectGroupInvite(groupId: string) {
+    return () => {
+      void rejectGroupInvite(groupId);
+    };
+  }
+
+  if (error && !isUnauthorized(error)) {
     handleUnexpectedError(error);
   }
 
@@ -35,6 +47,7 @@ export default function Notifications({
               key={v}
               isLoading={isLoading}
               notification={undefined}
+              onDeclineClick={undefined}
             />
           );
         })
@@ -45,6 +58,7 @@ export default function Notifications({
               isLoading={isLoading}
               key={notification.id}
               notification={notification}
+              onDeclineClick={handleRejectGroupInvite}
             />
           );
         })
