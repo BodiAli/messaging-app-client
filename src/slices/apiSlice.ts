@@ -7,7 +7,6 @@ import {
 } from "@reduxjs/toolkit/query/react";
 import serverUrl from "@/utils/serverUrl";
 import { getJwtToken } from "@/services/localStorage";
-import { logOut } from "./authSlice";
 
 const isProtectedRoute: (endpoint: string) => boolean = (endpoint) => {
   return (
@@ -42,7 +41,7 @@ const baseQueryWithLogout: BaseQueryFn<
   const result = await baseQuery(args, api, extraOptions);
 
   if (result.error?.status === 401 && isProtectedRoute(api.endpoint)) {
-    api.dispatch(logOut());
+    api.dispatch({ type: "auth/logOut" });
   }
 
   return result;
