@@ -62,7 +62,6 @@ export default defineConfig([
           ],
         },
       ],
-      "import-x/no-named-as-default-member": "off",
       "import-x/no-cycle": "error",
     },
   },
