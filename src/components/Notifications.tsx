@@ -1,5 +1,8 @@
 import { Menu, MenuItem } from "@mui/material";
 import {
+  useAcceptFriendRequestMutation,
+  useAcceptGroupInviteMutation,
+  useDeclineFriendRequestMutation,
   useGetNotificationsQuery,
   useRejectGroupInviteMutation,
 } from "@/slices/notificationsSlice";
@@ -25,17 +28,58 @@ export default function Notifications({
   } = useGetNotificationsQuery(undefined);
   const [rejectGroupInvite, { error: rejectGroupInviteError }] =
     useRejectGroupInviteMutation();
+  const [declineFriendRequest, { error: declineFriendRequestError }] =
+    useDeclineFriendRequestMutation();
+  const [acceptGroupInvite, { error: acceptGroupInviteError }] =
+    useAcceptGroupInviteMutation();
+  const [acceptFriendRequest, { error: acceptFriendRequestError }] =
+    useAcceptFriendRequestMutation();
 
-  const error = queryError ?? rejectGroupInviteError;
-
-  function handleRejectGroupInvite(groupId: string) {
-    return () => {
-      void rejectGroupInvite(groupId);
-    };
-  }
+  const error =
+    queryError ??
+    rejectGroupInviteError ??
+    acceptGroupInviteError ??
+    declineFriendRequestError ??
+    acceptFriendRequestError;
 
   if (error && !isUnauthorized(error)) {
     handleUnexpectedError(error);
+  }
+
+  function handleAcceptInvite(
+    id: string,
+    type: "GROUP_INVITATION" | "FRIEND_REQUEST",
+  ) {
+    return () => {
+      switch (type) {
+        case "GROUP_INVITATION": {
+          void acceptGroupInvite(id);
+          return;
+        }
+        case "FRIEND_REQUEST": {
+          void acceptFriendRequest(id);
+          return;
+        }
+      }
+    };
+  }
+
+  function handleDeclineInvite(
+    id: string,
+    type: "GROUP_INVITATION" | "FRIEND_REQUEST",
+  ) {
+    return () => {
+      switch (type) {
+        case "GROUP_INVITATION": {
+          void rejectGroupInvite(id);
+          return;
+        }
+        case "FRIEND_REQUEST": {
+          void declineFriendRequest(id);
+          return;
+        }
+      }
+    };
   }
 
   return (
@@ -48,6 +92,7 @@ export default function Notifications({
               isLoading={isLoading}
               notification={undefined}
               onDeclineClick={undefined}
+              onAcceptClick={undefined}
             />
           );
         })
@@ -58,7 +103,8 @@ export default function Notifications({
               isLoading={isLoading}
               key={notification.id}
               notification={notification}
-              onDeclineClick={handleRejectGroupInvite}
+              onDeclineClick={handleDeclineInvite}
+              onAcceptClick={handleAcceptInvite}
             />
           );
         })
