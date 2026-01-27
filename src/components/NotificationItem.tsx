@@ -53,12 +53,14 @@ interface NotificationLoading {
   isLoading: true;
   notification: undefined;
   onDeclineClick: undefined;
+  onAcceptClick: undefined;
 }
 
 interface NotificationNotLoading {
   isLoading: false;
   notification: Flatten<UserNotifications["notifications"]>;
-  onDeclineClick: (groupId: string) => () => void;
+  onDeclineClick: (id: string) => () => void;
+  onAcceptClick: (id: string) => () => void;
 }
 
 type NotificationItemProps = NotificationLoading | NotificationNotLoading;
@@ -77,6 +79,7 @@ export default function NotificationItem({
   isLoading,
   notification,
   onDeclineClick,
+  onAcceptClick,
 }: NotificationItemProps) {
   if (isLoading) {
     return (
@@ -165,6 +168,7 @@ export default function NotificationItem({
         </StyledStack>
         <StyledButtonStack>
           <StyledButton
+            onClick={onAcceptClick(notificationData.id)}
             sx={{
               flex: 1,
               color: (theme) => theme.palette.success.dark,

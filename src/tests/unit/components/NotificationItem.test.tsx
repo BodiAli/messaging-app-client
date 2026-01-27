@@ -42,10 +42,12 @@ const mockGroupInvite = {
 } satisfies Flatten<UserNotifications["notifications"]>;
 
 describe("notification-item component", () => {
-  const onDeclineClickMock = vi.fn<(groupId: string) => () => void>();
+  const onDeclineClickMock = vi.fn<(id: string) => () => void>();
+  const onAcceptClickMock = vi.fn<(id: string) => () => void>();
 
   afterEach(() => {
     onDeclineClickMock.mockClear();
+    onAcceptClickMock.mockClear();
   });
 
   describe("loading state", () => {
@@ -58,6 +60,7 @@ describe("notification-item component", () => {
             isLoading
             notification={undefined}
             onDeclineClick={undefined}
+            onAcceptClick={undefined}
           />,
         );
 
@@ -76,6 +79,7 @@ describe("notification-item component", () => {
             isLoading={false}
             notification={mockFriendRequest}
             onDeclineClick={onDeclineClickMock}
+            onAcceptClick={onAcceptClickMock}
           />,
         );
 
@@ -100,6 +104,7 @@ describe("notification-item component", () => {
             notification={mockFriendRequest}
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
+            onAcceptClick={onAcceptClickMock}
           />,
         );
 
@@ -120,6 +125,7 @@ describe("notification-item component", () => {
             notification={mockGroupInvite}
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
+            onAcceptClick={onAcceptClickMock}
           />,
         );
 
@@ -142,6 +148,7 @@ describe("notification-item component", () => {
             notification={mockFriendRequest}
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
+            onAcceptClick={onAcceptClickMock}
           />,
         );
 
@@ -164,6 +171,7 @@ describe("notification-item component", () => {
             notification={mockGroupInvite}
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
+            onAcceptClick={onAcceptClickMock}
           />,
         );
 
@@ -184,6 +192,7 @@ describe("notification-item component", () => {
             notification={mockFriendRequest}
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
+            onAcceptClick={onAcceptClickMock}
           />,
         );
 
@@ -206,6 +215,7 @@ describe("notification-item component", () => {
             notification={mockGroupInvite}
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
+            onAcceptClick={onAcceptClickMock}
           />,
         );
 
@@ -222,6 +232,7 @@ describe("notification-item component", () => {
             notification={mockGroupInvite}
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
+            onAcceptClick={onAcceptClickMock}
           />,
         );
 
@@ -241,12 +252,31 @@ describe("notification-item component", () => {
             notification={mockGroupInvite}
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
+            onAcceptClick={onAcceptClickMock}
           />,
         );
 
         const acceptButton = screen.getByRole("button", { name: "Accept" });
 
         expect(acceptButton).toBeInTheDocument();
+      });
+
+      it("should onAcceptClick when accept button is clicked", async () => {
+        expect.hasAssertions();
+
+        render(
+          <NotificationItem
+            notification={mockGroupInvite}
+            isLoading={false}
+            onDeclineClick={onDeclineClickMock}
+            onAcceptClick={onAcceptClickMock}
+          />,
+        );
+
+        const declineButton = screen.getByRole("button", { name: "Accept" });
+        await userEvent.click(declineButton);
+
+        expect(onDeclineClickMock).toHaveBeenCalledExactlyOnceWith("groupId");
       });
     });
   });
@@ -261,6 +291,7 @@ describe("notification-item component", () => {
             notification={mockFriendRequest}
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
+            onAcceptClick={onAcceptClickMock}
           />,
         );
 
@@ -277,6 +308,7 @@ describe("notification-item component", () => {
             notification={mockFriendRequest}
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
+            onAcceptClick={onAcceptClickMock}
           />,
         );
 
@@ -298,12 +330,33 @@ describe("notification-item component", () => {
             notification={mockFriendRequest}
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
+            onAcceptClick={onAcceptClickMock}
           />,
         );
 
         const acceptButton = screen.getByRole("button", { name: "Accept" });
 
         expect(acceptButton).toBeInTheDocument();
+      });
+
+      it("should onAcceptClick when accept button is clicked", async () => {
+        expect.hasAssertions();
+
+        render(
+          <NotificationItem
+            notification={mockFriendRequest}
+            isLoading={false}
+            onDeclineClick={onDeclineClickMock}
+            onAcceptClick={onAcceptClickMock}
+          />,
+        );
+
+        const declineButton = screen.getByRole("button", { name: "Accept" });
+        await userEvent.click(declineButton);
+
+        expect(onDeclineClickMock).toHaveBeenCalledExactlyOnceWith(
+          "friendRequestId",
+        );
       });
     });
   });
