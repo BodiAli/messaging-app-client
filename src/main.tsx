@@ -3,6 +3,7 @@ import * as ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import { CssBaseline, ThemeProvider } from "@mui/material";
+import { SnackbarProvider } from "notistack";
 import setupStore from "./config/store.js";
 import routes from "./routes/routes.js";
 import { apiSliceWithAuth } from "./slices/authSlice.js";
@@ -24,10 +25,12 @@ const theme = initializeTheme();
 ReactDOM.createRoot(document.getElementById("root") as HTMLDivElement).render(
   <React.StrictMode>
     <Provider store={store}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <RouterProvider router={router} />
-      </ThemeProvider>
+      <SnackbarProvider>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <RouterProvider router={router} />
+        </ThemeProvider>
+      </SnackbarProvider>
     </Provider>
   </React.StrictMode>,
 );
