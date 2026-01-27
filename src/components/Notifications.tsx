@@ -42,7 +42,11 @@ function handleNotificationError(error: unknown): string | ApiClientError {
     return error.data.error;
   }
 
-  return String(error.status);
+  if (typeof error.status === "string") {
+    return error.error;
+  }
+
+  return String(error.data);
 }
 
 export default function Notifications({
