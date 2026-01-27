@@ -56,11 +56,13 @@ interface NotificationLoading {
   onAcceptClick: undefined;
 }
 
+type NotificationType = "GROUP_INVITATION" | "FRIEND_REQUEST";
+
 interface NotificationNotLoading {
   isLoading: false;
   notification: Flatten<UserNotifications["notifications"]>;
-  onDeclineClick: (id: string) => () => void;
-  onAcceptClick: (id: string) => () => void;
+  onDeclineClick: (id: string, type: NotificationType) => () => void;
+  onAcceptClick: (id: string, type: NotificationType) => () => void;
 }
 
 type NotificationItemProps = NotificationLoading | NotificationNotLoading;
@@ -168,7 +170,7 @@ export default function NotificationItem({
         </StyledStack>
         <StyledButtonStack>
           <StyledButton
-            onClick={onAcceptClick(notificationData.id)}
+            onClick={onAcceptClick(notificationData.id, notification.type)}
             sx={{
               flex: 1,
               color: (theme) => theme.palette.success.dark,
@@ -177,7 +179,7 @@ export default function NotificationItem({
             Accept
           </StyledButton>
           <StyledButton
-            onClick={onDeclineClick(notificationData.id)}
+            onClick={onDeclineClick(notificationData.id, notification.type)}
             sx={{
               flex: 1,
               color: (theme) => theme.palette.error.main,
