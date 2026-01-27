@@ -61,8 +61,8 @@ type NotificationType = "GROUP_INVITATION" | "FRIEND_REQUEST";
 interface NotificationNotLoading {
   isLoading: false;
   notification: Flatten<UserNotifications["notifications"]>;
-  onDeclineClick: (id: string, type: NotificationType) => () => void;
-  onAcceptClick: (id: string, type: NotificationType) => () => void;
+  onDeclineClick: (id: string, type: NotificationType) => () => Promise<void>;
+  onAcceptClick: (id: string, type: NotificationType) => () => Promise<void>;
 }
 
 type NotificationItemProps = NotificationLoading | NotificationNotLoading;

@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { useSnackbar } from "notistack";
 import { Menu, MenuItem } from "@mui/material";
 import {
   useAcceptFriendRequestMutation,
@@ -8,9 +10,40 @@ import {
 } from "@/slices/notificationsSlice";
 import isUnauthorized from "@/utils/isUnauthorized";
 import handleUnexpectedError from "@/utils/handleUnexpectedError";
+import {
+  isClientError,
+  isFetchBaseQueryError,
+  isServerError,
+  type ApiClientError,
+} from "@/types/apiResponseTypes";
 import NotificationItem from "./NotificationItem";
 
 const NOTIFICATION_SKELETONS = ["SKELETON1", "SKELETON2"];
+
+function handleNotificationError(error: unknown): string | ApiClientError {
+  if (!isFetchBaseQueryError(error)) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "message" in error &&
+      typeof error.message === "string"
+    ) {
+      return error.message;
+    }
+
+    return String(error);
+  }
+
+  if (isClientError(error.data)) {
+    return error.data;
+  }
+
+  if (isServerError(error.data)) {
+    return error.data.error;
+  }
+
+  return String(error.status);
+}
 
 export default function Notifications({
   open,
@@ -21,45 +54,56 @@ export default function Notifications({
   anchorElement: HTMLButtonElement;
   onClose: () => void;
 }) {
+  const { enqueueSnackbar } = useSnackbar();
+  const [fatalError, setFatalError] = useState<{ error: string } | null>(null);
   const {
     data = { notifications: [] },
     isLoading,
     error: queryError,
   } = useGetNotificationsQuery(undefined);
-  const [rejectGroupInvite, { error: rejectGroupInviteError }] =
-    useRejectGroupInviteMutation();
-  const [declineFriendRequest, { error: declineFriendRequestError }] =
-    useDeclineFriendRequestMutation();
-  const [acceptGroupInvite, { error: acceptGroupInviteError }] =
-    useAcceptGroupInviteMutation();
-  const [acceptFriendRequest, { error: acceptFriendRequestError }] =
-    useAcceptFriendRequestMutation();
+  const [rejectGroupInvite] = useRejectGroupInviteMutation();
+  const [declineFriendRequest] = useDeclineFriendRequestMutation();
+  const [acceptGroupInvite] = useAcceptGroupInviteMutation();
+  const [acceptFriendRequest] = useAcceptFriendRequestMutation();
 
-  const error =
-    queryError ??
-    rejectGroupInviteError ??
-    acceptGroupInviteError ??
-    declineFriendRequestError ??
-    acceptFriendRequestError;
+  if (queryError && !isUnauthorized(queryError)) {
+    handleUnexpectedError(queryError);
+  }
 
-  if (error && !isUnauthorized(error)) {
-    handleUnexpectedError(error);
+  if (fatalError) {
+    throw new Error(fatalError.error);
   }
 
   function handleAcceptInvite(
     id: string,
     type: "GROUP_INVITATION" | "FRIEND_REQUEST",
   ) {
-    return () => {
-      switch (type) {
-        case "GROUP_INVITATION": {
-          void acceptGroupInvite(id);
+    return async () => {
+      try {
+        switch (type) {
+          case "GROUP_INVITATION":
+            {
+              await acceptGroupInvite(id).unwrap();
+            }
+            return;
+          case "FRIEND_REQUEST": {
+            await acceptFriendRequest(id).unwrap();
+            return;
+          }
+        }
+      } catch (error) {
+        const errorResult = handleNotificationError(error);
+
+        if (typeof errorResult === "string") {
+          setFatalError({ error: errorResult });
           return;
         }
-        case "FRIEND_REQUEST": {
-          void acceptFriendRequest(id);
-          return;
-        }
+
+        errorResult.errors.forEach((error) => {
+          enqueueSnackbar(error.message, {
+            variant: "error",
+          });
+        });
       }
     };
   }
@@ -68,16 +112,32 @@ export default function Notifications({
     id: string,
     type: "GROUP_INVITATION" | "FRIEND_REQUEST",
   ) {
-    return () => {
-      switch (type) {
-        case "GROUP_INVITATION": {
-          void rejectGroupInvite(id);
+    return async () => {
+      try {
+        switch (type) {
+          case "GROUP_INVITATION": {
+            await rejectGroupInvite(id).unwrap();
+            return;
+          }
+          case "FRIEND_REQUEST": {
+            await declineFriendRequest(id).unwrap();
+
+            return;
+          }
+        }
+      } catch (error) {
+        const errorResult = handleNotificationError(error);
+
+        if (typeof errorResult === "string") {
+          setFatalError({ error: errorResult });
           return;
         }
-        case "FRIEND_REQUEST": {
-          void declineFriendRequest(id);
-          return;
-        }
+
+        errorResult.errors.forEach((error) => {
+          enqueueSnackbar(error.message, {
+            variant: "error",
+          });
+        });
       }
     };
   }
