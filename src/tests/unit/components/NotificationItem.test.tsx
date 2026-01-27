@@ -239,7 +239,10 @@ describe("notification-item component", () => {
         const declineButton = screen.getByRole("button", { name: "Decline" });
         await userEvent.click(declineButton);
 
-        expect(onDeclineClickMock).toHaveBeenCalledExactlyOnceWith("groupId");
+        expect(onDeclineClickMock).toHaveBeenCalledExactlyOnceWith(
+          "groupId",
+          "GROUP_INVITATION",
+        );
       });
     });
 
@@ -276,7 +279,10 @@ describe("notification-item component", () => {
         const declineButton = screen.getByRole("button", { name: "Accept" });
         await userEvent.click(declineButton);
 
-        expect(onDeclineClickMock).toHaveBeenCalledExactlyOnceWith("groupId");
+        expect(onDeclineClickMock).toHaveBeenCalledExactlyOnceWith(
+          "groupId",
+          "GROUP_INVITATION",
+        );
       });
     });
   });
@@ -317,6 +323,7 @@ describe("notification-item component", () => {
 
         expect(onDeclineClickMock).toHaveBeenCalledExactlyOnceWith(
           "friendRequestId",
+          "FRIEND_REQUEST",
         );
       });
     });
@@ -356,6 +363,7 @@ describe("notification-item component", () => {
 
         expect(onDeclineClickMock).toHaveBeenCalledExactlyOnceWith(
           "friendRequestId",
+          "FRIEND_REQUEST",
         );
       });
     });
