@@ -13,6 +13,58 @@ const apiSliceWithNotifications = apiSlice.injectEndpoints({
           return {
             url: `/users/me/groups/${groupId}/notifications`,
             method: "DELETE",
+            responseHandler(response) {
+              if (response.ok || response.status === 401) {
+                return response.text();
+              }
+
+              return response.json();
+            },
+          };
+        },
+        invalidatesTags: ["Notification"],
+      }),
+      acceptGroupInvite: build.mutation<undefined, string>({
+        query: (groupId) => {
+          return {
+            url: `/users/me/groups/${groupId}/notifications`,
+            method: "PATCH",
+            responseHandler(response) {
+              if (response.ok || response.status === 401) {
+                return response.text();
+              }
+              return response.json();
+            },
+          };
+        },
+        invalidatesTags: ["Notification"],
+      }),
+      declineFriendRequest: build.mutation<undefined, string>({
+        query: (friendRequestId) => {
+          return {
+            url: `/friendships/${friendRequestId}`,
+            method: "DELETE",
+            responseHandler(response) {
+              if (response.ok || response.status === 401) {
+                return response.text();
+              }
+              return response.json();
+            },
+          };
+        },
+        invalidatesTags: ["Notification"],
+      }),
+      acceptFriendRequest: build.mutation<undefined, string>({
+        query: (friendRequestId) => {
+          return {
+            url: `/friendships/${friendRequestId}`,
+            method: "PATCH",
+            responseHandler(response) {
+              if (response.ok || response.status === 401) {
+                return response.text();
+              }
+              return response.json();
+            },
           };
         },
         invalidatesTags: ["Notification"],
@@ -21,5 +73,10 @@ const apiSliceWithNotifications = apiSlice.injectEndpoints({
   },
 });
 
-export const { useGetNotificationsQuery, useRejectGroupInviteMutation } =
-  apiSliceWithNotifications;
+export const {
+  useGetNotificationsQuery,
+  useRejectGroupInviteMutation,
+  useAcceptGroupInviteMutation,
+  useDeclineFriendRequestMutation,
+  useAcceptFriendRequestMutation,
+} = apiSliceWithNotifications;
