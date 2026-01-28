@@ -65,7 +65,9 @@ interface NotificationNotLoading {
   onAcceptClick: (id: string, type: NotificationType) => () => Promise<void>;
 }
 
-type NotificationItemProps = NotificationLoading | NotificationNotLoading;
+type NotificationItemProps = (NotificationLoading | NotificationNotLoading) & {
+  mutationLoading: boolean;
+};
 
 const SkeletonWithTestId = (props: SkeletonProps) => {
   return (
@@ -82,6 +84,7 @@ export default function NotificationItem({
   notification,
   onDeclineClick,
   onAcceptClick,
+  mutationLoading,
 }: NotificationItemProps) {
   if (isLoading) {
     return (
@@ -144,6 +147,7 @@ export default function NotificationItem({
 
   return (
     <MenuItem
+      disabled={mutationLoading}
       divider
       disableRipple
       sx={{

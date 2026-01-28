@@ -42,8 +42,8 @@ const mockGroupInvite = {
 } satisfies Flatten<UserNotifications["notifications"]>;
 
 describe("notification-item component", () => {
-  const onDeclineClickMock = vi.fn<(id: string) => () => void>();
-  const onAcceptClickMock = vi.fn<(id: string) => () => void>();
+  const onDeclineClickMock = vi.fn<(id: string) => () => Promise<void>>();
+  const onAcceptClickMock = vi.fn<(id: string) => () => Promise<void>>();
 
   afterEach(() => {
     onDeclineClickMock.mockClear();
@@ -61,6 +61,7 @@ describe("notification-item component", () => {
             notification={undefined}
             onDeclineClick={undefined}
             onAcceptClick={undefined}
+            mutationLoading={false}
           />,
         );
 
@@ -80,6 +81,7 @@ describe("notification-item component", () => {
             notification={mockFriendRequest}
             onDeclineClick={onDeclineClickMock}
             onAcceptClick={onAcceptClickMock}
+            mutationLoading={false}
           />,
         );
 
@@ -90,6 +92,46 @@ describe("notification-item component", () => {
 
         expect(loadingSkeleton).toHaveLength(0);
         expect(friendRequestMessage).toBeInTheDocument();
+      });
+    });
+
+    describe("given mutationLoading prop to be true", () => {
+      it("should disable menu item", () => {
+        expect.hasAssertions();
+
+        render(
+          <NotificationItem
+            isLoading={false}
+            notification={mockFriendRequest}
+            onDeclineClick={onDeclineClickMock}
+            onAcceptClick={onAcceptClickMock}
+            mutationLoading={true}
+          />,
+        );
+
+        const menuItem = screen.getByRole("menuitem");
+
+        expect(menuItem).toHaveAttribute("aria-disabled", "true");
+      });
+    });
+
+    describe("given mutationLoading prop to be false", () => {
+      it("should not disable menu item", () => {
+        expect.hasAssertions();
+
+        render(
+          <NotificationItem
+            isLoading={false}
+            notification={mockFriendRequest}
+            onDeclineClick={onDeclineClickMock}
+            onAcceptClick={onAcceptClickMock}
+            mutationLoading={false}
+          />,
+        );
+
+        const menuItem = screen.getByRole("menuitem");
+
+        expect(menuItem).not.toHaveAttribute("aria-disabled", "true");
       });
     });
   });
@@ -105,6 +147,7 @@ describe("notification-item component", () => {
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
             onAcceptClick={onAcceptClickMock}
+            mutationLoading={false}
           />,
         );
 
@@ -126,6 +169,7 @@ describe("notification-item component", () => {
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
             onAcceptClick={onAcceptClickMock}
+            mutationLoading={false}
           />,
         );
 
@@ -149,6 +193,7 @@ describe("notification-item component", () => {
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
             onAcceptClick={onAcceptClickMock}
+            mutationLoading={false}
           />,
         );
 
@@ -172,6 +217,7 @@ describe("notification-item component", () => {
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
             onAcceptClick={onAcceptClickMock}
+            mutationLoading={false}
           />,
         );
 
@@ -193,6 +239,7 @@ describe("notification-item component", () => {
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
             onAcceptClick={onAcceptClickMock}
+            mutationLoading={false}
           />,
         );
 
@@ -216,6 +263,7 @@ describe("notification-item component", () => {
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
             onAcceptClick={onAcceptClickMock}
+            mutationLoading={false}
           />,
         );
 
@@ -233,6 +281,7 @@ describe("notification-item component", () => {
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
             onAcceptClick={onAcceptClickMock}
+            mutationLoading={false}
           />,
         );
 
@@ -256,6 +305,7 @@ describe("notification-item component", () => {
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
             onAcceptClick={onAcceptClickMock}
+            mutationLoading={false}
           />,
         );
 
@@ -273,6 +323,7 @@ describe("notification-item component", () => {
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
             onAcceptClick={onAcceptClickMock}
+            mutationLoading={false}
           />,
         );
 
@@ -298,6 +349,7 @@ describe("notification-item component", () => {
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
             onAcceptClick={onAcceptClickMock}
+            mutationLoading={false}
           />,
         );
 
@@ -315,6 +367,7 @@ describe("notification-item component", () => {
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
             onAcceptClick={onAcceptClickMock}
+            mutationLoading={false}
           />,
         );
 
@@ -338,6 +391,7 @@ describe("notification-item component", () => {
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
             onAcceptClick={onAcceptClickMock}
+            mutationLoading={false}
           />,
         );
 
@@ -355,6 +409,7 @@ describe("notification-item component", () => {
             isLoading={false}
             onDeclineClick={onDeclineClickMock}
             onAcceptClick={onAcceptClickMock}
+            mutationLoading={false}
           />,
         );
 
