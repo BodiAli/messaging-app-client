@@ -65,10 +65,20 @@ export default function Notifications({
     isLoading,
     error: queryError,
   } = useGetNotificationsQuery(undefined);
-  const [rejectGroupInvite] = useRejectGroupInviteMutation();
-  const [declineFriendRequest] = useDeclineFriendRequestMutation();
-  const [acceptGroupInvite] = useAcceptGroupInviteMutation();
-  const [acceptFriendRequest] = useAcceptFriendRequestMutation();
+  const [rejectGroupInvite, { isLoading: isRejectGroupInviteLoading }] =
+    useRejectGroupInviteMutation();
+  const [declineFriendRequest, { isLoading: isDeclineFriendRequestLoading }] =
+    useDeclineFriendRequestMutation();
+  const [acceptGroupInvite, { isLoading: isAcceptGroupInviteLoading }] =
+    useAcceptGroupInviteMutation();
+  const [acceptFriendRequest, { isLoading: isAcceptFriendRequestLoading }] =
+    useAcceptFriendRequestMutation();
+
+  const mutationLoading =
+    isRejectGroupInviteLoading ||
+    isDeclineFriendRequestLoading ||
+    isAcceptGroupInviteLoading ||
+    isAcceptFriendRequestLoading;
 
   if (queryError && !isUnauthorized(queryError)) {
     handleUnexpectedError(queryError);
@@ -157,6 +167,7 @@ export default function Notifications({
               notification={undefined}
               onDeclineClick={undefined}
               onAcceptClick={undefined}
+              mutationLoading={mutationLoading}
             />
           );
         })
@@ -169,6 +180,7 @@ export default function Notifications({
               notification={notification}
               onDeclineClick={handleDeclineInvite}
               onAcceptClick={handleAcceptInvite}
+              mutationLoading={mutationLoading}
             />
           );
         })
