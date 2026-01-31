@@ -22,7 +22,7 @@ export default function TwoUsersChatPage() {
     if (isError) {
       if ("data" in error) {
         if (error.status === 404) {
-          void navigate(-1);
+          void navigate("/", { replace: true });
           enqueueSnackbar(error.data.errors[0].message, {
             variant: "error",
           });
