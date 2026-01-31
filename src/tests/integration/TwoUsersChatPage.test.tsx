@@ -90,7 +90,7 @@ describe("two-users-chat-page component", () => {
     });
 
     describe("given not found userId", () => {
-      it("should navigate back with an error message", async () => {
+      it("should navigate to homepage with an error message", async () => {
         expect.hasAssertions();
 
         vi.spyOn(notistackLibrary, "useSnackbar").mockImplementation(() => {
@@ -116,7 +116,7 @@ describe("two-users-chat-page component", () => {
               Component: () => <p>Home page</p>,
             },
           ],
-          { initialEntries: ["/", "/friends/userId"] },
+          { initialEntries: ["/friends/userId"] },
         );
         renderWithProviders(<RouterProvider router={router} />);
 
