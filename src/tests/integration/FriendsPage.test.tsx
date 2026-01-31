@@ -15,9 +15,9 @@ vi.mock(import("@/pages/LoginPage"), () => {
   };
 });
 
-vi.mock(import("@/pages/MessageFriend"), () => {
+vi.mock(import("@/pages/TwoUsersChatPage"), () => {
   return {
-    default: function MessageFriend() {
+    default: function TwoUsersChatPage() {
       const { friendId } = useParams<{ friendId: string }>();
 
       return <p>{friendId}</p>;

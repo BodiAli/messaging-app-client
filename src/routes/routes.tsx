@@ -9,7 +9,7 @@ import FriendsPage from "@/pages/FriendsPage";
 import GroupsPage from "@/pages/GroupsPage";
 import NonFriendsPage from "@/pages/NonFriendsPage";
 import ProfilePage from "@/pages/ProfilePage";
-import MessageFriend from "@/pages/MessageFriend";
+import TwoUsersChatPage from "@/pages/TwoUsersChatPage";
 import type { RouteObject } from "react-router";
 
 const routes: RouteObject[] = [
@@ -32,8 +32,8 @@ const routes: RouteObject[] = [
                 Component: FriendsPage,
                 children: [
                   {
-                    path: ":friendId",
-                    Component: MessageFriend,
+                    path: ":userId",
+                    Component: TwoUsersChatPage,
                   },
                 ],
               },
