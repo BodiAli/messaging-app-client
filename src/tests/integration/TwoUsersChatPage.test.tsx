@@ -1,7 +1,12 @@
-import { describe, beforeAll, afterEach, expect, it } from "vitest";
-import { createMemoryRouter, RouterProvider } from "react-router";
+import { describe, beforeAll, afterEach, expect, it, vi } from "vitest";
+import {
+  createMemoryRouter,
+  createRoutesStub,
+  RouterProvider,
+} from "react-router";
+import * as notistackLibrary from "notistack";
 import fetchMock, { manageFetchMockGlobally } from "@fetch-mock/vitest";
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import serverUrl from "@/utils/serverUrl";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import TwoUsersChatPage from "@/pages/TwoUsersChatPage";
@@ -9,6 +14,8 @@ import renderWithProviders from "@/utils/test-utils";
 import type { Messages } from "@/types/modelsType";
 
 const messagesRoute = `${serverUrl}/users/userId/messages`;
+
+const mockEnqueueSnackbar = vi.fn<notistackLibrary.EnqueueSnackbar>();
 
 const mockMessage: { messages: Messages } = {
   messages: [
@@ -82,6 +89,44 @@ describe("two-users-chat-page component", () => {
       });
     });
 
-    describe.todo("given not found userId");
+    describe("given not found userId", () => {
+      it("should navigate back with an error message", async () => {
+        expect.hasAssertions();
+
+        vi.spyOn(notistackLibrary, "useSnackbar").mockImplementation(() => {
+          return {
+            closeSnackbar: () => undefined,
+            enqueueSnackbar: mockEnqueueSnackbar,
+          };
+        });
+        fetchMock.get(messagesRoute, {
+          status: 404,
+          body: {
+            errors: [{ message: "User not found." }],
+          },
+        });
+        const router = createMemoryRouter(
+          [
+            {
+              path: "/friends/:userId",
+              Component: TwoUsersChatPage,
+            },
+            {
+              path: "/",
+              Component: () => <p>Home page</p>,
+            },
+          ],
+          { initialEntries: ["/", "/friends/userId"] },
+        );
+        renderWithProviders(<RouterProvider router={router} />);
+
+        const homePageText = await screen.findByText("Home page");
+
+        expect(mockEnqueueSnackbar).toHaveBeenCalledWith("User not found.", {
+          variant: "error",
+        });
+        expect(homePageText).toBeInTheDocument();
+      });
+    });
   });
 });
