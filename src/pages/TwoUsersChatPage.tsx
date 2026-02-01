@@ -20,7 +20,7 @@ export default function TwoUsersChatPage() {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const {
-    data = { messages: [] },
+    data: chatData,
     isError,
     error,
     isLoading,
@@ -50,7 +50,11 @@ export default function TwoUsersChatPage() {
         position: "relative",
       }}
     >
-      {isLoading ? <Loader /> : <UserChat messages={data.messages} />}
+      {isLoading || !chatData ? (
+        <Loader />
+      ) : (
+        <UserChat chatData={chatData} isFriend />
+      )}
     </Box>
   );
 }
