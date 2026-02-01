@@ -50,11 +50,7 @@ export default function TwoUsersChatPage() {
         position: "relative",
       }}
     >
-      {isLoading || !chatData ? (
-        <Loader />
-      ) : (
-        <UserChat chatData={chatData} isFriend />
-      )}
+      {isLoading || !chatData ? <Loader /> : <UserChat chatData={chatData} />}
     </Box>
   );
 }
