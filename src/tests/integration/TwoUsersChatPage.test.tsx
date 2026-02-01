@@ -6,7 +6,7 @@ import {
 } from "react-router";
 import * as notistackLibrary from "notistack";
 import fetchMock, { manageFetchMockGlobally } from "@fetch-mock/vitest";
-import { screen, waitFor } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import serverUrl from "@/utils/serverUrl";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import TwoUsersChatPage from "@/pages/TwoUsersChatPage";
@@ -17,7 +17,7 @@ const messagesRoute = `${serverUrl}/users/userId/messages`;
 
 const mockEnqueueSnackbar = vi.fn<notistackLibrary.EnqueueSnackbar>();
 
-const mockMessage: { messages: Messages } = {
+const mockMessages: { messages: Messages } = {
   messages: [
     {
       content: "messageFromUserA",
@@ -105,20 +105,17 @@ describe("two-users-chat-page component", () => {
             errors: [{ message: "User not found." }],
           },
         });
-        const router = createMemoryRouter(
-          [
-            {
-              path: "/friends/:userId",
-              Component: TwoUsersChatPage,
-            },
-            {
-              path: "/",
-              Component: () => <p>Home page</p>,
-            },
-          ],
-          { initialEntries: ["/friends/userId"] },
-        );
-        renderWithProviders(<RouterProvider router={router} />);
+        const Stub = createRoutesStub([
+          {
+            path: "/friends/:userId",
+            Component: TwoUsersChatPage,
+          },
+          {
+            path: "/",
+            Component: () => <p>Home page</p>,
+          },
+        ]);
+        renderWithProviders(<Stub initialEntries={["/friends/userId"]} />);
 
         const homePageText = await screen.findByText("Home page");
 
@@ -126,6 +123,52 @@ describe("two-users-chat-page component", () => {
           variant: "error",
         });
         expect(homePageText).toBeInTheDocument();
+      });
+    });
+
+    describe("given loading state", () => {
+      it("should render Loader component", () => {
+        expect.hasAssertions();
+
+        fetchMock.get(messagesRoute, {
+          status: 200,
+          body: mockMessages,
+        });
+        const Stub = createRoutesStub([
+          {
+            path: "/friends/:userId",
+            Component: TwoUsersChatPage,
+          },
+        ]);
+        renderWithProviders(<Stub initialEntries={["/friends/userId"]} />);
+
+        const loader = screen.getByTestId("loader");
+
+        expect(loader).toBeInTheDocument();
+      });
+    });
+
+    describe("given valid userId", () => {
+      it("should render user messages", async () => {
+        expect.hasAssertions();
+
+        fetchMock.get(messagesRoute, {
+          status: 200,
+          body: mockMessages,
+        });
+        const Stub = createRoutesStub([
+          {
+            path: "/friends/:userId",
+            Component: TwoUsersChatPage,
+          },
+        ]);
+        renderWithProviders(<Stub initialEntries={["/friends/userId"]} />);
+
+        const userAMessage = await screen.findByText("messageFromUserA");
+        const userBMessage = await screen.findByText("messageFromUserB");
+
+        expect(userAMessage).toBeInTheDocument();
+        expect(userBMessage).toBeInTheDocument();
       });
     });
   });
