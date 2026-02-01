@@ -6,7 +6,7 @@ import { useGetTwuUsersMessagesQuery } from "@/slices/messagesSlice";
 import handleUnexpectedError from "@/utils/handleUnexpectedError";
 import { isClientError, isFetchBaseQueryError } from "@/types/apiResponseTypes";
 import Loader from "@/components/Loader/Loader";
-import UsersChat from "@/components/UsersChat";
+import UserChat from "@/components/UserChat";
 
 function assert(userId: unknown): asserts userId {
   if (!userId) {
@@ -50,7 +50,7 @@ export default function TwoUsersChatPage() {
         position: "relative",
       }}
     >
-      {isLoading ? <Loader /> : <UsersChat messages={data.messages} />}
+      {isLoading ? <Loader /> : <UserChat messages={data.messages} />}
     </Box>
   );
 }
