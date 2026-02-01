@@ -1,10 +1,10 @@
 import apiSlice from "./apiSlice";
-import type { Messages } from "@/types/modelsType";
+import type { ChatData } from "@/types/modelsType";
 
 const apiSliceWithMessages = apiSlice.injectEndpoints({
   endpoints(build) {
     return {
-      getTwuUsersMessages: build.query<{ messages: Messages }, string>({
+      getTwuUsersMessages: build.query<ChatData, string>({
         query: (userId) => `/users/${userId}/messages`,
       }),
     };
