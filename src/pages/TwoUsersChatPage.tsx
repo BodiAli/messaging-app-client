@@ -1,8 +1,12 @@
+import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useSnackbar } from "notistack";
-import { useEffect } from "react";
+import { Box } from "@mui/material";
 import { useGetTwuUsersMessagesQuery } from "@/slices/messagesSlice";
 import handleUnexpectedError from "@/utils/handleUnexpectedError";
+import { isClientError, isFetchBaseQueryError } from "@/types/apiResponseTypes";
+import Loader from "@/components/Loader/Loader";
+import UsersChat from "@/components/UsersChat";
 
 function assert(userId: unknown): asserts userId {
   if (!userId) {
@@ -15,16 +19,22 @@ export default function TwoUsersChatPage() {
   assert(userId);
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
-  const { data, isError, error, isLoading } =
-    useGetTwuUsersMessagesQuery(userId);
+  const {
+    data = { messages: [] },
+    isError,
+    error,
+    isLoading,
+  } = useGetTwuUsersMessagesQuery(userId);
 
   useEffect(() => {
     if (isError) {
-      if ("data" in error) {
-        if (error.status === 404) {
+      if (isFetchBaseQueryError(error)) {
+        if (isClientError(error.data)) {
           void navigate("/", { replace: true });
-          enqueueSnackbar(error.data.errors[0].message, {
-            variant: "error",
+          error.data.errors.forEach((error) => {
+            enqueueSnackbar(error.message, {
+              variant: "error",
+            });
           });
           return;
         }
@@ -33,7 +43,14 @@ export default function TwoUsersChatPage() {
     }
   }, [error, isError, enqueueSnackbar, navigate]);
 
-  if (isLoading) return <p>Loading...</p>;
-
-  return <p>asd</p>;
+  return (
+    <Box
+      component={"section"}
+      sx={{
+        position: "relative",
+      }}
+    >
+      {isLoading ? <Loader /> : <UsersChat messages={data.messages} />}
+    </Box>
+  );
 }
