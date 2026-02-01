@@ -13,3 +13,8 @@ export interface UserFriends {
 export type Messages = (Omit<PrismaMessage, "createdAt"> & {
   createdAt: string;
 })[];
+
+export interface ChatData {
+  messages: Messages;
+  user: Pick<User, "username" | "lastSeen" | "imageUrl">;
+}
