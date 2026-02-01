@@ -1,4 +1,8 @@
-import type { User as PrismaUser, Message as PrismaMessage } from "prismaTypes";
+import type {
+  User as PrismaUser,
+  Message as PrismaMessage,
+  FriendStatus,
+} from "prismaTypes";
 
 export interface User extends Omit<PrismaUser, "lastSeen" | "password"> {
   lastSeen: string;
@@ -17,4 +21,5 @@ export type Messages = (Omit<PrismaMessage, "createdAt"> & {
 export interface ChatData {
   messages: Messages;
   user: Pick<User, "username" | "lastSeen" | "imageUrl">;
+  friendRequestStatus: null | { type: FriendStatus; senderId: string };
 }
