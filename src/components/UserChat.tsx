@@ -3,6 +3,7 @@ import { Box, Button, IconButton, Typography } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useAppSelector } from "@/app/hooks";
 import { selectUser } from "@/slices/authSlice";
+import UsersAvatar from "./UsersAvatar";
 import type { ChatData } from "@/types/modelsType";
 
 function assert(value: unknown): asserts value {
@@ -33,10 +34,19 @@ export default function UserChat({ chatData }: UserChatProps) {
         >
           <ArrowBackIcon />
         </IconButton>
+        <UsersAvatar
+          imageUrl={chatData.user.imageUrl}
+          username={chatData.user.username}
+        />
         <Typography variant="h2">
           Chatting with {chatData.user.username}
         </Typography>
         {friendShipAction}
+      </Box>
+      <Box>
+        {chatData.messages.map((message) => {
+          return <p key={message.id}>{message.content}</p>;
+        })}
       </Box>
     </Box>
   );
