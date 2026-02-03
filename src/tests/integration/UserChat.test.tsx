@@ -155,7 +155,19 @@ describe("user-chat component", () => {
       });
     });
 
-    describe.todo("given imageUrl");
+    describe("given imageUrl", () => {
+      it("should render a default avatar when no imageUrl is present", async () => {
+        expect.hasAssertions();
+
+        renderUserChat(mockChatData);
+
+        const defaultImage = await screen.findByTitle(
+          `${mockChatData.user.username} no profile picture`,
+        );
+
+        expect(defaultImage).toBeInTheDocument();
+      });
+    });
 
     describe("given user is a friend", () => {
       it("should not render a button to add as a friend if user is friend", async () => {
