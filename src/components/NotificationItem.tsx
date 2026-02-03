@@ -11,6 +11,7 @@ import {
   type StackProps,
 } from "@mui/material";
 import formatDate from "@/utils/formatDate";
+import UsersAvatar from "./UsersAvatar";
 import type { UserNotifications } from "@/types/userNotifications";
 
 type Flatten<Type> = Type extends (infer Item)[] ? Item : Type;
@@ -166,7 +167,7 @@ export default function NotificationItem({
       </Box>
       <StyledNotificationStack>
         <StyledStack>
-          <NotificationAvatar
+          <UsersAvatar
             imageUrl={notificationData.imageUrl}
             username={notificationData.username}
           />
@@ -194,19 +195,5 @@ export default function NotificationItem({
         </StyledButtonStack>
       </StyledNotificationStack>
     </MenuItem>
-  );
-}
-
-function NotificationAvatar({
-  imageUrl,
-  username,
-}: {
-  imageUrl: null | string;
-  username: string;
-}) {
-  return imageUrl ? (
-    <Avatar src={imageUrl} alt={`${username}'s profile picture`} />
-  ) : (
-    <Avatar title={`${username} no profile picture`} />
   );
 }
