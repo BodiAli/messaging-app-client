@@ -11,13 +11,24 @@ import serverUrl from "@/utils/serverUrl";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import TwoUsersChatPage from "@/pages/TwoUsersChatPage";
 import renderWithProviders from "@/utils/test-utils";
-import type { Messages } from "@/types/modelsType";
+import AppLayout from "@/app/AppLayout";
+import * as localStorageService from "@/services/localStorage";
+import type { ChatData, User } from "@/types/modelsType";
 
+const getUserServerRoute = `${serverUrl}/auth/get-user`;
 const messagesRoute = `${serverUrl}/users/userId/messages`;
 
 const mockEnqueueSnackbar = vi.fn<notistackLibrary.EnqueueSnackbar>();
 
-const mockMessages: { messages: Messages } = {
+const mockUser: User = {
+  id: "userAId",
+  username: "userA",
+  imageUrl: null,
+  isGuest: false,
+  lastSeen: new Date().toISOString(),
+};
+
+const mockChatData: ChatData = {
   messages: [
     {
       content: "messageFromUserA",
@@ -38,6 +49,12 @@ const mockMessages: { messages: Messages } = {
       receiverId: "userAId",
     },
   ],
+  user: {
+    imageUrl: null,
+    lastSeen: new Date().toISOString(),
+    username: "userB",
+  },
+  friendRequestStatus: null,
 };
 
 describe("two-users-chat-page component", () => {
@@ -132,7 +149,7 @@ describe("two-users-chat-page component", () => {
 
         fetchMock.get(messagesRoute, {
           status: 200,
-          body: mockMessages,
+          body: mockChatData,
         });
         const Stub = createRoutesStub([
           {
@@ -152,14 +169,29 @@ describe("two-users-chat-page component", () => {
       it("should render user messages", async () => {
         expect.hasAssertions();
 
+        vi.spyOn(localStorageService, "getJwtToken").mockReturnValue(
+          "jwtToken",
+        );
         fetchMock.get(messagesRoute, {
           status: 200,
-          body: mockMessages,
+          body: mockChatData,
+        });
+        fetchMock.get(getUserServerRoute, {
+          status: 200,
+          body: {
+            user: mockUser,
+          },
         });
         const Stub = createRoutesStub([
           {
-            path: "/friends/:userId",
-            Component: TwoUsersChatPage,
+            path: "/",
+            Component: AppLayout,
+            children: [
+              {
+                path: "/friends/:userId",
+                Component: TwoUsersChatPage,
+              },
+            ],
           },
         ]);
         renderWithProviders(<Stub initialEntries={["/friends/userId"]} />);
