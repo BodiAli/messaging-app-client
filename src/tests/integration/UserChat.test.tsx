@@ -7,6 +7,7 @@ import {
 } from "@testing-library/react";
 import fetchMock, { manageFetchMockGlobally } from "@fetch-mock/vitest";
 import userEvent from "@testing-library/user-event";
+import { badgeClasses } from "@mui/material";
 import renderWithProviders from "@/utils/test-utils";
 import UserChat from "@/components/UserChat";
 import * as localStorageService from "@/services/localStorage";
@@ -23,6 +24,8 @@ const mockUser: User = {
   isGuest: false,
   lastSeen: new Date().toISOString(),
 };
+
+const lastSeen = "2020-01-01T01:00:00Z";
 
 const mockChatData: ChatData = {
   messages: [
@@ -47,7 +50,7 @@ const mockChatData: ChatData = {
   ],
   user: {
     imageUrl: null,
-    lastSeen: new Date().toISOString(),
+    lastSeen: null,
     username: "userB",
   },
   friendRequestStatus: null,
@@ -84,10 +87,12 @@ describe("user-chat component", () => {
         user: mockUser,
       },
     });
+    vi.useFakeTimers({ shouldAdvanceTime: true });
   });
 
   afterEach(() => {
     vi.resetAllMocks();
+    vi.useRealTimers();
   });
 
   describe("back button navigation", () => {
@@ -176,6 +181,10 @@ describe("user-chat component", () => {
         renderUserChat({
           ...mockChatData,
           friendRequestStatus: { type: "ACCEPTED", senderId: "userBId" },
+          user: {
+            ...mockChatData.user,
+            lastSeen,
+          },
         });
 
         await waitForElementToBeRemoved(screen.getByTestId("loader"));
@@ -186,13 +195,42 @@ describe("user-chat component", () => {
         expect(addFriend).not.toBeInTheDocument();
       });
 
-      it.todo(
-        "if friend is last seen within the last 5 minutes it should render an online badge",
-      );
+      it("should render an online badge if friend is last seen within the last 5 minutes", async () => {
+        expect.hasAssertions();
 
-      it.todo(
-        "if friend is not last seen within the last 5 minutes it should not render an online badge",
-      );
+        vi.setSystemTime(new Date("2020-01-01T01:03:00Z"));
+        renderUserChat({
+          ...mockChatData,
+          friendRequestStatus: { type: "ACCEPTED", senderId: "userBId" },
+          user: {
+            ...mockChatData.user,
+            lastSeen,
+          },
+        });
+
+        const onlineBadge = await screen.findByTestId("online-badge");
+
+        expect(onlineBadge).toBeInTheDocument();
+      });
+
+      it("should not render an online badge if friend is not last seen within the last 5 minutes", async () => {
+        expect.hasAssertions();
+
+        vi.setSystemTime(new Date("2020-01-01T01:10:00Z"));
+        renderUserChat({
+          ...mockChatData,
+          friendRequestStatus: { type: "ACCEPTED", senderId: "userBId" },
+          user: {
+            ...mockChatData.user,
+            lastSeen,
+          },
+        });
+        await waitForElementToBeRemoved(screen.getByTestId("loader"));
+
+        const onlineBadge = screen.queryByTestId("online-badge");
+
+        expect(onlineBadge).toHaveClass(badgeClasses.invisible);
+      });
     });
 
     describe("given user is not a friend", () => {
@@ -206,6 +244,18 @@ describe("user-chat component", () => {
         });
 
         expect(addFriend).toBeInTheDocument();
+      });
+
+      it("should not render an online badge", async () => {
+        expect.hasAssertions();
+
+        vi.setSystemTime(new Date("2020-01-01T01:10:00Z"));
+        renderUserChat(mockChatData);
+        await waitForElementToBeRemoved(screen.getByTestId("loader"));
+
+        const onlineBadge = screen.queryByTestId("online-badge");
+
+        expect(onlineBadge).toHaveClass(badgeClasses.invisible);
       });
     });
 
@@ -228,6 +278,18 @@ describe("user-chat component", () => {
         expect(acceptRequestButton).toBeInTheDocument();
         expect(declineRequestButton).toBeInTheDocument();
       });
+
+      it("should not render an online badge", async () => {
+        expect.hasAssertions();
+
+        vi.setSystemTime(new Date("2020-01-01T01:10:00Z"));
+        renderUserChat(mockChatData);
+        await waitForElementToBeRemoved(screen.getByTestId("loader"));
+
+        const onlineBadge = screen.queryByTestId("online-badge");
+
+        expect(onlineBadge).toHaveClass(badgeClasses.invisible);
+      });
     });
 
     describe("given a friend request is already sent by the current user", () => {
@@ -244,6 +306,18 @@ describe("user-chat component", () => {
         });
 
         expect(cancelButton).toBeInTheDocument();
+      });
+
+      it("should not render an online badge", async () => {
+        expect.hasAssertions();
+
+        vi.setSystemTime(new Date("2020-01-01T01:10:00Z"));
+        renderUserChat(mockChatData);
+        await waitForElementToBeRemoved(screen.getByTestId("loader"));
+
+        const onlineBadge = screen.queryByTestId("online-badge");
+
+        expect(onlineBadge).toHaveClass(badgeClasses.invisible);
       });
     });
   });
