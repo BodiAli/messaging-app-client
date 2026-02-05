@@ -5,6 +5,7 @@ import { useAppSelector } from "@/app/hooks";
 import { selectUser } from "@/slices/authSlice";
 import isOnline from "@/utils/isOnline";
 import UsersAvatar from "./UsersAvatar";
+import Chatting from "./Chatting";
 import type { ChatData } from "@/types/modelsType";
 
 function assert(value: unknown): asserts value {
@@ -60,11 +61,7 @@ export default function UserChat({ chatData }: UserChatProps) {
         </Typography>
         {friendShipAction}
       </Box>
-      <Box>
-        {chatData.messages.map((message) => {
-          return <p key={message.id}>{message.content}</p>;
-        })}
-      </Box>
+      <Chatting messages={chatData.messages} />
     </Box>
   );
 }
@@ -80,10 +77,7 @@ function renderFriendshipAction(
   if (chatData.friendRequestStatus.type === "ACCEPTED") {
     return null;
   }
-  if (
-    chatData.friendRequestStatus.type === "PENDING" &&
-    chatData.friendRequestStatus.senderId === recipientId
-  ) {
+  if (chatData.friendRequestStatus.senderId === recipientId) {
     return (
       <>
         <Button>Accept</Button>
@@ -91,10 +85,7 @@ function renderFriendshipAction(
       </>
     );
   }
-  if (
-    chatData.friendRequestStatus.type === "PENDING" &&
-    chatData.friendRequestStatus.senderId === currentUserId
-  ) {
+  if (chatData.friendRequestStatus.senderId === currentUserId) {
     return <Button>Cancel request</Button>;
   }
 
