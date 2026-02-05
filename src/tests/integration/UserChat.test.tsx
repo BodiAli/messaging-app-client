@@ -145,7 +145,7 @@ describe("user-chat component", () => {
     });
   });
 
-  describe("messages data", () => {
+  describe("requested user data", () => {
     describe("given name of the current user being chatted with", () => {
       it("should render the name of the current user", async () => {
         expect.hasAssertions();
@@ -322,9 +322,19 @@ describe("user-chat component", () => {
     });
   });
 
-  describe("adding a friend", () => {
-    describe("given an unexpected error", () => {
-      it.todo("should render ErrorBoundary");
+  describe("rendering messages data", () => {
+    describe("given messages array", () => {
+      it("should render Chatting component", async () => {
+        expect.hasAssertions();
+
+        renderUserChat(mockChatData);
+
+        const message1 = await screen.findByText("messageFromUserA");
+        const message2 = await screen.findByText("messageFromUserB");
+
+        expect(message1).toBeInTheDocument();
+        expect(message2).toBeInTheDocument();
+      });
     });
   });
 });
