@@ -64,7 +64,7 @@ export default function Notifications({
     data = { notifications: [] },
     isLoading,
     error: queryError,
-  } = useGetNotificationsQuery(undefined);
+  } = useGetNotificationsQuery(undefined, { skip: !open });
   const [rejectGroupInvite, { isLoading: isRejectGroupInviteLoading }] =
     useRejectGroupInviteMutation();
   const [declineFriendRequest, { isLoading: isDeclineFriendRequestLoading }] =
