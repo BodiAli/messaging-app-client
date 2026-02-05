@@ -18,8 +18,31 @@ export type Messages = (Omit<PrismaMessage, "createdAt"> & {
   createdAt: string;
 })[];
 
-export interface ChatData {
+interface ChatDataIsNotFriend {
+  messages: Messages;
+  user: Pick<User, "username" | "imageUrl"> & { lastSeen: null };
+  friendRequestStatus: null;
+}
+
+interface ChatDataIsPendingFriend {
+  messages: Messages;
+  user: Pick<User, "username" | "imageUrl"> & { lastSeen: null };
+  friendRequestStatus: {
+    type: Extract<FriendStatus, "PENDING">;
+    senderId: string;
+  };
+}
+
+interface ChatDataIsFriend {
   messages: Messages;
   user: Pick<User, "username" | "lastSeen" | "imageUrl">;
-  friendRequestStatus: null | { type: FriendStatus; senderId: string };
+  friendRequestStatus: {
+    type: Extract<FriendStatus, "ACCEPTED">;
+    senderId: string;
+  };
 }
+
+export type ChatData =
+  | ChatDataIsFriend
+  | ChatDataIsNotFriend
+  | ChatDataIsPendingFriend;
