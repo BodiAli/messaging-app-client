@@ -1,8 +1,9 @@
 import { useNavigate, useParams } from "react-router";
-import { Box, Button, IconButton, Typography } from "@mui/material";
+import { Badge, Box, Button, IconButton, Typography } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useAppSelector } from "@/app/hooks";
 import { selectUser } from "@/slices/authSlice";
+import isOnline from "@/utils/isOnline";
 import UsersAvatar from "./UsersAvatar";
 import type { ChatData } from "@/types/modelsType";
 
@@ -34,10 +35,26 @@ export default function UserChat({ chatData }: UserChatProps) {
         >
           <ArrowBackIcon />
         </IconButton>
-        <UsersAvatar
-          imageUrl={chatData.user.imageUrl}
-          username={chatData.user.username}
-        />
+        <Badge
+          variant="dot"
+          color="success"
+          overlap="circular"
+          invisible={
+            chatData.user.lastSeen ? !isOnline(chatData.user.lastSeen) : true
+          }
+          slotProps={{
+            badge() {
+              return {
+                "data-testid": "online-badge",
+              };
+            },
+          }}
+        >
+          <UsersAvatar
+            imageUrl={chatData.user.imageUrl}
+            username={chatData.user.username}
+          />
+        </Badge>
         <Typography variant="h2">
           Chatting with {chatData.user.username}
         </Typography>
