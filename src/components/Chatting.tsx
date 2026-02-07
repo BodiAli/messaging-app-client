@@ -1,4 +1,5 @@
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
+import formatDate from "@/utils/formatDate";
 import type { Messages } from "@/types/modelsType";
 
 interface ChattingProps {
@@ -8,9 +9,25 @@ interface ChattingProps {
 export default function Chatting({ messages }: ChattingProps) {
   return (
     <Box>
-      {messages.map((message) => {
-        return <p key={message.id}>{message.content}</p>;
-      })}
+      <Box>
+        {messages.map((message) => {
+          return <Message key={message.id} message={message} />;
+        })}
+      </Box>
+    </Box>
+  );
+}
+
+type Flatten<T> = T extends (infer K)[] ? K : never;
+
+function Message({ message }: { message: Flatten<Messages> }) {
+  return (
+    <Box>
+      {message.imageUrl && <Box component={"img"} alt="user sent image" />}
+      <Typography>{message.content}</Typography>
+      <Typography>
+        Sent at <Box component={"time"}>{formatDate(message.createdAt)}</Box>
+      </Typography>
     </Box>
   );
 }
