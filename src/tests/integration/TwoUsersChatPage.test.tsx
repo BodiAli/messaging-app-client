@@ -11,22 +11,17 @@ import serverUrl from "@/utils/serverUrl";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import TwoUsersChatPage from "@/pages/TwoUsersChatPage";
 import renderWithProviders from "@/utils/test-utils";
-import AppLayout from "@/app/AppLayout";
-import * as localStorageService from "@/services/localStorage";
-import type { ChatData, User } from "@/types/modelsType";
+import type { ChatData } from "@/types/modelsType";
 
-const getUserServerRoute = `${serverUrl}/auth/get-user`;
 const messagesRoute = `${serverUrl}/users/userId/messages`;
 
-const mockEnqueueSnackbar = vi.fn<notistackLibrary.EnqueueSnackbar>();
+vi.mock(import("@/components/UserChat"), () => {
+  return {
+    default: () => <p>UserChat component</p>,
+  };
+});
 
-const mockUser: User = {
-  id: "userAId",
-  username: "userA",
-  imageUrl: null,
-  isGuest: false,
-  lastSeen: new Date().toISOString(),
-};
+const mockEnqueueSnackbar = vi.fn<notistackLibrary.EnqueueSnackbar>();
 
 const mockChatData: ChatData = {
   messages: [
@@ -51,7 +46,7 @@ const mockChatData: ChatData = {
   ],
   user: {
     imageUrl: null,
-    lastSeen: new Date().toISOString(),
+    lastSeen: null,
     username: "userB",
   },
   friendRequestStatus: null,
@@ -165,42 +160,26 @@ describe("two-users-chat-page component", () => {
       });
     });
 
-    describe("given valid userId", () => {
-      it("should render user messages", async () => {
+    describe("given child components", () => {
+      it("should render UserChat component", async () => {
         expect.hasAssertions();
 
-        vi.spyOn(localStorageService, "getJwtToken").mockReturnValue(
-          "jwtToken",
-        );
         fetchMock.get(messagesRoute, {
           status: 200,
           body: mockChatData,
         });
-        fetchMock.get(getUserServerRoute, {
-          status: 200,
-          body: {
-            user: mockUser,
-          },
-        });
         const Stub = createRoutesStub([
           {
-            path: "/",
-            Component: AppLayout,
-            children: [
-              {
-                path: "/friends/:userId",
-                Component: TwoUsersChatPage,
-              },
-            ],
+            path: "/friends/:userId",
+            Component: TwoUsersChatPage,
           },
         ]);
         renderWithProviders(<Stub initialEntries={["/friends/userId"]} />);
 
-        const userAMessage = await screen.findByText("messageFromUserA");
-        const userBMessage = await screen.findByText("messageFromUserB");
+        const userChatComponentText =
+          await screen.findByText("UserChat component");
 
-        expect(userAMessage).toBeInTheDocument();
-        expect(userBMessage).toBeInTheDocument();
+        expect(userChatComponentText).toBeInTheDocument();
       });
     });
   });

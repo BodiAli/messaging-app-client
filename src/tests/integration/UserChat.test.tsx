@@ -13,9 +13,21 @@ import UserChat from "@/components/UserChat";
 import * as localStorageService from "@/services/localStorage";
 import serverUrl from "@/utils/serverUrl";
 import AppLayout from "@/app/AppLayout";
-import type { ChatData, User } from "@/types/modelsType";
+import type { ChatData, Messages, User } from "@/types/modelsType";
 
 const getUserServerRoute = `${serverUrl}/auth/get-user`;
+
+vi.mock(import("@/components/Chatting"), () => {
+  return {
+    default: ({ messages }: { messages: Messages }) => (
+      <>
+        {messages.map((message) => (
+          <p key={message.id}>{message.content}</p>
+        ))}
+      </>
+    ),
+  };
+});
 
 const mockUser: User = {
   id: "userAId",
