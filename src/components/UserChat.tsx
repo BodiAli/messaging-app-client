@@ -1,5 +1,12 @@
 import { useNavigate, useParams } from "react-router";
-import { Badge, Box, Button, IconButton, Typography } from "@mui/material";
+import {
+  Badge,
+  Box,
+  Button,
+  IconButton,
+  Typography,
+  Stack,
+} from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useAppSelector } from "@/app/hooks";
 import { selectUser } from "@/slices/authSlice";
@@ -27,8 +34,19 @@ export default function UserChat({ chatData }: UserChatProps) {
 
   return (
     <Box>
-      <Box>
+      <Stack
+        direction={"row"}
+        sx={{
+          alignItems: "center",
+          gap: "1rem",
+          padding: 3,
+          justifyContent: "center",
+        }}
+      >
         <IconButton
+          sx={{
+            marginRight: "auto",
+          }}
           aria-label="back"
           onClick={() => {
             void navigate(-1);
@@ -56,11 +74,17 @@ export default function UserChat({ chatData }: UserChatProps) {
             username={chatData.user.username}
           />
         </Badge>
-        <Typography variant="h2">
+        <Typography
+          variant="h4"
+          component={"h2"}
+          sx={{
+            marginRight: "auto",
+          }}
+        >
           Chatting with {chatData.user.username}
         </Typography>
         {friendShipAction}
-      </Box>
+      </Stack>
       <Chatting messages={chatData.messages} />
     </Box>
   );
