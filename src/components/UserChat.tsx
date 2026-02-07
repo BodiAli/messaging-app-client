@@ -1,4 +1,6 @@
 import { useNavigate, useParams } from "react-router";
+import { useSnackbar } from "notistack";
+import { useState } from "react";
 import {
   Badge,
   Box,
@@ -11,6 +13,12 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useAppSelector } from "@/app/hooks";
 import { selectUser } from "@/slices/authSlice";
 import isOnline from "@/utils/isOnline";
+import { useAddFriendMutation } from "@/slices/friendsSlice";
+import {
+  isClientError,
+  isFetchBaseQueryError,
+  isServerError,
+} from "@/types/apiResponseTypes";
 import UsersAvatar from "./UsersAvatar";
 import Chatting from "./Chatting";
 import type { ChatData } from "@/types/modelsType";
@@ -24,13 +32,42 @@ interface UserChatProps {
 }
 
 export default function UserChat({ chatData }: UserChatProps) {
+  const [fatalError, setFatalError] = useState<string | null>(null);
+  const { enqueueSnackbar } = useSnackbar();
+
   const navigate = useNavigate();
-  const user = useAppSelector(selectUser);
+  const currentUser = useAppSelector(selectUser);
   const { userId } = useParams<"userId">();
-  assert(user);
+  assert(currentUser);
   assert(userId);
 
-  const friendShipAction = renderFriendshipAction(chatData, user.id, userId);
+  const [addFriend, { isLoading }] = useAddFriendMutation();
+
+  const handleFriendshipAction = async () => {
+    try {
+      const { message } = await addFriend(userId).unwrap();
+
+      enqueueSnackbar(message, {
+        variant: "success",
+      });
+    } catch (error) {
+      if (isFetchBaseQueryError(error)) {
+        if (isServerError(error.data)) {
+          setFatalError(error.data.error);
+        }
+
+        if (isClientError(error.data)) {
+          error.data.errors.map((error) => {
+            enqueueSnackbar(error.message, { variant: "error" });
+          });
+        }
+      }
+    }
+  };
+
+  if (fatalError) {
+    throw new Error(fatalError);
+  }
 
   return (
     <Box>
@@ -83,24 +120,51 @@ export default function UserChat({ chatData }: UserChatProps) {
         >
           Chatting with {chatData.user.username}
         </Typography>
-        {friendShipAction}
+        <FriendshipAction
+          chatData={chatData}
+          currentUserId={currentUser.id}
+          recipientId={userId}
+          isLoading={isLoading}
+          onActionClick={handleFriendshipAction}
+        />
       </Stack>
       <Chatting messages={chatData.messages} />
     </Box>
   );
 }
 
-function renderFriendshipAction(
-  chatData: ChatData,
-  currentUserId: string,
-  recipientId: string,
-) {
+interface FriendshipActionProps {
+  chatData: ChatData;
+  currentUserId: string;
+  recipientId: string;
+  isLoading: boolean;
+  onActionClick: () => void;
+}
+
+function FriendshipAction({
+  chatData,
+  currentUserId,
+  recipientId,
+  onActionClick,
+  isLoading,
+}: FriendshipActionProps) {
   if (!chatData.friendRequestStatus) {
-    return <Button>Add as a friend</Button>;
+    return (
+      <Button
+        loading={isLoading}
+        onClick={() => {
+          onActionClick();
+        }}
+      >
+        Add as a friend
+      </Button>
+    );
   }
+
   if (chatData.friendRequestStatus.type === "ACCEPTED") {
     return null;
   }
+
   if (chatData.friendRequestStatus.senderId === recipientId) {
     return (
       <>
@@ -112,6 +176,4 @@ function renderFriendshipAction(
   if (chatData.friendRequestStatus.senderId === currentUserId) {
     return <Button>Cancel request</Button>;
   }
-
-  throw new Error("Unknown action");
 }
