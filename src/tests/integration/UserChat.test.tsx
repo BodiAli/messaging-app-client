@@ -1,10 +1,12 @@
 import { createRoutesStub } from "react-router";
 import { describe, it, expect, beforeAll, afterEach, beforeEach } from "vitest";
 import {
+  fireEvent,
   screen,
   waitForElementToBeRemoved,
   within,
 } from "@testing-library/react";
+import * as notistack from "notistack";
 import fetchMock, { manageFetchMockGlobally } from "@fetch-mock/vitest";
 import userEvent from "@testing-library/user-event";
 import { badgeClasses } from "@mui/material";
@@ -13,9 +15,11 @@ import UserChat from "@/components/UserChat";
 import * as localStorageService from "@/services/localStorage";
 import serverUrl from "@/utils/serverUrl";
 import AppLayout from "@/app/AppLayout";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import type { ChatData, Messages, User } from "@/types/modelsType";
 
 const getUserServerRoute = `${serverUrl}/auth/get-user`;
+const addFriendServerRoute = `${serverUrl}/friendships`;
 
 vi.mock(import("@/components/Chatting"), () => {
   return {
@@ -74,6 +78,7 @@ describe("user-chat component", () => {
       {
         path: "/",
         Component: AppLayout,
+        ErrorBoundary,
         children: [
           {
             path: "/friends/:userId",
@@ -157,7 +162,7 @@ describe("user-chat component", () => {
     });
   });
 
-  describe("requested user data", () => {
+  describe("rendering requested user data", () => {
     describe("given name of the current user being chatted with", () => {
       it("should render the name of the current user", async () => {
         expect.hasAssertions();
@@ -346,6 +351,109 @@ describe("user-chat component", () => {
 
         expect(message1).toBeInTheDocument();
         expect(message2).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("friendship actions logic", () => {
+    describe("given adding friend", () => {
+      it("should render ErrorBoundary when server responds with unexpected error", async () => {
+        expect.hasAssertions();
+
+        vi.spyOn(console, "error").mockImplementation(() => null);
+        fetchMock.post(addFriendServerRoute, {
+          status: 500,
+          body: {
+            error: "Server error",
+          },
+        });
+        renderUserChat(mockChatData);
+        const addFriendButton = await screen.findByRole("button", {
+          name: "Add as a friend",
+        });
+
+        await userEvent.click(addFriendButton);
+        const errorBoundaryHeading = screen.getByRole("heading", {
+          name: "Unexpected error occurred",
+          level: 1,
+        });
+        const errorMessage = screen.getByText("Server error");
+
+        expect(errorBoundaryHeading).toBeInTheDocument();
+        expect(errorMessage).toBeInTheDocument();
+      });
+
+      it("should call enqueueSnackbar when server responds with client error", async () => {
+        expect.hasAssertions();
+
+        const mockEnqueueSnackbar = vi.fn<notistack.EnqueueSnackbar>();
+        vi.spyOn(notistack, "useSnackbar").mockReturnValue({
+          closeSnackbar: vi.fn<() => void>(),
+          enqueueSnackbar: mockEnqueueSnackbar,
+        });
+        fetchMock.post(addFriendServerRoute, {
+          status: 409,
+          body: {
+            errors: [{ message: "A friend request is already sent by userB" }],
+          },
+        });
+        renderUserChat();
+        const addFriendButton = await screen.findByRole("button", {
+          name: "Add as a friend",
+        });
+
+        await userEvent.click(addFriendButton);
+
+        expect(mockEnqueueSnackbar).toHaveBeenCalledExactlyOnceWith(
+          "A friend request is already sent by userB",
+          { variant: "error" },
+        );
+      });
+
+      it("should disable button while fetching", async () => {
+        expect.hasAssertions();
+
+        fetchMock.post(addFriendServerRoute, {
+          status: 201,
+          body: {
+            message: "Friend request sent to userA",
+          },
+        });
+        renderUserChat();
+
+        const addFriendButton = await screen.findByRole("button", {
+          name: "Add as a friend",
+        });
+        fireEvent.click(addFriendButton);
+
+        expect(addFriendButton).toBeDisabled();
+      });
+
+      it("should call enqueueSnackbar with success message when the server response succeeds", async () => {
+        expect.hasAssertions();
+
+        const mockEnqueueSnackbar = vi.fn<notistack.EnqueueSnackbar>();
+        vi.spyOn(notistack, "useSnackbar").mockReturnValue({
+          closeSnackbar: vi.fn<() => void>(),
+          enqueueSnackbar: mockEnqueueSnackbar,
+        });
+        fetchMock.post(addFriendServerRoute, {
+          status: 201,
+          body: {
+            message: "Friend request sent to userA",
+          },
+        });
+        renderUserChat();
+        const addFriendButton = await screen.findByRole("button", {
+          name: "Add as a friend",
+        });
+
+        await userEvent.click(addFriendButton);
+
+        expect(mockEnqueueSnackbar).toHaveBeenCalledExactlyOnceWith(
+          "Friend request sent to userA",
+          { variant: "success" },
+        );
       });
     });
   });
