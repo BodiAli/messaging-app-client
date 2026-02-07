@@ -1,5 +1,6 @@
 import { Box, Typography } from "@mui/material";
 import formatDate from "@/utils/formatDate";
+import SendMessage from "./SendMessage";
 import type { Messages } from "@/types/modelsType";
 
 interface ChattingProps {
@@ -14,6 +15,7 @@ export default function Chatting({ messages }: ChattingProps) {
           return <Message key={message.id} message={message} />;
         })}
       </Box>
+      <SendMessage />
     </Box>
   );
 }
