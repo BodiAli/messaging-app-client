@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useSnackbar } from "notistack";
 import { Box } from "@mui/material";
-import { useGetTwuUsersMessagesQuery } from "@/slices/messagesSlice";
+import { useGetTwoUsersMessagesQuery } from "@/slices/messagesSlice";
 import handleUnexpectedError from "@/utils/handleUnexpectedError";
 import { isClientError, isFetchBaseQueryError } from "@/types/apiResponseTypes";
 import Loader from "@/components/Loader/Loader";
@@ -24,7 +24,7 @@ export default function TwoUsersChatPage() {
     isError,
     error,
     isLoading,
-  } = useGetTwuUsersMessagesQuery(userId);
+  } = useGetTwoUsersMessagesQuery(userId);
 
   useEffect(() => {
     if (isError) {
