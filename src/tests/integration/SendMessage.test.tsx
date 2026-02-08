@@ -1,8 +1,28 @@
 import { screen, within } from "@testing-library/react";
-import { describe, it, expect, afterEach, beforeEach } from "vitest";
+import { createRoutesStub } from "react-router";
+import { describe, it, expect, afterEach, beforeEach, beforeAll } from "vitest";
+import fetchMock, { manageFetchMockGlobally } from "@fetch-mock/vitest";
 import userEvent from "@testing-library/user-event";
 import SendMessage from "@/components/SendMessage";
 import renderWithProviders from "@/utils/test-utils";
+import ErrorBoundary from "@/components/ErrorBoundary";
+
+const serverMessagesRoute = "/users/userId/messages";
+
+function renderSendMessage() {
+  const Stub = createRoutesStub([
+    {
+      ErrorBoundary,
+      children: [
+        {
+          path: "/:userId",
+          Component: () => <SendMessage />,
+        },
+      ],
+    },
+  ]);
+  return renderWithProviders(<Stub initialEntries={["/userId"]} />);
+}
 
 describe("send-message component", () => {
   // resolve createObjectURL does not exist jsdom error
@@ -14,6 +34,11 @@ describe("send-message component", () => {
       writable: true,
     });
   }
+
+  beforeAll(() => {
+    fetchMock.mockGlobal();
+    manageFetchMockGlobally();
+  });
 
   beforeEach(() => {
     // resolve URL.createObjectURL is not a function jsdom error
@@ -28,7 +53,7 @@ describe("send-message component", () => {
     it("should render text input", () => {
       expect.hasAssertions();
 
-      renderWithProviders(<SendMessage />);
+      renderSendMessage();
 
       const textInput = screen.getByRole("textbox");
 
@@ -38,7 +63,7 @@ describe("send-message component", () => {
     it("should render text input as required", () => {
       expect.hasAssertions();
 
-      renderWithProviders(<SendMessage />);
+      renderSendMessage();
 
       const textInput = screen.getByRole("textbox");
 
@@ -50,7 +75,7 @@ describe("send-message component", () => {
     it("should render a button with an attach icon", () => {
       expect.hasAssertions();
 
-      renderWithProviders(<SendMessage />);
+      renderSendMessage();
 
       const attachImageButton = screen.getByRole("button", {
         name: "attach image",
@@ -65,7 +90,7 @@ describe("send-message component", () => {
     it("should render the uploaded image when an image is uploaded", async () => {
       expect.hasAssertions();
 
-      renderWithProviders(<SendMessage />);
+      renderSendMessage();
       const attachImageButton = screen.getByRole("button", {
         name: "attach image",
       });
@@ -82,7 +107,7 @@ describe("send-message component", () => {
     it("should not render an uploaded image when simulating a 'cancel' click after uploading an image", async () => {
       expect.hasAssertions();
 
-      renderWithProviders(<SendMessage />);
+      renderSendMessage();
       const attachImageButton = screen.getByRole("button", {
         name: "attach image",
       });
@@ -102,7 +127,7 @@ describe("send-message component", () => {
     it("should render a submit button with a send icon", () => {
       expect.hasAssertions();
 
-      renderWithProviders(<SendMessage />);
+      renderSendMessage();
 
       const sendButton = screen.getByRole<HTMLButtonElement>("button", {
         name: "send message",
@@ -116,13 +141,13 @@ describe("send-message component", () => {
   });
 
   describe("submitting form", () => {
-    it("should call alert method with expected arguments", async () => {
+    it("should call alert method when message field is empty", async () => {
       expect.hasAssertions();
 
       const mockAlert = vi
         .spyOn(window, "alert")
         .mockImplementation(() => null);
-      renderWithProviders(<SendMessage />);
+      renderSendMessage();
       const textInput = screen.getByRole("textbox");
       const sendButton = screen.getByRole("button", { name: "send message" });
 
@@ -133,5 +158,42 @@ describe("send-message component", () => {
         "Cannot send an empty message",
       );
     });
+
+    it("should render ErrorBoundary when server responds with unexpected error", async () => {
+      expect.hasAssertions();
+
+      fetchMock.post(serverMessagesRoute, {
+        status: 500,
+        body: {
+          error: "Server error",
+        },
+      });
+      renderSendMessage();
+      const textField = screen.getByRole("textbox");
+      const attachButton = screen.getByRole("button", {
+        name: "attach image",
+      });
+      const sendButton = screen.getByRole("button", {
+        name: "send message",
+      });
+
+      await userEvent.type(textField, "Hello!");
+      await userEvent.upload(
+        attachButton,
+        new File(["hello"], "hello.png", { type: "image/png" }),
+      );
+      await userEvent.click(sendButton);
+
+      const errorBoundaryHeading = await screen.findByRole("heading", {
+        level: 1,
+        name: "Unexpected error occurred",
+      });
+      const errorMessage = screen.getByText("Server error");
+
+      expect(errorBoundaryHeading).toBeInTheDocument();
+      expect(errorMessage).toBeInTheDocument();
+    });
+
+    it.todo("should call 'enqueueSnackbar' on each client error");
   });
 });
