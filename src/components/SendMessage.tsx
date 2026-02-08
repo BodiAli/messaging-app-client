@@ -1,7 +1,10 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useParams } from "react-router";
 import { Box, IconButton, styled, TextField } from "@mui/material";
 import AttachmentIcon from "@mui/icons-material/Attachment";
 import SendIcon from "@mui/icons-material/Send";
+import { useSendMessageMutation } from "@/slices/messagesSlice";
+import { isFetchBaseQueryError, isServerError } from "@/types/apiResponseTypes";
 
 const VisuallyHiddenUpload = styled("input")({
   position: "absolute",
@@ -13,6 +16,7 @@ const VisuallyHiddenUpload = styled("input")({
 
 interface FormFields extends HTMLFormControlsCollection {
   messageContent: HTMLInputElement;
+  messageImage: HTMLInputElement;
 }
 
 interface FormWithElements extends HTMLFormElement {
@@ -21,27 +25,57 @@ interface FormWithElements extends HTMLFormElement {
 
 export default function SendMessage() {
   const [uploadedImageUrl, setUploadedImageUrl] = useState<null | string>(null);
+  const [fatalError, setFatalError] = useState<string | null>(null);
+  const [sendMessage, { isLoading }] = useSendMessageMutation();
+  const { userId } = useParams<"userId">();
+  assert(userId);
 
-  const handleSubmit = (e: FormEvent<FormWithElements>) => {
+  if (fatalError) {
+    throw new Error(fatalError);
+  }
+
+  const handleSubmit = async (e: FormEvent<FormWithElements>) => {
     e.preventDefault();
+    const { messageImage: messageImageElement } = e.currentTarget.elements;
+    assert(messageImageElement.files);
+    const messageImage = messageImageElement.files[0];
 
-    const message = e.currentTarget.elements.messageContent;
+    const messageContent = e.currentTarget.elements.messageContent.value;
 
-    if (message.textContent.trim().length === 0) {
+    if (messageContent.trim().length === 0) {
       alert("Cannot send an empty message");
+      return;
+    }
+
+    const formData = new FormData();
+
+    formData.append("messageContent", messageContent);
+    if (messageImage) {
+      formData.append("messageImage", messageContent);
+    }
+
+    try {
+      await sendMessage({ userId, formData }).unwrap();
+    } catch (error) {
+      if (isFetchBaseQueryError(error)) {
+        if (isServerError(error.data)) {
+          setFatalError(error.data.error);
+        }
+      }
     }
   };
 
   const handleUploadImage = (e: ChangeEvent<HTMLInputElement>) => {
     assert(e.currentTarget.files);
     const files = e.currentTarget.files;
+    const file = files[0];
 
-    if (files[0] === undefined) {
+    if (file === undefined) {
       setUploadedImageUrl(null);
       return;
     }
 
-    const url = URL.createObjectURL(files[0]);
+    const url = URL.createObjectURL(file);
     setUploadedImageUrl(url);
   };
 
