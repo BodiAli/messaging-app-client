@@ -4,6 +4,14 @@ import renderWithProviders from "@/utils/test-utils";
 import Chatting from "@/components/Chatting";
 import type { Messages } from "@/types/modelsType";
 
+vi.mock(import("@/components/SendMessage"), () => {
+  return {
+    default: () => {
+      return <form aria-label="send message form"></form>;
+    },
+  };
+});
+
 describe("chatting component", () => {
   const mockMessages: Messages = [
     {
