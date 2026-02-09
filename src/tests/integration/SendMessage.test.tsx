@@ -1,7 +1,8 @@
-import { screen, within } from "@testing-library/react";
+import { fireEvent, screen, within } from "@testing-library/react";
 import { createRoutesStub } from "react-router";
 import { describe, it, expect, afterEach, beforeEach, beforeAll } from "vitest";
 import fetchMock, { manageFetchMockGlobally } from "@fetch-mock/vitest";
+import * as notistack from "notistack";
 import userEvent from "@testing-library/user-event";
 import SendMessage from "@/components/SendMessage";
 import renderWithProviders from "@/utils/test-utils";
@@ -162,6 +163,7 @@ describe("send-message component", () => {
     it("should render ErrorBoundary when server responds with unexpected error", async () => {
       expect.hasAssertions();
 
+      vi.spyOn(console, "error").mockImplementation(() => null);
       fetchMock.post(serverMessagesRoute, {
         status: 500,
         body: {
@@ -184,7 +186,7 @@ describe("send-message component", () => {
       );
       await userEvent.click(sendButton);
 
-      const errorBoundaryHeading = await screen.findByRole("heading", {
+      const errorBoundaryHeading = screen.getByRole("heading", {
         level: 1,
         name: "Unexpected error occurred",
       });
@@ -194,6 +196,58 @@ describe("send-message component", () => {
       expect(errorMessage).toBeInTheDocument();
     });
 
-    it.todo("should call 'enqueueSnackbar' on each client error");
+    it("should call 'enqueueSnackbar' on each client error", async () => {
+      expect.hasAssertions();
+
+      const mockEnqueueSnackbar = vi.fn<notistack.EnqueueSnackbar>();
+      vi.spyOn(notistack, "useSnackbar").mockReturnValue({
+        closeSnackbar: vi.fn<() => void>(),
+        enqueueSnackbar: mockEnqueueSnackbar,
+      });
+      fetchMock.post(serverMessagesRoute, {
+        status: 404,
+        body: {
+          errors: [{ message: "Cannot find user to send message to." }],
+        },
+      });
+      renderSendMessage();
+      const textField = screen.getByRole("textbox");
+      const sendButton = screen.getByRole("button", {
+        name: "send message",
+      });
+
+      await userEvent.type(textField, "message");
+      await userEvent.click(sendButton);
+
+      expect(mockEnqueueSnackbar).toHaveBeenCalledExactlyOnceWith(
+        "Cannot find user to send message to.",
+        { variant: "error" },
+      );
+    });
+
+    it("should disable inputs while submitting", async () => {
+      expect.hasAssertions();
+
+      fetchMock.post(serverMessagesRoute, {
+        status: 201,
+      });
+      renderSendMessage();
+      const textField = screen.getByRole("textbox");
+      const attachButton = screen.getByRole("button", {
+        name: "attach image",
+      });
+      const submitButton = screen.getByRole("button", {
+        name: "send message",
+      });
+      await userEvent.type(textField, "message");
+
+      fireEvent.click(submitButton);
+
+      expect(textField).toBeDisabled();
+      expect(attachButton).toHaveAttribute("aria-disabled", "true");
+      expect(submitButton).toBeDisabled();
+    });
+
+    it.todo("should re-fetch messages on a successful post request");
   });
 });
