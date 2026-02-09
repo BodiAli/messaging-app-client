@@ -1,10 +1,15 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useParams } from "react-router";
 import { Box, IconButton, styled, TextField } from "@mui/material";
+import { useSnackbar } from "notistack";
 import AttachmentIcon from "@mui/icons-material/Attachment";
 import SendIcon from "@mui/icons-material/Send";
 import { useSendMessageMutation } from "@/slices/messagesSlice";
-import { isFetchBaseQueryError, isServerError } from "@/types/apiResponseTypes";
+import {
+  isClientError,
+  isFetchBaseQueryError,
+  isServerError,
+} from "@/types/apiResponseTypes";
 
 const VisuallyHiddenUpload = styled("input")({
   position: "absolute",
@@ -25,6 +30,7 @@ interface FormWithElements extends HTMLFormElement {
 
 export default function SendMessage() {
   const [uploadedImageUrl, setUploadedImageUrl] = useState<null | string>(null);
+  const { enqueueSnackbar } = useSnackbar();
   const [fatalError, setFatalError] = useState<string | null>(null);
   const [sendMessage, { isLoading }] = useSendMessageMutation();
   const { userId } = useParams<"userId">();
@@ -60,6 +66,12 @@ export default function SendMessage() {
       if (isFetchBaseQueryError(error)) {
         if (isServerError(error.data)) {
           setFatalError(error.data.error);
+          return;
+        }
+        if (isClientError(error.data)) {
+          error.data.errors.forEach((error) => {
+            enqueueSnackbar(error.message, { variant: "error" });
+          });
         }
       }
     }
@@ -85,10 +97,11 @@ export default function SendMessage() {
       aria-label="send message form"
       onSubmit={handleSubmit}
     >
-      <TextField name="messageContent" required />
+      <TextField name="messageContent" required disabled={isLoading} />
       <IconButton
         component="label"
         title="attach image"
+        loading={isLoading}
         sx={{
           position: "relative",
         }}
@@ -101,7 +114,7 @@ export default function SendMessage() {
           onChange={handleUploadImage}
         />
       </IconButton>
-      <IconButton type="submit" title="send message">
+      <IconButton type="submit" title="send message" loading={isLoading}>
         <SendIcon />
       </IconButton>
       {uploadedImageUrl && (
