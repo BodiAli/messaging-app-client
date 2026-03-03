@@ -30,6 +30,7 @@ interface FormWithElements extends HTMLFormElement {
 
 export default function SendMessage() {
   const [uploadedImageUrl, setUploadedImageUrl] = useState<null | string>(null);
+  const [messageContent, setMessageContent] = useState("");
   const { enqueueSnackbar } = useSnackbar();
   const [fatalError, setFatalError] = useState<string | null>(null);
   const [sendMessage, { isLoading }] = useSendMessageMutation();
@@ -63,6 +64,7 @@ export default function SendMessage() {
 
     try {
       await sendMessage({ userId, formData }).unwrap();
+      setMessageContent("");
     } catch (error) {
       if (isFetchBaseQueryError(error)) {
         if (isServerError(error.data)) {
@@ -103,6 +105,10 @@ export default function SendMessage() {
         required
         disabled={isLoading}
         placeholder="Message"
+        value={messageContent}
+        onChange={(e) => {
+          setMessageContent(e.target.value);
+        }}
       />
       <IconButton
         component="label"
