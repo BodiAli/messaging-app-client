@@ -247,7 +247,5 @@ describe("send-message component", () => {
       expect(attachButton).toHaveAttribute("aria-disabled", "true");
       expect(submitButton).toBeDisabled();
     });
-
-    it.todo("should re-fetch messages on a successful post request");
   });
 });

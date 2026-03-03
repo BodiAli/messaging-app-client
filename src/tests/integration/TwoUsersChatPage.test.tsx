@@ -6,20 +6,17 @@ import {
 } from "react-router";
 import * as notistackLibrary from "notistack";
 import fetchMock, { manageFetchMockGlobally } from "@fetch-mock/vitest";
+import userEvent from "@testing-library/user-event";
 import { screen } from "@testing-library/react";
 import serverUrl from "@/utils/serverUrl";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import TwoUsersChatPage from "@/pages/TwoUsersChatPage";
 import renderWithProviders from "@/utils/test-utils";
-import type { ChatData } from "@/types/modelsType";
+import * as localStorageService from "@/services/localStorage";
+import type { ChatData, User } from "@/types/modelsType";
 
 const messagesRoute = `${serverUrl}/users/userId/messages`;
-
-vi.mock(import("@/components/UserChat"), () => {
-  return {
-    default: () => <p>UserChat component</p>,
-  };
-});
+const getCurrentUserRoute = `${serverUrl}/auth/get-user`;
 
 const mockEnqueueSnackbar = vi.fn<notistackLibrary.EnqueueSnackbar>();
 
@@ -50,6 +47,16 @@ const mockChatData: ChatData = {
     username: "userB",
   },
   friendRequestStatus: null,
+};
+
+const mockCurrentUser: { user: User } = {
+  user: {
+    id: "guestUserId",
+    imageUrl: null,
+    isGuest: true,
+    lastSeen: new Date().toDateString(),
+    username: "guestUsername",
+  },
 };
 
 describe("two-users-chat-page component", () => {
@@ -164,6 +171,13 @@ describe("two-users-chat-page component", () => {
       it("should render UserChat component", async () => {
         expect.hasAssertions();
 
+        vi.spyOn(localStorageService, "getJwtToken").mockReturnValue(
+          "jwtToken",
+        );
+        fetchMock.get(getCurrentUserRoute, {
+          status: 200,
+          body: mockCurrentUser,
+        });
         fetchMock.get(messagesRoute, {
           status: 200,
           body: mockChatData,
@@ -176,10 +190,71 @@ describe("two-users-chat-page component", () => {
         ]);
         renderWithProviders(<Stub initialEntries={["/friends/userId"]} />);
 
-        const userChatComponentText =
-          await screen.findByText("UserChat component");
+        const userChatComponentText = await screen.findByText(
+          "Chatting with userB",
+        );
 
         expect(userChatComponentText).toBeInTheDocument();
+      });
+    });
+
+    describe("given successful sent message", () => {
+      it("should re-fetch messages", async () => {
+        expect.hasAssertions();
+
+        vi.spyOn(localStorageService, "getJwtToken").mockReturnValue(
+          "jwtToken",
+        );
+        fetchMock.get(getCurrentUserRoute, {
+          status: 200,
+          body: mockCurrentUser,
+        });
+        fetchMock.post(messagesRoute, {
+          status: 201,
+          body: {
+            messageContent: "secondMessageFromUserA",
+          },
+        });
+        fetchMock.get(messagesRoute, {
+          status: 200,
+          body: mockChatData,
+        });
+        fetchMock.get(messagesRoute, {
+          status: 200,
+          body: {
+            ...mockChatData,
+            messages: [
+              ...mockChatData.messages,
+              {
+                content: "secondMessageFromUserA",
+                createdAt: new Date().toISOString(),
+                groupChatId: null,
+                id: "secondMessageIdUserA",
+                imageUrl: null,
+                senderId: "userAId",
+                receiverId: "userBId",
+              },
+            ],
+          },
+        });
+        const Stub = createRoutesStub([
+          {
+            path: "/friends/:userId",
+            Component: TwoUsersChatPage,
+          },
+        ]);
+        renderWithProviders(<Stub initialEntries={["/friends/userId"]} />);
+        const sendMessageTextField =
+          await screen.findByPlaceholderText("Message");
+        const sendMessageButton = screen.getByRole("button", {
+          name: "send message",
+        });
+
+        await userEvent.type(sendMessageTextField, "secondMEssageFromUserA");
+        await userEvent.click(sendMessageButton);
+
+        expect(fetchMock).toHavePosted(messagesRoute);
+        expect(fetchMock).toHaveGotTimes(2, messagesRoute);
       });
     });
   });
