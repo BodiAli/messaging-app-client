@@ -42,6 +42,7 @@ export default function SendMessage() {
 
   const handleSubmit = async (e: FormEvent<FormWithElements>) => {
     e.preventDefault();
+
     const { messageImage: messageImageElement } = e.currentTarget.elements;
     assert(messageImageElement.files);
     const messageImage = messageImageElement.files[0];
@@ -97,7 +98,12 @@ export default function SendMessage() {
       aria-label="send message form"
       onSubmit={handleSubmit}
     >
-      <TextField name="messageContent" required disabled={isLoading} />
+      <TextField
+        name="messageContent"
+        required
+        disabled={isLoading}
+        placeholder="Message"
+      />
       <IconButton
         component="label"
         title="attach image"
