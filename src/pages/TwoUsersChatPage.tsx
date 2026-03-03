@@ -26,6 +26,8 @@ export default function TwoUsersChatPage() {
     isLoading,
   } = useGetTwoUsersMessagesQuery(userId);
 
+  // Use a “useEffect” here to prevent react logging the warning “Cannot update a component (`RouterProvider`) while rendering a different component (`TwoUsersChatPage`).”
+  // The navigate function calls setState() and without a “useEffect” this can cause the state to be modified while rendering TwoUsersChatPage component.
   useEffect(() => {
     if (isError) {
       if (isFetchBaseQueryError(error)) {
