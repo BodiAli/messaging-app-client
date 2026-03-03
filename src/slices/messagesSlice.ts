@@ -6,6 +6,7 @@ const apiSliceWithMessages = apiSlice.injectEndpoints({
     return {
       getTwoUsersMessages: build.query<ChatData, string>({
         query: (userId) => `/users/${userId}/messages`,
+        providesTags: ["Message"],
       }),
       sendMessage: build.mutation<
         undefined,
@@ -18,6 +19,7 @@ const apiSliceWithMessages = apiSlice.injectEndpoints({
             body: formData,
           };
         },
+        invalidatesTags: ["Message"],
       }),
     };
   },

@@ -49,7 +49,7 @@ const baseQueryWithLogout: BaseQueryFn<
 
 const apiSlice = createApi({
   baseQuery: baseQueryWithLogout,
-  tagTypes: ["Notification"],
+  tagTypes: ["Notification", "Message"],
   endpoints() {
     return {};
   },
