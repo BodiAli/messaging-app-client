@@ -1,4 +1,10 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import {
+  useState,
+  useRef,
+  type ChangeEvent,
+  type FormEvent,
+  useEffect,
+} from "react";
 import { useParams } from "react-router";
 import { Box, IconButton, styled, TextField } from "@mui/material";
 import { useSnackbar } from "notistack";
@@ -33,6 +39,7 @@ export default function SendMessage() {
   const [messageContent, setMessageContent] = useState("");
   const { enqueueSnackbar } = useSnackbar();
   const [fatalError, setFatalError] = useState<string | null>(null);
+  const messageInputRef = useRef<HTMLInputElement | null>(null);
   const [sendMessage, { isLoading }] = useSendMessageMutation();
   const { userId } = useParams<"userId">();
   assert(userId);
@@ -40,6 +47,13 @@ export default function SendMessage() {
   if (fatalError) {
     throw new Error(fatalError);
   }
+
+  useEffect(() => {
+    assert(messageInputRef.current);
+    if (!isLoading) {
+      messageInputRef.current.focus();
+    }
+  }, [isLoading]);
 
   const handleSubmit = async (e: FormEvent<FormWithElements>) => {
     e.preventDefault();
@@ -59,12 +73,13 @@ export default function SendMessage() {
 
     formData.append("messageContent", messageContent);
     if (messageImage) {
-      formData.append("messageImage", messageContent);
+      formData.append("messageImage", messageImage);
     }
 
     try {
       await sendMessage({ userId, formData }).unwrap();
       setMessageContent("");
+      setUploadedImageUrl(null);
     } catch (error) {
       if (isFetchBaseQueryError(error)) {
         if (isServerError(error.data)) {
@@ -96,11 +111,17 @@ export default function SendMessage() {
 
   return (
     <Box
+      sx={{
+        display: "flex",
+        alignItems: "start",
+        gap: 1,
+      }}
       component={"form"}
       aria-label="send message form"
       onSubmit={handleSubmit}
     >
       <TextField
+        inputRef={messageInputRef}
         name="messageContent"
         required
         disabled={isLoading}
@@ -108,6 +129,9 @@ export default function SendMessage() {
         value={messageContent}
         onChange={(e) => {
           setMessageContent(e.target.value);
+        }}
+        sx={{
+          flex: 1,
         }}
       />
       <IconButton
@@ -130,7 +154,16 @@ export default function SendMessage() {
         <SendIcon />
       </IconButton>
       {uploadedImageUrl && (
-        <Box component={"img"} src={uploadedImageUrl} alt="uploaded image" />
+        <Box
+          component={"img"}
+          src={uploadedImageUrl}
+          alt="uploaded image"
+          sx={{
+            width: "200px",
+            height: "200px",
+            objectFit: "contain",
+          }}
+        />
       )}
     </Box>
   );
