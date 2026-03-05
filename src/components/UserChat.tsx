@@ -34,7 +34,6 @@ interface UserChatProps {
 export default function UserChat({ chatData }: UserChatProps) {
   const [fatalError, setFatalError] = useState<string | null>(null);
   const { enqueueSnackbar } = useSnackbar();
-
   const navigate = useNavigate();
   const currentUser = useAppSelector(selectUser);
   const { userId } = useParams<"userId">();
@@ -128,7 +127,7 @@ export default function UserChat({ chatData }: UserChatProps) {
           onActionClick={handleFriendshipAction}
         />
       </Stack>
-      <Chatting messages={chatData.messages} />
+      <Chatting messages={chatData.messages} currentUserId={currentUser.id} />
     </Box>
   );
 }
