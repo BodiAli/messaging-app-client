@@ -1,5 +1,6 @@
 import { describe, it, expect, assert } from "vitest";
 import { screen } from "@testing-library/react";
+import { createRoutesStub } from "react-router";
 import renderWithProviders from "@/utils/test-utils";
 import Chatting from "@/components/Chatting";
 import type { Messages } from "@/types/modelsType";
@@ -34,14 +35,26 @@ describe("chatting component", () => {
     },
   ];
 
+  function renderChattingComponent(messages: Messages) {
+    const Stub = createRoutesStub([
+      {
+        path: "/:userId",
+        Component: () => (
+          <Chatting messages={messages} currentUserId="currentUserId" />
+        ),
+      },
+    ]);
+    return renderWithProviders(<Stub initialEntries={["/userId"]} />);
+  }
+
   describe("rendering messages", () => {
     describe("given no messages", () => {
       it("should render no messages", () => {
         expect.hasAssertions();
 
-        renderWithProviders(<Chatting messages={[]} />);
+        renderChattingComponent([]);
 
-        const messages = screen.queryAllByRole("paragraph");
+        const messages = screen.queryAllByText(/^messageFromUser/);
 
         expect(messages).toHaveLength(0);
       });
@@ -51,7 +64,7 @@ describe("chatting component", () => {
       it("should render message content", () => {
         expect.hasAssertions();
 
-        renderWithProviders(<Chatting messages={mockMessages} />);
+        renderChattingComponent(mockMessages);
 
         const firstMessage = screen.getByText("messageFromUserA");
         const secondMessage = screen.getByText("messageFromUserB");
@@ -63,7 +76,7 @@ describe("chatting component", () => {
       it("should render message image when imageUrl is not null", () => {
         expect.hasAssertions();
 
-        renderWithProviders(<Chatting messages={mockMessages} />);
+        renderChattingComponent(mockMessages);
 
         const messageImage = screen.getByRole("img", {
           name: "user sent image",
@@ -75,7 +88,7 @@ describe("chatting component", () => {
       it("should render when was the message created", () => {
         expect.hasAssertions();
 
-        renderWithProviders(<Chatting messages={mockMessages} />);
+        renderChattingComponent(mockMessages);
 
         const messagesTime = screen.getAllByRole("time");
         assert(messagesTime[0]);
@@ -93,7 +106,7 @@ describe("chatting component", () => {
     it("should render SendMessage form component", () => {
       expect.hasAssertions();
 
-      renderWithProviders(<Chatting messages={mockMessages} />);
+      renderChattingComponent(mockMessages);
 
       const sendMessageForm = screen.getByRole("form", {
         name: "send message form",
