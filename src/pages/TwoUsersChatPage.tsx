@@ -50,6 +50,7 @@ export default function TwoUsersChatPage() {
       component={"section"}
       sx={{
         position: "relative",
+        marginBottom: 2,
       }}
     >
       {isLoading || !chatData ? <Loader /> : <UserChat chatData={chatData} />}
