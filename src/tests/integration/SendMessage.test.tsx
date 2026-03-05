@@ -26,17 +26,14 @@ function renderSendMessage() {
 }
 
 describe("send-message component", () => {
-  // resolve createObjectURL does not exist jsdom error
-  if (typeof window.URL.createObjectURL === "undefined") {
+  beforeAll(() => {
+    // resolve createObjectURL does not exist jsdom error
     Object.defineProperty(window.URL, "createObjectURL", {
       value: () => {
         // empty
       },
       writable: true,
     });
-  }
-
-  beforeAll(() => {
     fetchMock.mockGlobal();
     manageFetchMockGlobally();
   });
