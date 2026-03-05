@@ -16,7 +16,7 @@ const apiSliceWithMessages = apiSlice.injectEndpoints({
           return {
             url: `/users/${userId}/messages`,
             method: "POST",
-            body: formData,
+            body: { formData },
           };
         },
         invalidatesTags: ["Message"],
