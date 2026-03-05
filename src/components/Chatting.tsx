@@ -1,18 +1,70 @@
+import { useEffect, useRef } from "react";
 import { Box, Typography } from "@mui/material";
+import { useParams } from "react-router";
+import { useGetTwoUsersMessagesQuery } from "@/slices/messagesSlice";
 import formatDate from "@/utils/formatDate";
 import SendMessage from "./SendMessage";
 import type { Messages } from "@/types/modelsType";
 
-interface ChattingProps {
-  messages: Messages;
+function assert(value: unknown): asserts value {
+  if (!value) throw new Error("Value is not defined");
 }
 
-export default function Chatting({ messages }: ChattingProps) {
+interface ChattingProps {
+  messages: Messages;
+  currentUserId: string;
+}
+
+export default function Chatting({ messages, currentUserId }: ChattingProps) {
+  const { userId } = useParams<"userId">();
+  assert(userId);
+  const { isFetching } = useGetTwoUsersMessagesQuery(userId);
+  const messagesContainerRef = useRef<null | HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (messagesContainerRef.current && !isFetching) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+      });
+    }
+  }, [isFetching]);
+
   return (
-    <Box>
-      <Box>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 1,
+        paddingX: 3,
+      }}
+    >
+      <Box
+        ref={messagesContainerRef}
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 4,
+          padding: 3,
+          backgroundColor: "#ffffff73",
+          minHeight: "300px",
+          maxHeight: "600px",
+          overflowY: "auto",
+        }}
+      >
         {messages.map((message) => {
-          return <Message key={message.id} message={message} />;
+          const direction =
+            message.senderId === currentUserId ? "end" : "start";
+          const backgroundColor =
+            message.senderId === currentUserId ? "#0055ff76" : "#b5b5b59e";
+          return (
+            <Message
+              key={message.id}
+              message={message}
+              direction={direction}
+              backgroundColor={backgroundColor}
+              isLoading={isFetching}
+            />
+          );
         })}
       </Box>
       <SendMessage />
@@ -22,13 +74,55 @@ export default function Chatting({ messages }: ChattingProps) {
 
 type Flatten<T> = T extends (infer K)[] ? K : never;
 
-function Message({ message }: { message: Flatten<Messages> }) {
+function Message({
+  message,
+  direction,
+  backgroundColor,
+  isLoading,
+}: {
+  message: Flatten<Messages>;
+  direction: string;
+  backgroundColor: string;
+  isLoading: boolean;
+}) {
   return (
-    <Box>
-      {message.imageUrl && <Box component={"img"} alt="user sent image" />}
+    <Box
+      sx={{
+        alignSelf: direction,
+        backgroundColor,
+        padding: 1,
+        borderRadius: "5px",
+        display: "flex",
+        flexDirection: "column",
+        gap: 1,
+        maxWidth: "400px",
+        opacity: isLoading ? 0.5 : "initial",
+      }}
+    >
+      {message.imageUrl && (
+        <Box
+          sx={{
+            alignSelf: "center",
+          }}
+        >
+          <Box
+            component={"img"}
+            alt="user sent image"
+            src={message.imageUrl}
+            sx={{
+              width: "300px",
+            }}
+          />
+        </Box>
+      )}
       <Typography>{message.content}</Typography>
-      <Typography>
-        Sent at <Box component={"time"}>{formatDate(message.createdAt)}</Box>
+      <Typography
+        sx={{
+          fontSize: "0.8rem",
+          alignSelf: "end",
+        }}
+      >
+        <Box component={"time"}>{formatDate(message.createdAt)}</Box>
       </Typography>
     </Box>
   );
