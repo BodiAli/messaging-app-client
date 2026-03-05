@@ -16,6 +16,12 @@ Object.defineProperty(window, "matchMedia", {
   })),
 });
 
+// scrollTo is not implemented in jsdom
+Object.defineProperty(window.HTMLElement.prototype, "scrollTo", {
+  writable: true,
+  value: vi.fn(),
+});
+
 afterEach(() => {
   cleanup();
 });

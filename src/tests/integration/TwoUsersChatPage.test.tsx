@@ -60,6 +60,11 @@ const mockCurrentUser: { user: User } = {
 };
 
 describe("two-users-chat-page component", () => {
+  // scrollTo is not implemented in jsdom
+  vi.spyOn(window.HTMLElement.prototype, "scrollTo").mockImplementation(
+    () => "null",
+  );
+
   beforeAll(() => {
     fetchMock.mockGlobal();
     manageFetchMockGlobally();
