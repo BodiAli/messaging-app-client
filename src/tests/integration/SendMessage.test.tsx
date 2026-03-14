@@ -161,12 +161,16 @@ describe("send-message component", () => {
       expect.hasAssertions();
 
       vi.spyOn(console, "error").mockImplementation(() => null);
-      fetchMock.post(serverMessagesRoute, {
-        status: 500,
-        body: {
-          error: "Server error",
-        },
-      });
+      // Manually mock fetch because fetch-mock keeps the response promise hanging and not executing
+      // when using multipart/form-data
+      vi.spyOn(globalThis, "fetch").mockResolvedValue(
+        new Response(JSON.stringify({ error: "Server error" }), {
+          headers: {
+            "Content-type": "application/json",
+          },
+          status: 500,
+        }),
+      );
       renderSendMessage();
       const textField = screen.getByRole("textbox");
       const attachButton = screen.getByRole("button", {
