@@ -40,7 +40,11 @@ describe("chatting component", () => {
       {
         path: "/:userId",
         Component: () => (
-          <Chatting messages={messages} currentUserId="currentUserId" />
+          <Chatting
+            messages={messages}
+            isFetching={false}
+            currentUserId="currentUserId"
+          />
         ),
       },
     ]);

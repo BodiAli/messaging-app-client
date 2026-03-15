@@ -24,6 +24,7 @@ export default function TwoUsersChatPage() {
     isError,
     error,
     isLoading,
+    isFetching,
   } = useGetTwoUsersMessagesQuery(userId);
 
   // Use a “useEffect” here to prevent react logging the warning “Cannot update a component (`RouterProvider`) while rendering a different component (`TwoUsersChatPage`).”
@@ -53,7 +54,11 @@ export default function TwoUsersChatPage() {
         marginBottom: 2,
       }}
     >
-      {isLoading || !chatData ? <Loader /> : <UserChat chatData={chatData} />}
+      {isLoading || !chatData ? (
+        <Loader />
+      ) : (
+        <UserChat chatData={chatData} isFetching={isFetching} />
+      )}
     </Box>
   );
 }

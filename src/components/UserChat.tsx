@@ -29,9 +29,10 @@ function assert(value: unknown): asserts value {
 
 interface UserChatProps {
   chatData: ChatData;
+  isFetching: boolean;
 }
 
-export default function UserChat({ chatData }: UserChatProps) {
+export default function UserChat({ chatData, isFetching }: UserChatProps) {
   const [fatalError, setFatalError] = useState<string | null>(null);
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -127,7 +128,11 @@ export default function UserChat({ chatData }: UserChatProps) {
           onActionClick={handleFriendshipAction}
         />
       </Stack>
-      <Chatting messages={chatData.messages} currentUserId={currentUser.id} />
+      <Chatting
+        messages={chatData.messages}
+        isFetching={isFetching}
+        currentUserId={currentUser.id}
+      />
     </Box>
   );
 }

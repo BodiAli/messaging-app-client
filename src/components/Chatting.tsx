@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import { Box, Typography } from "@mui/material";
 import { useParams } from "react-router";
-import { useGetTwoUsersMessagesQuery } from "@/slices/messagesSlice";
 import formatDate from "@/utils/formatDate";
 import SendMessage from "./SendMessage";
 import type { Messages } from "@/types/modelsType";
@@ -12,13 +11,17 @@ function assert(value: unknown): asserts value {
 
 interface ChattingProps {
   messages: Messages;
+  isFetching: boolean;
   currentUserId: string;
 }
 
-export default function Chatting({ messages, currentUserId }: ChattingProps) {
+export default function Chatting({
+  messages,
+  isFetching,
+  currentUserId,
+}: ChattingProps) {
   const { userId } = useParams<"userId">();
   assert(userId);
-  const { isFetching } = useGetTwoUsersMessagesQuery(userId);
   const messagesContainerRef = useRef<null | HTMLDivElement>(null);
 
   useEffect(() => {
