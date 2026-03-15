@@ -58,7 +58,7 @@ export default function Chatting({
           const direction =
             message.senderId === currentUserId ? "end" : "start";
           const backgroundColor =
-            message.senderId === currentUserId ? "#0055ff76" : "#b5b5b59e";
+            message.senderId === currentUserId ? "#3f7fffb9" : "#b5b5b59e";
           return (
             <Message
               key={message.id}
