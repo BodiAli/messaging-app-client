@@ -2,6 +2,7 @@ import type {
   User as PrismaUser,
   Message as PrismaMessage,
   FriendStatus,
+  GroupChat as PrismaGroupChat,
 } from "prismaTypes";
 
 export interface User extends Omit<PrismaUser, "lastSeen" | "password"> {
@@ -46,3 +47,7 @@ export type ChatData =
   | ChatDataIsFriend
   | ChatDataIsNotFriend
   | ChatDataIsPendingFriend;
+
+export interface GroupChat extends Omit<PrismaGroupChat, "createdAt"> {
+  createdAt: string;
+}
