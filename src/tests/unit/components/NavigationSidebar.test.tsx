@@ -40,6 +40,12 @@ vi.mock(import("@/pages/ProfilePage"), () => {
   };
 });
 
+vi.mock(import("@/pages/IndexPage"), () => {
+  return {
+    default: () => <h1>Welcome user</h1>,
+  };
+});
+
 describe("navigation-sidebar component", () => {
   const renderWithRouter = () => {
     const router = createMemoryRouter(routes);
