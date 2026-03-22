@@ -10,6 +10,7 @@ import GroupsPage from "@/pages/GroupsPage";
 import NonFriendsPage from "@/pages/NonFriendsPage";
 import ProfilePage from "@/pages/ProfilePage";
 import TwoUsersChatPage from "@/pages/TwoUsersChatPage";
+import IndexPage from "@/pages/IndexPage";
 import type { RouteObject } from "react-router";
 
 const routes: RouteObject[] = [
@@ -27,6 +28,10 @@ const routes: RouteObject[] = [
               </ProtectedRoute>
             ),
             children: [
+              {
+                index: true,
+                Component: IndexPage,
+              },
               {
                 path: "/friends",
                 Component: FriendsPage,
