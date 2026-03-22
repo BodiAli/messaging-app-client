@@ -50,6 +50,10 @@ export default function FriendsPage() {
               title={<Skeleton animation="wave" />}
             />
           </Card>
+        ) : data.friends.length === 0 ? (
+          <Typography textAlign={"center"}>
+            You currently have no friends
+          </Typography>
         ) : (
           <Stack spacing={5}>
             {data.friends.map((friend) => {
