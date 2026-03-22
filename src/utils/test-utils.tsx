@@ -1,14 +1,22 @@
-import { render } from "@testing-library/react";
+import { render, type RenderOptions } from "@testing-library/react";
 import { Provider } from "react-redux";
 import { CssBaseline, ThemeProvider } from "@mui/material";
-import setupStore from "@/config/store";
+import setupStore, { type PreloadedState } from "@/config/store";
 import { apiSliceWithAuth } from "@/slices/authSlice";
 import { getJwtToken } from "@/services/localStorage";
 import initializeTheme from "@/libs/theme";
 import type { PropsWithChildren, ReactElement } from "react";
 
-export default function renderWithProviders(ui: ReactElement) {
-  const store = setupStore();
+interface ExtendedRenderOptions extends RenderOptions {
+  preloadedState?: PreloadedState;
+}
+
+export default function renderWithProviders(
+  ui: ReactElement,
+  extendedRenderOptions: ExtendedRenderOptions = {},
+) {
+  const { preloadedState } = extendedRenderOptions;
+  const store = setupStore(preloadedState);
   const jwtToken = getJwtToken();
   const theme = initializeTheme();
 
