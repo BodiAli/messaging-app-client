@@ -6,8 +6,8 @@ import userEvent from "@testing-library/user-event";
 import renderWithProviders from "@/utils/test-utils";
 import GroupsPage from "@/pages/GroupsPage";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import type { GroupChat } from "@/types/modelsType";
 import GroupChatPage from "@/pages/GroupChatPage";
+import type { GroupChat } from "@/types/modelsType";
 
 const serverUserGroupsRoute = "/users/me/groups";
 
