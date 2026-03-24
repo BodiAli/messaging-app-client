@@ -19,6 +19,7 @@ export default function GroupsPage() {
 
   return (
     <Box component={"main"}>
+      <Typography variant="h2">Your groups</Typography>
       {data.groups.length === 0 ? (
         <Typography>You are not in any groups</Typography>
       ) : (

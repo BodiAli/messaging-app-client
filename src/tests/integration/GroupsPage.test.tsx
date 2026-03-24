@@ -71,6 +71,25 @@ describe("groups-page-component", () => {
     vi.resetAllMocks();
   });
 
+  describe("rendering heading", () => {
+    it("should render header info about current page", async () => {
+      expect.hasAssertions();
+
+      fetchMock.get(serverUserGroupsRoute, {
+        status: 200,
+        body: mockGroupsResponse,
+      });
+      renderGroupsRoute();
+
+      const headingElement = await screen.findByRole("heading", {
+        level: 2,
+        name: "Your groups",
+      });
+
+      expect(headingElement).toBeInTheDocument();
+    });
+  });
+
   describe("rendering group cards", () => {
     it("should render ErrorBoundary when an unexpected error occurs", async () => {
       expect.hasAssertions();
