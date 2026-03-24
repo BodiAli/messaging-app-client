@@ -7,6 +7,7 @@ const apiSliceWithNotifications = apiSlice.injectEndpoints({
       getNotifications: build.query<UserNotifications, undefined>({
         query: () => "/notifications/me",
         providesTags: ["Notification"],
+        keepUnusedDataFor: 0,
       }),
       rejectGroupInvite: build.mutation<undefined, string>({
         query: (groupId) => {
