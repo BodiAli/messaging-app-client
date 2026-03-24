@@ -11,6 +11,7 @@ import NonFriendsPage from "@/pages/NonFriendsPage";
 import ProfilePage from "@/pages/ProfilePage";
 import TwoUsersChatPage from "@/pages/TwoUsersChatPage";
 import IndexPage from "@/pages/IndexPage";
+import GroupChatPage from "@/pages/GroupChatPage";
 import type { RouteObject } from "react-router";
 
 const routes: RouteObject[] = [
@@ -45,6 +46,12 @@ const routes: RouteObject[] = [
               {
                 path: "/groups",
                 Component: GroupsPage,
+                children: [
+                  {
+                    path: ":groupId",
+                    Component: GroupChatPage,
+                  },
+                ],
               },
               {
                 path: "/non-friends",
