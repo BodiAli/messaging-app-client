@@ -82,7 +82,9 @@ describe("user-chat component", () => {
         children: [
           {
             path: "/friends/:userId",
-            Component: () => <UserChat chatData={chatData} />,
+            Component: () => (
+              <UserChat isFetching={false} chatData={chatData} />
+            ),
           },
         ],
       },
@@ -138,7 +140,9 @@ describe("user-chat component", () => {
             children: [
               {
                 path: "/friends/:userId",
-                Component: () => <UserChat chatData={mockChatData} />,
+                Component: () => (
+                  <UserChat isFetching={false} chatData={mockChatData} />
+                ),
               },
               {
                 path: "/test",
