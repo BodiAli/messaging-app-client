@@ -7,9 +7,16 @@ import renderWithProviders from "@/utils/test-utils";
 import GroupsPage from "@/pages/GroupsPage";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import GroupChatPage from "@/pages/GroupChatPage";
+import GroupsPageIndex from "@/components/GroupsPageIndex";
 import type { GroupChat } from "@/types/modelsType";
 
 const serverUserGroupsRoute = "/users/me/groups";
+
+vi.mock(import("@/components/GroupsPageIndex"), () => {
+  return {
+    default: () => <p>groups page index</p>,
+  };
+});
 
 vi.mock(import("@/pages/GroupChatPage"), () => {
   return {
@@ -28,6 +35,10 @@ describe("groups-page-component", () => {
               path: "/groups",
               Component: GroupsPage,
               children: [
+                {
+                  index: true,
+                  Component: GroupsPageIndex,
+                },
                 {
                   path: ":groupId",
                   Component: GroupChatPage,
@@ -87,6 +98,18 @@ describe("groups-page-component", () => {
       });
 
       expect(headingElement).toBeInTheDocument();
+    });
+  });
+
+  describe("rendering GroupsPageIndex", () => {
+    it("should render GroupsPageIndex", () => {
+      expect.hasAssertions();
+
+      renderGroupsRoute();
+
+      const groupsPageIndexElement = screen.getByText("groups page index");
+
+      expect(groupsPageIndexElement).toBeInTheDocument();
     });
   });
 
