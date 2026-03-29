@@ -1,4 +1,4 @@
-import { fireEvent, screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { describe, it, expect, beforeAll, afterEach } from "vitest";
 import userEvent from "@testing-library/user-event";
@@ -84,6 +84,36 @@ describe("notifications component", () => {
         anchorElement={anchorElement}
       />,
     );
+  }
+
+  function manualFetchMock() {
+    const { promise, resolve } = Promise.withResolvers();
+
+    // Mock fetch for getting notifications.
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+      new Response(JSON.stringify(mockUserNotifications), {
+        status: 200,
+      }),
+    );
+    // Mock fetch for mutating notification.
+    vi.spyOn(globalThis, "fetch").mockImplementationOnce(async () => {
+      await promise;
+
+      const response = new Response(null, {
+        status: 204,
+      });
+
+      return Promise.resolve(response);
+    });
+    // Mock fetch for getting notifications because mutation causes a cache invalidation
+    // which creates a new fetch request.
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+      new Response(JSON.stringify(mockUserNotifications), {
+        status: 200,
+      }),
+    );
+
+    return resolve;
   }
 
   beforeAll(() => {
@@ -329,26 +359,29 @@ describe("notifications component", () => {
       it("should disable menu items while sending a request", async () => {
         expect.hasAssertions();
 
-        fetchMock.get(notificationsRoute, {
-          status: 200,
-          body: mockUserNotifications,
-        });
-        fetchMock.delete(respondToGroupInviteRoute, {
-          status: 204,
-        });
+        // Manually mock fetch to allow for testing disabled menu items while sending a request
+        // by resolving fetch after assertion.
+        const resolvePromise = manualFetchMock();
         renderNotificationsComponent();
         const notifications = await screen.findAllByRole("menuitem", {
           name: /Accept Decline/,
         });
         assertIsElement(notifications[0]);
+
         const declineButton = within(notifications[0]).getByRole("button", {
           name: "Decline",
         });
-        fireEvent.click(declineButton);
+        await userEvent.click(declineButton);
 
         notifications.forEach((notification) => {
           expect(notification).toHaveAttribute("aria-disabled", "true");
         });
+        resolvePromise(null);
+        for (const notification of notifications) {
+          await waitFor(() => {
+            expect(notification).not.toHaveAttribute("aria-disabled", "true");
+          });
+        }
       });
 
       it("should decline group invite", async () => {
@@ -470,26 +503,29 @@ describe("notifications component", () => {
       it("should disable menu items while sending a request", async () => {
         expect.hasAssertions();
 
-        fetchMock.get(notificationsRoute, {
-          status: 200,
-          body: mockUserNotifications,
-        });
-        fetchMock.delete(respondToGroupInviteRoute, {
-          status: 204,
-        });
+        // Manually mock fetch to allow for testing disabled menu items while sending a request
+        // by resolving fetch after assertion.
+        const resolvePromise = manualFetchMock();
         renderNotificationsComponent();
         const notifications = await screen.findAllByRole("menuitem", {
           name: /Accept Decline/,
         });
         assertIsElement(notifications[0]);
+
         const acceptButton = within(notifications[0]).getByRole("button", {
           name: "Accept",
         });
-        fireEvent.click(acceptButton);
+        await userEvent.click(acceptButton);
 
         notifications.forEach((notification) => {
           expect(notification).toHaveAttribute("aria-disabled", "true");
         });
+        resolvePromise(null);
+        for (const notification of notifications) {
+          await waitFor(() => {
+            expect(notification).not.toHaveAttribute("aria-disabled", "true");
+          });
+        }
       });
 
       it("should accept group invite", async () => {
@@ -612,26 +648,29 @@ describe("notifications component", () => {
       it("should disable menu items while sending a request", async () => {
         expect.hasAssertions();
 
-        fetchMock.get(notificationsRoute, {
-          status: 200,
-          body: mockUserNotifications,
-        });
-        fetchMock.delete(respondToFriendRequestRoute, {
-          status: 204,
-        });
+        // Manually mock fetch to allow for testing disabled menu items while sending a request
+        // by resolving fetch after assertion.
+        const resolvePromise = manualFetchMock();
         renderNotificationsComponent();
         const notifications = await screen.findAllByRole("menuitem", {
           name: /Accept Decline/,
         });
         assertIsElement(notifications[1]);
+
         const declineButton = within(notifications[1]).getByRole("button", {
           name: "Decline",
         });
-        fireEvent.click(declineButton);
+        await userEvent.click(declineButton);
 
         notifications.forEach((notification) => {
           expect(notification).toHaveAttribute("aria-disabled", "true");
         });
+        resolvePromise(null);
+        for (const notification of notifications) {
+          await waitFor(() => {
+            expect(notification).not.toHaveAttribute("aria-disabled", "true");
+          });
+        }
       });
 
       it("should decline friend request", async () => {
@@ -752,26 +791,29 @@ describe("notifications component", () => {
       it("should disable menu items while sending a request", async () => {
         expect.hasAssertions();
 
-        fetchMock.get(notificationsRoute, {
-          status: 200,
-          body: mockUserNotifications,
-        });
-        fetchMock.patch(respondToFriendRequestRoute, {
-          status: 204,
-        });
+        // Manually mock fetch to allow for testing disabled menu items while sending a request
+        // by resolving fetch after assertion.
+        const resolvePromise = manualFetchMock();
         renderNotificationsComponent();
         const notifications = await screen.findAllByRole("menuitem", {
           name: /Accept Decline/,
         });
         assertIsElement(notifications[1]);
+
         const acceptButton = within(notifications[1]).getByRole("button", {
           name: "Accept",
         });
-        fireEvent.click(acceptButton);
+        await userEvent.click(acceptButton);
 
         notifications.forEach((notification) => {
           expect(notification).toHaveAttribute("aria-disabled", "true");
         });
+        resolvePromise(null);
+        for (const notification of notifications) {
+          await waitFor(() => {
+            expect(notification).not.toHaveAttribute("aria-disabled", "true");
+          });
+        }
       });
 
       it("should accept friend request", async () => {
