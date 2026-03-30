@@ -19,3 +19,10 @@ export const UserSignupSchema = z
       path: ["confirmPassword"],
     },
   );
+
+export const GroupSchema = z.strictObject({
+  groupName: z
+    .string("Please provide a string group name.")
+    .trim()
+    .nonempty("Group name cannot be empty."),
+});
