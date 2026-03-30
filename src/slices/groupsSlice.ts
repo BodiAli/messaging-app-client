@@ -7,8 +7,19 @@ const apiSliceWithGroups = apiSlice.injectEndpoints({
       getGroups: build.query<{ groups: GroupChat[] }, undefined>({
         query: () => "/users/me/groups",
       }),
+      createGroup: build.mutation<{ group: GroupChat }, string, undefined>({
+        query: (groupName) => {
+          return {
+            method: "POST",
+            url: "/users/me/groups",
+            body: {
+              groupName,
+            },
+          };
+        },
+      }),
     };
   },
 });
 
-export const { useGetGroupsQuery } = apiSliceWithGroups;
+export const { useGetGroupsQuery, useCreateGroupMutation } = apiSliceWithGroups;
