@@ -13,7 +13,6 @@ import TwoUsersChatPage from "@/pages/TwoUsersChatPage";
 import IndexPage from "@/pages/IndexPage";
 import GroupChatPage from "@/pages/GroupChatPage";
 import GroupsPageIndex from "@/components/GroupsPageIndex";
-import CreateGroupPage from "@/pages/CreateGroupPage";
 import type { RouteObject } from "react-router";
 
 const routes: RouteObject[] = [
@@ -52,10 +51,6 @@ const routes: RouteObject[] = [
                   {
                     index: true,
                     Component: GroupsPageIndex,
-                  },
-                  {
-                    path: "create-group",
-                    Component: CreateGroupPage,
                   },
                   {
                     path: ":groupId",
