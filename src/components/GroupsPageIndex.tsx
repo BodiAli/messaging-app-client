@@ -18,6 +18,7 @@ export default function GroupsPageIndex() {
     handleSubmit,
     register,
     formState: { errors },
+    reset,
   } = useForm({
     resolver: zodResolver(GroupSchema),
   });
@@ -35,18 +36,41 @@ export default function GroupsPageIndex() {
 
   const onSubmit: SubmitHandler<FormFields> = async (data) => {
     await createGroup(data.groupName);
+    reset();
     enqueueSnackbar(`${data.groupName} was created successfully`, {
       variant: "success",
     });
   };
 
   return (
-    <Box>
-      <Typography variant="h1">Create a new group</Typography>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        gap: 3,
+        marginTop: 3,
+        paddingX: 8,
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
+        <Typography variant="h2" component={"h1"}>
+          Create a new group
+        </Typography>
+      </Box>
       <Box
         component={"form"}
         aria-label="create new group"
         onSubmit={handleSubmit(onSubmit)}
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+        }}
       >
         {errorsList && (
           <List
@@ -65,8 +89,31 @@ export default function GroupsPageIndex() {
           {...register("groupName")}
           error={!!errors.groupName}
           helperText={errors.groupName?.message}
+          sx={{
+            flex: 3,
+            "& .MuiOutlinedInput-notchedOutline": {
+              borderColor: "#000",
+            },
+          }}
+          slotProps={{
+            inputLabel: {
+              sx: {
+                color: "#000",
+              },
+            },
+          }}
         />
-        <Button type="submit" loading={isLoading}>
+        <Button
+          type="submit"
+          loading={isLoading}
+          variant="contained"
+          sx={{
+            alignSelf: "start",
+            flex: 1,
+            backgroundColor: (theme) => theme.palette.success.dark,
+            paddingY: 2,
+          }}
+        >
           Create group
         </Button>
       </Box>
