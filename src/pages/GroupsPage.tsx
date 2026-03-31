@@ -56,7 +56,7 @@ export default function GroupsPage() {
         ) : data.groups.length === 0 ? (
           <Typography>You are not in any groups</Typography>
         ) : (
-          <Stack>
+          <Stack spacing={5}>
             {data.groups.map((group) => {
               return (
                 <Card key={group.id}>
