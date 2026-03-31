@@ -1,10 +1,12 @@
 import { describe, it, expect, beforeAll, afterEach } from "vitest";
 import { createMemoryRouter, Outlet, RouterProvider } from "react-router";
 import fetchMock, { manageFetchMockGlobally } from "@fetch-mock/vitest";
+import * as notistack from "notistack";
 import userEvent from "@testing-library/user-event";
-import { render, screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import routes from "@/routes/routes";
 import renderWithProviders from "@/utils/test-utils";
+import type { GroupChat } from "@/types/modelsType";
 
 const serverCreateGroupRoute = "/users/me/groups";
 
@@ -171,6 +173,123 @@ describe("groups-page-index component", () => {
       expect(errorsListitem).toHaveTextContent("SERVER: Group cannot be empty");
     });
 
-    it.todo("should render ErrorBoundary when server responds with 5xx status");
+    it("should render ErrorBoundary when server responds with 5xx status", async () => {
+      expect.hasAssertions();
+
+      vi.spyOn(console, "error").mockImplementation(() => null);
+      fetchMock.post(serverCreateGroupRoute, {
+        status: 500,
+        body: {
+          error: "Server Error!",
+        },
+      });
+      const router = createMemoryRouter(routes, {
+        initialEntries: ["/groups"],
+      });
+      renderWithProviders(<RouterProvider router={router} />);
+      const groupNameInput = screen.getByRole("textbox", {
+        name: "Group name",
+      });
+      const submitButton = screen.getByRole("button", {
+        name: "Create group",
+      });
+      await userEvent.type(groupNameInput, "group name");
+      await userEvent.click(submitButton);
+
+      const errorBoundaryElement = screen.getByRole("heading", {
+        level: 1,
+        name: "Unexpected error occurred",
+      });
+      const errorText = screen.getByText("Server Error!");
+
+      expect(errorBoundaryElement).toBeInTheDocument();
+      expect(errorText).toBeInTheDocument();
+    });
+  });
+
+  describe("handling valid form submit", () => {
+    it("should disable submit button while submitting", async () => {
+      expect.hasAssertions();
+
+      const { promise, resolve } = Promise.withResolvers();
+      vi.spyOn(globalThis, "fetch").mockImplementationOnce(async () => {
+        await promise;
+
+        const groupResponse: { group: GroupChat } = {
+          group: {
+            adminId: "adminId",
+            createdAt: "2020-01-01T01:30:00Z",
+            id: "groupId",
+            name: "group name",
+          },
+        };
+        return new Response(JSON.stringify(groupResponse), {
+          status: 201,
+          headers: {
+            "Content-type": "application/json",
+          },
+        });
+      });
+      const router = createMemoryRouter(routes, {
+        initialEntries: ["/groups"],
+      });
+      renderWithProviders(<RouterProvider router={router} />);
+      const groupNameInput = screen.getByRole("textbox", {
+        name: "Group name",
+      });
+      const submitButton = screen.getByRole("button", {
+        name: "Create group",
+      });
+
+      await userEvent.type(groupNameInput, "group name");
+      await userEvent.click(submitButton);
+
+      expect(submitButton).toBeDisabled();
+
+      resolve(null);
+      await waitFor(() => {
+        expect(submitButton).toBeEnabled();
+      });
+    });
+
+    it("should call enqueueSnackbar", async () => {
+      expect.hasAssertions();
+
+      const mockEnqueueSnackbar = vi.fn<() => notistack.SnackbarKey>();
+      vi.spyOn(notistack, "useSnackbar").mockImplementation(() => {
+        return {
+          enqueueSnackbar: mockEnqueueSnackbar,
+          closeSnackbar: vi.fn<() => void>(),
+        };
+      });
+      fetchMock.post(serverCreateGroupRoute, {
+        status: 201,
+        body: {
+          group: {
+            adminId: "adminId",
+            createdAt: "2020-01-01T01:30:00Z",
+            id: "groupId",
+            name: "group name",
+          },
+        } satisfies { group: GroupChat },
+      });
+      const router = createMemoryRouter(routes, {
+        initialEntries: ["/groups"],
+      });
+      renderWithProviders(<RouterProvider router={router} />);
+      const groupNameInput = screen.getByRole("textbox", {
+        name: "Group name",
+      });
+      const submitButton = screen.getByRole("button", {
+        name: "Create group",
+      });
+
+      await userEvent.type(groupNameInput, "group name");
+      await userEvent.click(submitButton);
+
+      expect(mockEnqueueSnackbar).toHaveBeenCalledWith<
+        [notistack.SnackbarMessage, notistack.OptionsObject]
+      >("group name was created successfully", { variant: "success" });
+    });
   });
 });
