@@ -6,6 +6,7 @@ const apiSliceWithGroups = apiSlice.injectEndpoints({
     return {
       getGroups: build.query<{ groups: GroupChat[] }, undefined>({
         query: () => "/users/me/groups",
+        providesTags: ["Group"],
       }),
       createGroup: build.mutation<{ group: GroupChat }, string, undefined>({
         query: (groupName) => {
@@ -17,6 +18,7 @@ const apiSliceWithGroups = apiSlice.injectEndpoints({
             },
           };
         },
+        invalidatesTags: ["Group"],
       }),
     };
   },
