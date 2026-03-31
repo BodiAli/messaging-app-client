@@ -21,9 +21,9 @@ const CustomCardActionArea = (
 export default function GroupsPage() {
   const {
     data = { groups: [] },
-    isLoading,
     isError,
     error,
+    isFetching,
   } = useGetGroupsQuery(undefined);
 
   if (isError) {
@@ -35,11 +35,18 @@ export default function GroupsPage() {
       component={"main"}
       sx={{ display: "grid", gridTemplateColumns: "0.3fr 1fr", flex: 1 }}
     >
-      <Box component={"section"}>
+      <Box
+        component={"section"}
+        sx={{
+          maxHeight: "700px",
+          overflowY: "auto",
+          scrollbarColor: "gray transparent",
+        }}
+      >
         <Typography variant="h2" sx={{ paddingY: 3, textAlign: "center" }}>
           Your groups
         </Typography>
-        {isLoading ? (
+        {isFetching ? (
           <Card>
             <CardHeader
               avatar={
