@@ -252,7 +252,7 @@ describe("groups-page-index component", () => {
       });
     });
 
-    it("should call enqueueSnackbar", async () => {
+    it("should call enqueueSnackbar after submitting form", async () => {
       expect.hasAssertions();
 
       const mockEnqueueSnackbar = vi.fn<() => notistack.SnackbarKey>();
