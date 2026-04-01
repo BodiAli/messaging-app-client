@@ -1,13 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Box, Typography } from "@mui/material";
-import { useParams } from "react-router";
 import formatDate from "@/utils/formatDate";
-import SendMessage from "./SendMessage";
 import type { Messages } from "@/types/modelsType";
-
-function assert(value: unknown): asserts value {
-  if (!value) throw new Error("Value is not defined");
-}
 
 interface ChattingProps {
   messages: Messages;
@@ -20,8 +14,6 @@ export default function Chatting({
   isFetching,
   currentUserId,
 }: ChattingProps) {
-  const { userId } = useParams<"userId">();
-  assert(userId);
   const messagesContainerRef = useRef<null | HTMLDivElement>(null);
 
   useEffect(() => {
@@ -35,9 +27,6 @@ export default function Chatting({
   return (
     <Box
       sx={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 1,
         paddingX: 3,
       }}
     >
@@ -70,7 +59,6 @@ export default function Chatting({
           );
         })}
       </Box>
-      <SendMessage />
     </Box>
   );
 }
