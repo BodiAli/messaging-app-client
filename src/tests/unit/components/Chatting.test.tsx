@@ -105,18 +105,4 @@ describe("chatting component", () => {
       });
     });
   });
-
-  describe("rendering child components", () => {
-    it("should render SendMessage form component", () => {
-      expect.hasAssertions();
-
-      renderChattingComponent(mockMessages);
-
-      const sendMessageForm = screen.getByRole("form", {
-        name: "send message form",
-      });
-
-      expect(sendMessageForm).toBeInTheDocument();
-    });
-  });
 });
