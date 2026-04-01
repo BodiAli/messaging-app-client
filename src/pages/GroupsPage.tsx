@@ -61,7 +61,13 @@ export default function GroupsPage() {
             />
           </Card>
         ) : data.groups.length === 0 ? (
-          <Typography>You are not in any groups</Typography>
+          <Typography
+            sx={{
+              textAlign: "center",
+            }}
+          >
+            You are not in any groups
+          </Typography>
         ) : (
           <Stack spacing={5}>
             {data.groups.map((group) => {
