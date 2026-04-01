@@ -1,5 +1,5 @@
 import apiSlice from "./apiSlice";
-import type { GroupChat } from "@/types/modelsType";
+import type { GroupChat, GroupMessages } from "@/types/modelsType";
 
 const apiSliceWithGroups = apiSlice.injectEndpoints({
   endpoints(build) {
@@ -20,8 +20,15 @@ const apiSliceWithGroups = apiSlice.injectEndpoints({
         },
         invalidatesTags: ["Group"],
       }),
+      getGroupMessages: build.query<GroupMessages, string>({
+        query: (groupId) => `/users/me/groups/${groupId}/messages`,
+      }),
     };
   },
 });
 
-export const { useGetGroupsQuery, useCreateGroupMutation } = apiSliceWithGroups;
+export const {
+  useGetGroupsQuery,
+  useCreateGroupMutation,
+  useGetGroupMessagesQuery,
+} = apiSliceWithGroups;
