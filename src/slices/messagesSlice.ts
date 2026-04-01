@@ -7,6 +7,7 @@ const apiSliceWithMessages = apiSlice.injectEndpoints({
       getTwoUsersMessages: build.query<ChatData, string>({
         query: (userId) => `/users/${userId}/messages`,
         providesTags: ["Message"],
+        keepUnusedDataFor: 0,
       }),
       sendMessage: build.mutation<
         undefined,
