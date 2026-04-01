@@ -13,6 +13,7 @@ import TwoUsersChatPage from "@/pages/TwoUsersChatPage";
 import IndexPage from "@/pages/IndexPage";
 import GroupChatPage from "@/pages/GroupChatPage";
 import GroupsPageIndex from "@/components/GroupsPageIndex";
+import GroupDetails from "@/pages/GroupDetails";
 import type { RouteObject } from "react-router";
 
 const routes: RouteObject[] = [
@@ -55,6 +56,10 @@ const routes: RouteObject[] = [
                   {
                     path: ":groupId",
                     Component: GroupChatPage,
+                  },
+                  {
+                    path: ":groupId/details",
+                    Component: GroupDetails,
                   },
                 ],
               },
