@@ -51,11 +51,11 @@ const mockChatData: ChatData = {
 
 const mockCurrentUser: { user: User } = {
   user: {
-    id: "guestUserId",
+    id: "currentUserId",
     imageUrl: null,
-    isGuest: true,
+    isGuest: false,
     lastSeen: new Date().toDateString(),
-    username: "guestUsername",
+    username: "currentUsername",
   },
 };
 
