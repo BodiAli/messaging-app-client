@@ -1,10 +1,14 @@
 import { useEffect } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, Link as RouterLink } from "react-router";
+import { Box, Link } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { useGetGroupMessagesQuery } from "@/slices/groupsSlice";
 import handleUnexpectedError from "@/utils/handleUnexpectedError";
 import Loader from "@/components/Loader/Loader";
 import { isClientError, isFetchBaseQueryError } from "@/types/apiResponseTypes";
+import Chatting from "@/components/Chatting";
+import { useAppSelector } from "@/app/hooks";
+import { selectUser } from "@/slices/authSlice";
 
 function assert(value: unknown): asserts value {
   if (!value) {
@@ -15,9 +19,12 @@ function assert(value: unknown): asserts value {
 export default function GroupChatPage() {
   const { groupId } = useParams<"groupId">();
   assert(groupId);
-  const { isError, isLoading, error } = useGetGroupMessagesQuery(groupId);
+  const { data, isError, isLoading, isFetching, error } =
+    useGetGroupMessagesQuery(groupId);
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
+  const currentUser = useAppSelector(selectUser);
+  assert(currentUser);
 
   useEffect(() => {
     if (isError) {
@@ -32,9 +39,20 @@ export default function GroupChatPage() {
     }
   }, [isError, error, enqueueSnackbar, navigate]);
 
-  if (isLoading) {
+  if (isLoading || !data) {
     return <Loader />;
   }
 
-  return <p>GROUPS CHAT PAGE</p>;
+  return (
+    <Box>
+      <Link component={RouterLink} to="details">
+        {data.group.name}
+      </Link>
+      <Chatting
+        currentUserId={currentUser.id}
+        isFetching={isFetching}
+        messages={data.messages}
+      />
+    </Box>
+  );
 }
