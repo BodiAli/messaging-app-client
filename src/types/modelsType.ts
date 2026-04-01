@@ -51,3 +51,10 @@ export type ChatData =
 export interface GroupChat extends Omit<PrismaGroupChat, "createdAt"> {
   createdAt: string;
 }
+
+export interface GroupMessages {
+  messages: (Omit<PrismaMessage, "createdAt"> & { createdAt: string } & {
+    sender: Omit<PrismaUser, "password" | "isGuest" | "lastSeen">;
+  })[];
+  group: Omit<PrismaGroupChat, "adminId" | "createdAt"> & { createdAt: string };
+}
