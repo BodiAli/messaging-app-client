@@ -115,6 +115,8 @@ export default function SendMessage() {
         display: "flex",
         alignItems: "start",
         gap: 1,
+        paddingX: 3,
+        marginTop: 1,
       }}
       component={"form"}
       aria-label="send message form"

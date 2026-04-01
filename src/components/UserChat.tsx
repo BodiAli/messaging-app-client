@@ -21,6 +21,7 @@ import {
 } from "@/types/apiResponseTypes";
 import UsersAvatar from "./UsersAvatar";
 import Chatting from "./Chatting";
+import SendMessage from "./SendMessage";
 import type { ChatData } from "@/types/modelsType";
 
 function assert(value: unknown): asserts value {
@@ -133,6 +134,7 @@ export default function UserChat({ chatData, isFetching }: UserChatProps) {
         isFetching={isFetching}
         currentUserId={currentUser.id}
       />
+      <SendMessage />
     </Box>
   );
 }
