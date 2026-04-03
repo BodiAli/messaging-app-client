@@ -7,7 +7,6 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import { useParams } from "react-router";
 import { Box, IconButton, styled, TextField } from "@mui/material";
 import AttachmentIcon from "@mui/icons-material/Attachment";
 import SendIcon from "@mui/icons-material/Send";
@@ -40,8 +39,6 @@ export default function SendMessage({
 }) {
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const messageInputRef = useRef<HTMLInputElement | null>(null);
-  const { userId } = useParams<"userId">();
-  assert(userId);
 
   useEffect(() => {
     assert(messageInputRef.current);
