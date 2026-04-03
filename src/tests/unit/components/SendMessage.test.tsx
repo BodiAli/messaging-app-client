@@ -1,23 +1,30 @@
-import { fireEvent, screen, within } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import { createRoutesStub } from "react-router";
 import { describe, it, expect, afterEach, beforeEach, beforeAll } from "vitest";
 import fetchMock, { manageFetchMockGlobally } from "@fetch-mock/vitest";
-import * as notistack from "notistack";
 import userEvent from "@testing-library/user-event";
 import SendMessage from "@/components/SendMessage";
 import renderWithProviders from "@/utils/test-utils";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import type { Dispatch, SetStateAction, SubmitEvent } from "react";
 
-const serverMessagesRoute = "/users/userId/messages";
-
-function renderSendMessage() {
+function renderSendMessage(
+  onSubmit: (
+    setUploadedImageUrl: Dispatch<SetStateAction<string | null>>,
+  ) => (e: SubmitEvent<HTMLFormElement>) => void = vi.fn<
+    (setUploadedImageUrl: Dispatch<SetStateAction<string | null>>) => () => void
+  >(),
+  isLoading = false,
+) {
   const Stub = createRoutesStub([
     {
       ErrorBoundary,
       children: [
         {
           path: "/:userId",
-          Component: () => <SendMessage />,
+          Component: () => (
+            <SendMessage onSubmit={onSubmit} isLoading={isLoading} />
+          ),
         },
       ],
     },
@@ -139,100 +146,10 @@ describe("send-message component", () => {
   });
 
   describe("submitting form", () => {
-    it("should call alert method when message field is empty", async () => {
+    it("should disable inputs when loading is true", () => {
       expect.hasAssertions();
 
-      const mockAlert = vi
-        .spyOn(window, "alert")
-        .mockImplementation(() => null);
-      renderSendMessage();
-      const textInput = screen.getByRole("textbox");
-      const sendButton = screen.getByRole("button", { name: "send message" });
-
-      await userEvent.type(textInput, " ");
-      await userEvent.click(sendButton);
-
-      expect(mockAlert).toHaveBeenCalledExactlyOnceWith(
-        "Cannot send an empty message",
-      );
-    });
-
-    it("should render ErrorBoundary when server responds with unexpected error", async () => {
-      expect.hasAssertions();
-
-      vi.spyOn(console, "error").mockImplementation(() => null);
-      // Manually mock fetch because fetch-mock keeps the response promise hanging and not executing
-      // when using multipart/form-data
-      vi.spyOn(globalThis, "fetch").mockResolvedValue(
-        new Response(JSON.stringify({ error: "Server error" }), {
-          headers: {
-            "Content-type": "application/json",
-          },
-          status: 500,
-        }),
-      );
-      renderSendMessage();
-      const textField = screen.getByRole("textbox");
-      const attachButton = screen.getByRole("button", {
-        name: "attach image",
-      });
-      const sendButton = screen.getByRole("button", {
-        name: "send message",
-      });
-
-      await userEvent.type(textField, "Hello!");
-      await userEvent.upload(
-        attachButton,
-        new File(["hello"], "hello.png", { type: "image/png" }),
-      );
-      await userEvent.click(sendButton);
-
-      const errorBoundaryHeading = screen.getByRole("heading", {
-        level: 1,
-        name: "Unexpected error occurred",
-      });
-      const errorMessage = screen.getByText("Server error");
-
-      expect(errorBoundaryHeading).toBeInTheDocument();
-      expect(errorMessage).toBeInTheDocument();
-    });
-
-    it("should call 'enqueueSnackbar' on each client error", async () => {
-      expect.hasAssertions();
-
-      const mockEnqueueSnackbar = vi.fn<notistack.EnqueueSnackbar>();
-      vi.spyOn(notistack, "useSnackbar").mockReturnValue({
-        closeSnackbar: vi.fn<() => void>(),
-        enqueueSnackbar: mockEnqueueSnackbar,
-      });
-      fetchMock.post(serverMessagesRoute, {
-        status: 404,
-        body: {
-          errors: [{ message: "Cannot find user to send message to." }],
-        },
-      });
-      renderSendMessage();
-      const textField = screen.getByRole("textbox");
-      const sendButton = screen.getByRole("button", {
-        name: "send message",
-      });
-
-      await userEvent.type(textField, "message");
-      await userEvent.click(sendButton);
-
-      expect(mockEnqueueSnackbar).toHaveBeenCalledExactlyOnceWith(
-        "Cannot find user to send message to.",
-        { variant: "error" },
-      );
-    });
-
-    it("should disable inputs while submitting", async () => {
-      expect.hasAssertions();
-
-      fetchMock.post(serverMessagesRoute, {
-        status: 201,
-      });
-      renderSendMessage();
+      renderSendMessage(vi.fn(), true);
       const textField = screen.getByRole("textbox");
       const attachButton = screen.getByRole("button", {
         name: "attach image",
@@ -240,13 +157,56 @@ describe("send-message component", () => {
       const submitButton = screen.getByRole("button", {
         name: "send message",
       });
-      await userEvent.type(textField, "message");
-
-      fireEvent.click(submitButton);
 
       expect(textField).toBeDisabled();
       expect(attachButton).toHaveAttribute("aria-disabled", "true");
       expect(submitButton).toBeDisabled();
+    });
+
+    it("should not disable inputs when loading is false", () => {
+      expect.hasAssertions();
+
+      renderSendMessage(vi.fn(), false);
+      const textField = screen.getByRole("textbox");
+      const attachButton = screen.getByRole("button", {
+        name: "attach image",
+      });
+      const submitButton = screen.getByRole("button", {
+        name: "send message",
+      });
+
+      expect(textField).toBeEnabled();
+      expect(attachButton).not.toHaveAttribute("aria-disabled", "true");
+      expect(submitButton).toBeEnabled();
+    });
+
+    it("should call onSubmit with expected arguments", async () => {
+      expect.hasAssertions();
+
+      const mockOnSubmit = vi.fn<
+        (
+          setUploadedImageUrl: Dispatch<SetStateAction<string | null>>,
+        ) => (e: SubmitEvent<HTMLFormElement>) => void
+      >(() => (e) => {
+        e.preventDefault();
+      });
+      renderSendMessage(mockOnSubmit, false);
+      const textField = screen.getByRole("textbox");
+      const attachButton = screen.getByRole("button", {
+        name: "attach image",
+      });
+      const submitButton = screen.getByRole("button", {
+        name: "send message",
+      });
+
+      await userEvent.type(textField, "message content");
+      await userEvent.upload(
+        attachButton,
+        new File(["hello"], "file.txt", { type: "image/png" }),
+      );
+      await userEvent.click(submitButton);
+
+      expect(mockOnSubmit).toHaveBeenCalledWith(expect.any(Function));
     });
   });
 });
