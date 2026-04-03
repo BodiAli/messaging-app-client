@@ -16,14 +16,23 @@ import * as localStorageService from "@/services/localStorage";
 import serverUrl from "@/utils/serverUrl";
 import AppLayout from "@/app/AppLayout";
 import ErrorBoundary from "@/components/ErrorBoundary";
-import type { ChatData, Messages, User } from "@/types/modelsType";
+import type {
+  ChatData,
+  GroupMessages,
+  Messages,
+  User,
+} from "@/types/modelsType";
 
 const getUserServerRoute = `${serverUrl}/auth/get-user`;
 const addFriendServerRoute = `${serverUrl}/friendships`;
 
 vi.mock(import("@/components/Chatting"), () => {
   return {
-    default: ({ messages }: { messages: Messages }) => (
+    default: ({
+      messages,
+    }: {
+      messages: Messages | GroupMessages["messages"];
+    }) => (
       <>
         {messages.map((message) => (
           <p key={message.id}>{message.content}</p>
