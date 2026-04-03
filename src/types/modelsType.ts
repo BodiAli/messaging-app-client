@@ -15,8 +15,13 @@ export interface UserFriends {
   friends: Friend[];
 }
 
-export type Messages = (Omit<PrismaMessage, "createdAt"> & {
+export type Messages = (Omit<
+  PrismaMessage,
+  "createdAt" | "groupChatId" | "receiverId"
+> & {
   createdAt: string;
+  groupChatId: null;
+  receiverId: string;
 })[];
 
 interface ChatDataIsNotFriend {
@@ -53,7 +58,10 @@ export interface GroupChat extends Omit<PrismaGroupChat, "createdAt"> {
 }
 
 export interface GroupMessages {
-  messages: (Omit<PrismaMessage, "createdAt"> & { createdAt: string } & {
+  messages: (Omit<PrismaMessage, "createdAt" | "groupChatId" | "receiverId"> & {
+    createdAt: string;
+    groupChatId: string;
+    receiverId: null;
     sender: Omit<PrismaUser, "password" | "isGuest" | "lastSeen">;
   })[];
   group: Omit<PrismaGroupChat, "adminId" | "createdAt"> & { createdAt: string };
