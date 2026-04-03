@@ -241,6 +241,65 @@ describe("group-chat-page component", () => {
       expect(secondGroupMessageContent).toBeInTheDocument();
     });
 
-    it.todo("should render group messages images");
+    it("should render group message image if present", async () => {
+      expect.hasAssertions();
+
+      fetchMock.get(serverGroupMessagesRoute, {
+        status: 200,
+        body: mockGroupMessages,
+      });
+      const router = createMemoryRouter(routes, {
+        initialEntries: ["/groups/Test-GroupId"],
+      });
+      renderWithProviders(<RouterProvider router={router} />);
+
+      const messageImage = await screen.findByRole("img", {
+        name: "user sent image",
+      });
+
+      expect(messageImage).toBeInTheDocument();
+    });
+
+    it("should render group message sender's profile picture", async () => {
+      expect.hasAssertions();
+
+      fetchMock.get(serverGroupMessagesRoute, {
+        status: 200,
+        body: mockGroupMessages,
+      });
+      const router = createMemoryRouter(routes, {
+        initialEntries: ["/groups/Test-GroupId"],
+      });
+      renderWithProviders(<RouterProvider router={router} />);
+
+      const userAProfilePicture = await screen.findByTitle(
+        "Test-UserAUsername no profile picture",
+      );
+      const userBProfilePicture = screen.getByRole("img", {
+        name: "Test-UserBUsername's profile picture",
+      });
+
+      expect(userAProfilePicture).toBeInTheDocument();
+      expect(userBProfilePicture).toBeInTheDocument();
+    });
+
+    it("should render group message sender's username", async () => {
+      expect.hasAssertions();
+
+      fetchMock.get(serverGroupMessagesRoute, {
+        status: 200,
+        body: mockGroupMessages,
+      });
+      const router = createMemoryRouter(routes, {
+        initialEntries: ["/groups/Test-GroupId"],
+      });
+      renderWithProviders(<RouterProvider router={router} />);
+
+      const userAUsername = await screen.findByText("Test-UserAUsername");
+      const userBUsername = screen.getByText("Test-UserBUsername");
+
+      expect(userAUsername).toBeInTheDocument();
+      expect(userBUsername).toBeInTheDocument();
+    });
   });
 });
