@@ -1,21 +1,16 @@
 import {
-  useState,
   useRef,
   type ChangeEvent,
   useEffect,
   type SubmitEvent,
+  useState,
+  type Dispatch,
+  type SetStateAction,
 } from "react";
 import { useParams } from "react-router";
 import { Box, IconButton, styled, TextField } from "@mui/material";
-import { useSnackbar } from "notistack";
 import AttachmentIcon from "@mui/icons-material/Attachment";
 import SendIcon from "@mui/icons-material/Send";
-import { useSendMessageMutation } from "@/slices/messagesSlice";
-import {
-  isClientError,
-  isFetchBaseQueryError,
-  isServerError,
-} from "@/types/apiResponseTypes";
 
 const VisuallyHiddenUpload = styled("input")({
   position: "absolute",
@@ -34,19 +29,19 @@ interface FormWithElements extends HTMLFormElement {
   elements: FormFields;
 }
 
-export default function SendMessage() {
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<null | string>(null);
-  const [messageContent, setMessageContent] = useState("");
-  const { enqueueSnackbar } = useSnackbar();
-  const [fatalError, setFatalError] = useState<string | null>(null);
+export default function SendMessage({
+  onSubmit,
+  isLoading,
+}: {
+  onSubmit: (
+    setUploadedImageUrl: Dispatch<SetStateAction<string | null>>,
+  ) => (e: SubmitEvent<FormWithElements>) => void;
+  isLoading: boolean;
+}) {
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const messageInputRef = useRef<HTMLInputElement | null>(null);
-  const [sendMessage, { isLoading }] = useSendMessageMutation();
   const { userId } = useParams<"userId">();
   assert(userId);
-
-  if (fatalError) {
-    throw new Error(fatalError);
-  }
 
   useEffect(() => {
     assert(messageInputRef.current);
@@ -54,46 +49,6 @@ export default function SendMessage() {
       messageInputRef.current.focus();
     }
   }, [isLoading]);
-
-  const handleSubmit = async (e: SubmitEvent<FormWithElements>) => {
-    e.preventDefault();
-
-    const { messageImage: messageImageElement } = e.currentTarget.elements;
-    assert(messageImageElement.files);
-    const messageImage = messageImageElement.files[0];
-
-    const messageContent = e.currentTarget.elements.messageContent.value;
-
-    if (messageContent.trim().length === 0) {
-      alert("Cannot send an empty message");
-      return;
-    }
-
-    const formData = new FormData();
-
-    formData.append("messageContent", messageContent);
-    if (messageImage) {
-      formData.append("messageImage", messageImage);
-    }
-
-    try {
-      await sendMessage({ userId, formData }).unwrap();
-      setMessageContent("");
-      setUploadedImageUrl(null);
-    } catch (error) {
-      if (isFetchBaseQueryError(error)) {
-        if (isServerError(error.data)) {
-          setFatalError(error.data.error);
-          return;
-        }
-        if (isClientError(error.data)) {
-          error.data.errors.forEach((error) => {
-            enqueueSnackbar(error.message, { variant: "error" });
-          });
-        }
-      }
-    }
-  };
 
   const handleUploadImage = (e: ChangeEvent<HTMLInputElement>) => {
     assert(e.currentTarget.files);
@@ -120,7 +75,7 @@ export default function SendMessage() {
       }}
       component={"form"}
       aria-label="send message form"
-      onSubmit={handleSubmit}
+      onSubmit={onSubmit(setUploadedImageUrl)}
     >
       <TextField
         inputRef={messageInputRef}
@@ -128,10 +83,6 @@ export default function SendMessage() {
         required
         disabled={isLoading}
         placeholder="Message"
-        value={messageContent}
-        onChange={(e) => {
-          setMessageContent(e.target.value);
-        }}
         sx={{
           flex: 1,
         }}
