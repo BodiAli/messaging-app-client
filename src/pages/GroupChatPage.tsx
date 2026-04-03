@@ -101,15 +101,10 @@ export default function GroupChatPage() {
       const form = e.currentTarget;
       const formData = new FormData(form);
       const messageContent = form.elements.messageContent.value;
-      const messageImage = form.elements.messageImage.files?.[0];
 
       if (messageContent.trim().length === 0) {
         alert("Cannot send an empty message");
         return;
-      }
-
-      if (messageImage) {
-        formData.append("messageImage", messageContent);
       }
 
       await sendMessage({ groupId, formData });
