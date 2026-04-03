@@ -57,11 +57,11 @@ const routes: RouteObject[] = [
                     path: ":groupId",
                     Component: GroupChatPage,
                   },
-                  {
-                    path: ":groupId/details",
-                    Component: GroupDetails,
-                  },
                 ],
+              },
+              {
+                path: "/groups/:groupId/details",
+                Component: GroupDetails,
               },
               {
                 path: "/non-friends",
