@@ -44,10 +44,39 @@ export default function GroupChatPage() {
   }
 
   return (
-    <Box>
-      <Link component={RouterLink} to="details">
-        {data.group.name}
-      </Link>
+    <Box
+      component={"section"}
+      sx={{
+        paddingY: 3,
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+        }}
+      >
+        <Link
+          component={RouterLink}
+          to="details"
+          sx={{
+            color: "#fff",
+            textDecoration: "none",
+            paddingY: 1,
+            paddingX: 2,
+            marginBottom: 3,
+            borderRadius: "5px",
+            fontSize: "1.1rem",
+            transition: "background-color 200ms",
+            backgroundColor: (theme) => theme.palette.primary.light,
+            "&:hover": {
+              backgroundColor: (theme) => theme.palette.primary.main,
+            },
+          }}
+        >
+          {data.group.name}
+        </Link>
+      </Box>
       <Chatting
         currentUserId={currentUser.id}
         isFetching={isFetching}
