@@ -1,6 +1,6 @@
 import { Navigate, useNavigate } from "react-router";
 import { Box, Button, List, TextField, Typography } from "@mui/material";
-import { type FormEvent, type ReactElement } from "react";
+import { type ReactElement, type SubmitEvent } from "react";
 import {
   selectUser,
   useLoginAsGuestMutation,
@@ -43,7 +43,7 @@ export default function LoginPage() {
     }
   }
 
-  const handleLogin = (e: FormEvent<LoginFormWithElements>) => {
+  const handleLogin = (e: SubmitEvent<LoginFormWithElements>) => {
     e.preventDefault();
 
     const form = e.currentTarget;

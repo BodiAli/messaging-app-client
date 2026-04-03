@@ -2,8 +2,8 @@ import {
   useState,
   useRef,
   type ChangeEvent,
-  type FormEvent,
   useEffect,
+  type SubmitEvent,
 } from "react";
 import { useParams } from "react-router";
 import { Box, IconButton, styled, TextField } from "@mui/material";
@@ -55,7 +55,7 @@ export default function SendMessage() {
     }
   }, [isLoading]);
 
-  const handleSubmit = async (e: FormEvent<FormWithElements>) => {
+  const handleSubmit = async (e: SubmitEvent<FormWithElements>) => {
     e.preventDefault();
 
     const { messageImage: messageImageElement } = e.currentTarget.elements;
