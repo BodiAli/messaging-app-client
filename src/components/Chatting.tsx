@@ -1,10 +1,11 @@
 import { useEffect, useRef } from "react";
 import { Box, Typography } from "@mui/material";
 import formatDate from "@/utils/formatDate";
-import type { Messages } from "@/types/modelsType";
+import UsersAvatar from "./UsersAvatar";
+import type { GroupMessages, Messages } from "@/types/modelsType";
 
 interface ChattingProps {
-  messages: Messages;
+  messages: Messages | GroupMessages["messages"];
   isFetching: boolean;
   currentUserId: string;
 }
@@ -71,7 +72,7 @@ function Message({
   backgroundColor,
   isLoading,
 }: {
-  message: Flatten<Messages>;
+  message: Flatten<Messages> | Flatten<GroupMessages["messages"]>;
   direction: string;
   backgroundColor: string;
   isLoading: boolean;
@@ -90,6 +91,15 @@ function Message({
         opacity: isLoading ? 0.5 : "initial",
       }}
     >
+      {message.groupChatId && (
+        <>
+          <UsersAvatar
+            imageUrl={message.sender.imageUrl}
+            username={message.sender.username}
+          />
+          <Typography>{message.sender.username}</Typography>
+        </>
+      )}
       {message.imageUrl && (
         <Box
           sx={{
