@@ -19,7 +19,7 @@ export default function initializeTheme() {
     palette: {
       primary: {
         main: "#4a4453",
-        light: "#847d90ff",
+        light: "#777181",
         dark: "#3a3542ff",
       },
       secondary: {
