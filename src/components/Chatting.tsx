@@ -39,8 +39,8 @@ export default function Chatting({
           gap: 4,
           padding: 3,
           backgroundColor: "#ffffff73",
-          minHeight: "300px",
-          maxHeight: "600px",
+          minHeight: "500px",
+          maxHeight: "700px",
           overflowY: "auto",
         }}
       >
@@ -92,13 +92,20 @@ function Message({
       }}
     >
       {message.groupChatId && (
-        <>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+            marginBottom: 1,
+          }}
+        >
           <UsersAvatar
             imageUrl={message.sender.imageUrl}
             username={message.sender.username}
           />
           <Typography>{message.sender.username}</Typography>
-        </>
+        </Box>
       )}
       {message.imageUrl && (
         <Box
