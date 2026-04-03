@@ -16,7 +16,7 @@ import routes from "@/routes/routes";
 import renderWithProviders from "@/utils/test-utils";
 import * as jwtTokenService from "@/services/localStorage";
 import type { ApiClientError } from "@/types/apiResponseTypes";
-import type { GroupMessages, User } from "@/types/modelsType";
+import type { GroupMessages, Message, User } from "@/types/modelsType";
 
 const serverGroupMessagesRoute = "/users/me/groups/Test-GroupId/messages";
 
@@ -300,6 +300,156 @@ describe("group-chat-page component", () => {
 
       expect(userAUsername).toBeInTheDocument();
       expect(userBUsername).toBeInTheDocument();
+    });
+  });
+
+  describe("handling validating form fields", () => {
+    it("should call alert method with an error message when sending an empty message", async () => {
+      expect.hasAssertions();
+
+      const mockAlert = vi.spyOn(globalThis, "alert");
+      fetchMock.get(serverGroupMessagesRoute, {
+        status: 200,
+        body: mockGroupMessages,
+      });
+      const router = createMemoryRouter(routes, {
+        initialEntries: ["/groups/Test-GroupId"],
+      });
+      renderWithProviders(<RouterProvider router={router} />);
+      const messageInput = await screen.findByPlaceholderText("Message");
+      const submitButton = screen.getByRole("button", {
+        name: "send message",
+      });
+
+      await userEvent.type(messageInput, " ");
+      await userEvent.click(submitButton);
+
+      expect(mockAlert).toHaveBeenCalledWith("Cannot send an empty message");
+    });
+  });
+
+  describe("handling errors when sending a message", () => {
+    it("should render ErrorBoundary when server responds with 5xx status", async () => {
+      expect.hasAssertions();
+
+      vi.spyOn(console, "error").mockImplementation(() => null);
+      fetchMock.get(serverGroupMessagesRoute, {
+        status: 200,
+        body: mockGroupMessages,
+      });
+      fetchMock.post(serverGroupMessagesRoute, {
+        status: 500,
+        body: {
+          error: "Test-Server error.",
+        },
+      });
+      const router = createMemoryRouter(routes, {
+        initialEntries: ["/groups/Test-GroupId"],
+      });
+      renderWithProviders(<RouterProvider router={router} />);
+      const messageInput = await screen.findByPlaceholderText("Message");
+      const submitButton = screen.getByRole("button", {
+        name: "send message",
+      });
+
+      await userEvent.type(messageInput, "Test-Message content");
+      await userEvent.click(submitButton);
+      const errorBoundaryHeading = screen.getByRole("heading", {
+        name: "Unexpected error occurred",
+        level: 1,
+      });
+      const errorText = screen.getByText("Test-Server error.");
+
+      expect(errorBoundaryHeading).toBeInTheDocument();
+      expect(errorText).toBeInTheDocument();
+    });
+
+    it("should call enqueue snackbar when server responds with 4xx status", async () => {
+      expect.hasAssertions();
+
+      const mockEnqueueSnackbar = vi.fn<() => notistack.SnackbarKey>();
+      vi.spyOn(notistack, "useSnackbar").mockImplementation(() => {
+        return {
+          enqueueSnackbar: mockEnqueueSnackbar,
+          closeSnackbar: vi.fn<() => string>(),
+        };
+      });
+      fetchMock.get(serverGroupMessagesRoute, {
+        status: 200,
+        body: mockGroupMessages,
+      });
+      fetchMock.post(serverGroupMessagesRoute, {
+        status: 403,
+        body: {
+          errors: [{ message: "You cannot send message to this group." }],
+        } as ApiClientError,
+      });
+      const router = createMemoryRouter(routes, {
+        initialEntries: ["/groups/Test-GroupId"],
+      });
+      renderWithProviders(<RouterProvider router={router} />);
+      const messageInput = await screen.findByPlaceholderText("Message");
+      const submitButton = screen.getByRole("button", {
+        name: "send message",
+      });
+
+      await userEvent.type(messageInput, "Test-Message content");
+      await userEvent.click(submitButton);
+
+      expect(mockEnqueueSnackbar).toHaveBeenCalledWith<
+        [notistack.SnackbarMessage, notistack.OptionsObject]
+      >("You cannot send message to this group.", { variant: "error" });
+    });
+  });
+
+  describe("handling valid form submit", () => {
+    it("should clear form messageInput field and remove upload image after form submit", async () => {
+      expect.hasAssertions();
+
+      fetchMock.get(serverGroupMessagesRoute, {
+        status: 200,
+        body: mockGroupMessages,
+      });
+      fetchMock.post(serverGroupMessagesRoute, {
+        status: 201,
+        body: {
+          content: "Test-Message content",
+          createdAt: new Date().toISOString(),
+          groupChatId: "Test-GroupId",
+          id: "Test-MessageId3",
+          imageUrl: null,
+          receiverId: null,
+          senderId: "Test-UserAId",
+        } satisfies Omit<Message, "createdAt"> & { createdAt: string },
+      });
+      const router = createMemoryRouter(routes, {
+        initialEntries: ["/groups/Test-GroupId"],
+      });
+      renderWithProviders(<RouterProvider router={router} />);
+      const messageInput = await screen.findByPlaceholderText("Message");
+      const messageImage = screen.getByRole("button", {
+        name: "attach image",
+      });
+      const submitButton = screen.getByRole("button", {
+        name: "send message",
+      });
+
+      await userEvent.type(messageInput, "Test-Message content");
+      await userEvent.upload(
+        messageImage,
+        new File(["blob"], "filename.png", { type: "image/png" }),
+      );
+      const uploadedImagePreview = screen.getByRole("img", {
+        name: "uploaded image",
+      });
+
+      expect(messageInput).toHaveValue("Test-Message content");
+      expect(uploadedImagePreview).toBeInTheDocument();
+
+      await userEvent.click(submitButton);
+
+      expect(messageInput).not.toHaveValue();
+      expect(uploadedImagePreview).not.toBeInTheDocument();
     });
   });
 });
