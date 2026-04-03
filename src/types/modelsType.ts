@@ -24,6 +24,8 @@ export type Messages = (Omit<
   receiverId: string;
 })[];
 
+export type { PrismaMessage as Message };
+
 interface ChatDataIsNotFriend {
   messages: Messages;
   user: Pick<User, "username" | "imageUrl"> & { lastSeen: null };
