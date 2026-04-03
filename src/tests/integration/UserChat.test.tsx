@@ -19,12 +19,14 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import type {
   ChatData,
   GroupMessages,
+  Message,
   Messages,
   User,
 } from "@/types/modelsType";
 
 const getUserServerRoute = `${serverUrl}/auth/get-user`;
 const addFriendServerRoute = `${serverUrl}/friendships`;
+const serverMessagesRoute = "/users/userBId/messages";
 
 vi.mock(import("@/components/Chatting"), () => {
   return {
@@ -468,6 +470,119 @@ describe("user-chat component", () => {
           { variant: "success" },
         );
       });
+    });
+  });
+
+  describe("sending message to user", () => {
+    it("should call alert method when message field is empty", async () => {
+      expect.hasAssertions();
+
+      const mockAlert = vi
+        .spyOn(window, "alert")
+        .mockImplementation(() => null);
+      renderUserChat();
+      const textInput = await screen.findByPlaceholderText("Message");
+      const sendButton = screen.getByRole("button", { name: "send message" });
+
+      await userEvent.type(textInput, " ");
+      await userEvent.click(sendButton);
+
+      expect(mockAlert).toHaveBeenCalledExactlyOnceWith(
+        "Cannot send an empty message",
+      );
+    });
+
+    it("should render ErrorBoundary when server responds with unexpected error", async () => {
+      expect.hasAssertions();
+
+      vi.spyOn(console, "error").mockImplementation(() => null);
+      fetchMock.post(serverMessagesRoute, {
+        status: 500,
+        body: {
+          error: "Server error",
+        },
+      });
+      renderUserChat();
+      const textField = await screen.findByPlaceholderText("Message");
+      const attachButton = screen.getByRole("button", {
+        name: "attach image",
+      });
+      const sendButton = screen.getByRole("button", {
+        name: "send message",
+      });
+
+      await userEvent.type(textField, "Hello!");
+      await userEvent.upload(
+        attachButton,
+        new File(["hello"], "hello.png", { type: "image/png" }),
+      );
+      await userEvent.click(sendButton);
+      const errorBoundaryHeading = screen.getByRole("heading", {
+        level: 1,
+        name: "Unexpected error occurred",
+      });
+      const errorMessage = screen.getByText("Server error");
+
+      expect(errorBoundaryHeading).toBeInTheDocument();
+      expect(errorMessage).toBeInTheDocument();
+    });
+
+    it("should call 'enqueueSnackbar' on each client error", async () => {
+      expect.hasAssertions();
+
+      const mockEnqueueSnackbar = vi.fn<notistack.EnqueueSnackbar>();
+      vi.spyOn(notistack, "useSnackbar").mockReturnValue({
+        closeSnackbar: vi.fn<() => void>(),
+        enqueueSnackbar: mockEnqueueSnackbar,
+      });
+      fetchMock.post(serverMessagesRoute, {
+        status: 404,
+        body: {
+          errors: [{ message: "Cannot find user to send message to." }],
+        },
+      });
+      renderUserChat();
+      const textField = await screen.findByPlaceholderText("Message");
+      const sendButton = screen.getByRole("button", {
+        name: "send message",
+      });
+
+      await userEvent.type(textField, "message");
+      await userEvent.click(sendButton);
+
+      expect(mockEnqueueSnackbar).toHaveBeenCalledExactlyOnceWith(
+        "Cannot find user to send message to.",
+        { variant: "error" },
+      );
+    });
+
+    it("should clear form fields after submit", async () => {
+      expect.hasAssertions();
+
+      fetchMock.post(serverMessagesRoute, {
+        status: 201,
+        body: {
+          content: "Test-Message content",
+          createdAt: new Date().toISOString(),
+          groupChatId: null,
+          id: "Test-MessageId",
+          imageUrl: null,
+          receiverId: "userBId",
+          senderId: "userAId",
+        } as Omit<Message, "createdAt"> & { createdAt: string },
+      });
+      renderUserChat();
+      const textField =
+        await screen.findByPlaceholderText<HTMLInputElement>("Message");
+      const submitButton = screen.getByRole("button", { name: "send message" });
+
+      await userEvent.type(textField, "message content");
+
+      expect(textField).toHaveValue("message content");
+
+      await userEvent.click(submitButton);
+
+      expect(textField).not.toHaveValue();
     });
   });
 });
