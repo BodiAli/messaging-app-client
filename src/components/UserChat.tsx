@@ -1,6 +1,11 @@
 import { useNavigate, useParams } from "react-router";
 import { useSnackbar } from "notistack";
-import { useState } from "react";
+import {
+  useState,
+  type Dispatch,
+  type SetStateAction,
+  type SubmitEvent,
+} from "react";
 import {
   Badge,
   Box,
@@ -14,6 +19,7 @@ import { useAppSelector } from "@/app/hooks";
 import { selectUser } from "@/slices/authSlice";
 import isOnline from "@/utils/isOnline";
 import { useAddFriendMutation } from "@/slices/friendsSlice";
+import { useSendMessageMutation } from "@/slices/messagesSlice";
 import {
   isClientError,
   isFetchBaseQueryError,
@@ -28,21 +34,35 @@ function assert(value: unknown): asserts value {
   if (!value) throw new Error("Value is not defined");
 }
 
+interface FormFields extends HTMLFormControlsCollection {
+  messageContent: HTMLInputElement;
+  messageImage: HTMLInputElement;
+}
+
+interface FormWithElements extends HTMLFormElement {
+  elements: FormFields;
+}
+
 interface UserChatProps {
   chatData: ChatData;
   isFetching: boolean;
 }
-
 export default function UserChat({ chatData, isFetching }: UserChatProps) {
   const [fatalError, setFatalError] = useState<string | null>(null);
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
   const currentUser = useAppSelector(selectUser);
   const { userId } = useParams<"userId">();
+  const [addFriend, { isLoading: isFriendshipActionLoading }] =
+    useAddFriendMutation();
+  const [sendMessage, { isLoading: isSendingMessage }] =
+    useSendMessageMutation();
   assert(currentUser);
   assert(userId);
 
-  const [addFriend, { isLoading }] = useAddFriendMutation();
+  if (fatalError) {
+    throw new Error(fatalError);
+  }
 
   const handleFriendshipAction = async () => {
     try {
@@ -66,9 +86,47 @@ export default function UserChat({ chatData, isFetching }: UserChatProps) {
     }
   };
 
-  if (fatalError) {
-    throw new Error(fatalError);
-  }
+  const handleSubmit = (
+    setUploadedImageUrl: Dispatch<SetStateAction<string | null>>,
+  ) => {
+    return async (e: SubmitEvent<FormWithElements>) => {
+      e.preventDefault();
+      const { messageImage: messageImageElement } = e.currentTarget.elements;
+      assert(messageImageElement.files);
+      const messageImage = messageImageElement.files[0];
+
+      const messageContent = e.currentTarget.elements.messageContent.value;
+      if (messageContent.trim().length === 0) {
+        alert("Cannot send an empty message");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("messageContent", messageContent);
+      if (messageImage) {
+        formData.append("messageImage", messageImage);
+      }
+
+      try {
+        await sendMessage({ userId, formData }).unwrap();
+
+        setUploadedImageUrl(null);
+        e.target.reset();
+      } catch (error) {
+        if (isFetchBaseQueryError(error)) {
+          if (isServerError(error.data)) {
+            setFatalError(error.data.error);
+            return;
+          }
+          if (isClientError(error.data)) {
+            error.data.errors.forEach((error) => {
+              enqueueSnackbar(error.message, { variant: "error" });
+            });
+          }
+        }
+      }
+    };
+  };
 
   return (
     <Box>
@@ -125,7 +183,7 @@ export default function UserChat({ chatData, isFetching }: UserChatProps) {
           chatData={chatData}
           currentUserId={currentUser.id}
           recipientId={userId}
-          isLoading={isLoading}
+          isLoading={isFriendshipActionLoading}
           onActionClick={handleFriendshipAction}
         />
       </Stack>
@@ -134,7 +192,7 @@ export default function UserChat({ chatData, isFetching }: UserChatProps) {
         isFetching={isFetching}
         currentUserId={currentUser.id}
       />
-      <SendMessage />
+      <SendMessage isLoading={isSendingMessage} onSubmit={handleSubmit} />
     </Box>
   );
 }
