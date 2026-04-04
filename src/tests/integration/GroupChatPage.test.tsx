@@ -6,6 +6,7 @@ import {
   afterEach,
   expect,
   beforeEach,
+  assert,
 } from "vitest";
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -450,6 +451,64 @@ describe("group-chat-page component", () => {
 
       expect(messageInput).not.toHaveValue();
       expect(uploadedImagePreview).not.toBeInTheDocument();
+    });
+
+    it("should re-fetch group messages after submit", async () => {
+      expect.hasAssertions();
+
+      fetchMock.getOnce(serverGroupMessagesRoute, {
+        status: 200,
+        body: mockGroupMessages,
+      });
+      assert(mockGroupMessages.messages[0]);
+      fetchMock.getOnce(serverGroupMessagesRoute, {
+        status: 200,
+        body: {
+          ...mockGroupMessages,
+          messages: [
+            ...mockGroupMessages.messages,
+            {
+              ...mockGroupMessages.messages[0],
+              content: "Test-Message content 3",
+              id: "Test-MessageId3",
+            },
+          ],
+        } satisfies GroupMessages,
+      });
+      fetchMock.post(serverGroupMessagesRoute, {
+        status: 201,
+        body: {
+          content: "Test-Message content",
+          createdAt: new Date().toISOString(),
+          groupChatId: "Test-GroupId",
+          id: "Test-MessageId3",
+          imageUrl: null,
+          receiverId: null,
+          senderId: "Test-UserAId",
+        } satisfies Omit<Message, "createdAt"> & { createdAt: string },
+      });
+      const router = createMemoryRouter(routes, {
+        initialEntries: ["/groups/Test-GroupId"],
+      });
+      renderWithProviders(<RouterProvider router={router} />);
+      const messageInput = await screen.findByPlaceholderText("Message");
+      const submitButton = screen.getByRole("button", {
+        name: "send message",
+      });
+      const reFetchedMessageBeforeSubmit = screen.queryByText(
+        "Test-Message content 3",
+      );
+
+      await userEvent.type(messageInput, "Test-Message content");
+      await userEvent.click(submitButton);
+      const reFetchedMessageAfterSubmit = screen.queryByText(
+        "Test-Message content 3",
+      );
+
+      expect(reFetchedMessageBeforeSubmit).not.toBeInTheDocument();
+      expect(reFetchedMessageAfterSubmit).toBeInTheDocument();
+      expect(fetchMock).toHavePostedTimes(1, serverGroupMessagesRoute);
+      expect(fetchMock).toHaveGotTimes(2, serverGroupMessagesRoute);
     });
   });
 });
