@@ -10,7 +10,7 @@ import { useSnackbar } from "notistack";
 import {
   useGetGroupMessagesQuery,
   useSendGroupMessageMutation,
-} from "@/slices/groupsSlice";
+} from "@/slices/messagesSlice";
 import handleUnexpectedError from "@/utils/handleUnexpectedError";
 import Loader from "@/components/Loader/Loader";
 import { isClientError, isFetchBaseQueryError } from "@/types/apiResponseTypes";
