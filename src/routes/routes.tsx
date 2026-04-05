@@ -13,7 +13,7 @@ import TwoUsersChatPage from "@/pages/TwoUsersChatPage";
 import IndexPage from "@/pages/IndexPage";
 import GroupChatPage from "@/pages/GroupChatPage";
 import GroupsPageIndex from "@/components/GroupsPageIndex";
-import GroupDetails from "@/pages/GroupDetails";
+import GroupDetails from "@/pages/GroupDetailsPage";
 import type { RouteObject } from "react-router";
 
 const routes: RouteObject[] = [

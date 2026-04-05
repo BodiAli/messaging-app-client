@@ -45,7 +45,7 @@ vi.mock(import("@/pages/GroupsPage"), () => {
   };
 });
 
-vi.mock(import("@/pages/GroupDetails"), () => {
+vi.mock(import("@/pages/GroupDetailsPage"), () => {
   return {
     default: () => <p>Group Details Page</p>,
   };
