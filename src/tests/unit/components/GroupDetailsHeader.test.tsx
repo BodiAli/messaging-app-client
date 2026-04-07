@@ -7,13 +7,10 @@ import {
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import GroupDetailsHeader from "@/components/GroupDetailsHeader";
-import type { GroupChat, User } from "@/types/modelsType";
+import type { GroupDetails, User } from "@/types/modelsType";
 
 describe("group-details-header component", () => {
-  const mockGroup: GroupChat & {
-    admin: Pick<User, "id" | "username" | "imageUrl">;
-  } = {
-    adminId: "Test-AdminId",
+  const mockGroup: Omit<GroupDetails["group"], "users"> = {
     createdAt: "2020-01-01T01:30:30",
     id: "Test-GroupId",
     name: "Test-Group name",
