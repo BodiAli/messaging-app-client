@@ -68,3 +68,10 @@ export interface GroupMessages {
   })[];
   group: Omit<PrismaGroupChat, "adminId" | "createdAt"> & { createdAt: string };
 }
+
+export interface GroupDetails {
+  group: Omit<GroupChat, "adminId"> & {
+    users: Pick<User, "id" | "imageUrl" | "username">[];
+    admin: Pick<User, "id" | "imageUrl" | "username">;
+  };
+}
