@@ -23,6 +23,26 @@ const apiSliceWithGroups = apiSlice.injectEndpoints({
       getGroupDetails: build.query<GroupDetails, string>({
         query: (groupId) => `/users/me/groups/${groupId}`,
       }),
+      sendGroupInvite: build.mutation<
+        undefined,
+        { friendIds: string[]; groupId: string }
+      >({
+        query: ({ friendIds, groupId }) => {
+          return {
+            url: `/users/me/groups/${groupId}/notifications`,
+            method: "POST",
+            body: {
+              userIds: friendIds,
+            },
+            responseHandler(response) {
+              if (response.ok) {
+                return response.text();
+              }
+              return response.json();
+            },
+          };
+        },
+      }),
     };
   },
 });
@@ -31,4 +51,5 @@ export const {
   useGetGroupsQuery,
   useCreateGroupMutation,
   useGetGroupDetailsQuery,
+  useSendGroupInviteMutation,
 } = apiSliceWithGroups;
