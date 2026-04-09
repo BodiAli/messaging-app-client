@@ -38,6 +38,8 @@ describe("group-details-header component", () => {
     currentUserId = "Test-AdminId",
     onGroupInvite = vi.fn<(friendIds: string[]) => Promise<void>>(),
     onDeleteGroup = vi.fn<() => Promise<void>>(),
+    isSendingInvite = false,
+    isDeletingGroup = false,
   ) => {
     return render(
       <GroupDetailsHeader
@@ -46,6 +48,8 @@ describe("group-details-header component", () => {
         currentUserId={currentUserId}
         onGroupInvite={onGroupInvite}
         onDeleteGroup={onDeleteGroup}
+        isDeletingGroup={isDeletingGroup}
+        isSendingInvite={isSendingInvite}
       />,
     );
   };
@@ -122,6 +126,76 @@ describe("group-details-header component", () => {
       const comboBox = screen.queryByRole("combobox");
 
       expect(comboBox).toBeInTheDocument();
+    });
+
+    it("should disable invite friends input while isSendingInvite is true", () => {
+      expect.hasAssertions();
+
+      renderGroupHeader(
+        "Test-AdminId",
+        vi.fn<(friendIds: string[]) => Promise<void>>(),
+        vi.fn<() => Promise<void>>(),
+        true,
+      );
+
+      const invitationInput = screen.getByRole("combobox", {
+        name: "Invite friends",
+      });
+
+      expect(invitationInput).toBeDisabled();
+    });
+
+    it("should not disable invite friends input while isSendingInvite is false", () => {
+      expect.hasAssertions();
+
+      renderGroupHeader(
+        "Test-AdminId",
+        vi.fn<(friendIds: string[]) => Promise<void>>(),
+        vi.fn<() => Promise<void>>(),
+        false,
+      );
+
+      const invitationInput = screen.getByRole("combobox", {
+        name: "Invite friends",
+      });
+
+      expect(invitationInput).toBeEnabled();
+    });
+
+    it("should disable delete group button while isDeletingGroup is true", () => {
+      expect.hasAssertions();
+
+      renderGroupHeader(
+        "Test-AdminId",
+        vi.fn<(friendIds: string[]) => Promise<void>>(),
+        vi.fn<() => Promise<void>>(),
+        false,
+        true,
+      );
+
+      const deleteGroupButton = screen.getByRole("button", {
+        name: "Delete Group",
+      });
+
+      expect(deleteGroupButton).toBeDisabled();
+    });
+
+    it("should not disable delete group button while isDeletingGroup is false", () => {
+      expect.hasAssertions();
+
+      renderGroupHeader(
+        "Test-AdminId",
+        vi.fn<(friendIds: string[]) => Promise<void>>(),
+        vi.fn<() => Promise<void>>(),
+        false,
+        false,
+      );
+
+      const deleteGroupButton = screen.getByRole("button", {
+        name: "Delete Group",
+      });
+
+      expect(deleteGroupButton).toBeEnabled();
     });
 
     it("should render a listbox to select all friends who are not members of the group", async () => {

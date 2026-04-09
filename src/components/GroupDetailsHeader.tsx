@@ -13,7 +13,7 @@ import CheckBox from "@mui/icons-material/CheckBox";
 import CheckBoxOutlineBlank from "@mui/icons-material/CheckBoxOutlineBlank";
 import formatDate from "@/utils/formatDate";
 import UsersAvatar from "./UsersAvatar";
-import type { GroupChat, User } from "@/types/modelsType";
+import type { GroupDetails, User } from "@/types/modelsType";
 
 export default function GroupDetailsHeader({
   group,
@@ -21,12 +21,14 @@ export default function GroupDetailsHeader({
   currentUserId,
   onGroupInvite,
   onDeleteGroup,
+  isSendingInvite,
+  isDeletingGroup,
 }: {
-  group: GroupChat & {
-    admin: Pick<User, "id" | "username" | "imageUrl">;
-  };
+  group: Omit<GroupDetails["group"], "users">;
   nonMemberUsers: Pick<User, "id" | "username" | "imageUrl">[];
   currentUserId: string;
+  isSendingInvite: boolean;
+  isDeletingGroup: boolean;
   onGroupInvite: (friendIds: string[]) => Promise<void>;
   onDeleteGroup: () => Promise<void>;
 }) {
@@ -34,7 +36,8 @@ export default function GroupDetailsHeader({
   const [dialogOpen, setDialogOpen] = useState(false);
 
   let groupActions: ReactElement | null = null;
-  if (currentUserId === group.adminId) {
+
+  if (currentUserId === group.admin.id) {
     const handleDialogOpen = () => {
       setDialogOpen(true);
     };
@@ -47,6 +50,7 @@ export default function GroupDetailsHeader({
         <Autocomplete
           multiple
           options={nonMemberUsers}
+          disabled={isSendingInvite}
           renderInput={(params) => {
             return <TextField {...params} label="Invite friends" />;
           }}
@@ -83,7 +87,9 @@ export default function GroupDetailsHeader({
         >
           Send Invite
         </Button>
-        <Button onClick={handleDialogOpen}>Delete Group</Button>
+        <Button onClick={handleDialogOpen} loading={isDeletingGroup}>
+          Delete Group
+        </Button>
         <Dialog open={dialogOpen} onClose={handleDialogClose}>
           <DialogTitle>Are you sure you want to delete this group?</DialogTitle>
           <DialogActions>
