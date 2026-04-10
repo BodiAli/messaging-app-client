@@ -41,6 +41,12 @@ vi.mock(import("@/pages/IndexPage"), () => {
   };
 });
 
+vi.mock(import("@/pages/GroupsPage"), () => {
+  return {
+    default: () => <p>Mock: groups page component</p>,
+  };
+});
+
 const serverGetUserRoute = "/auth/get-user";
 const serverGroupRoute = "/users/me/groups/Test-GroupId";
 const serverGroupInvitationsRoute =
@@ -136,6 +142,11 @@ describe("group-details-page component", () => {
         new Response(null, { status: mutationResponseStatus }),
       );
     });
+
+    // mock for getting group details because mutating will invalidate cache
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+      new Response(JSON.stringify(mockGroupDetails), { status: 200 }),
+    );
 
     return resolve;
   };
@@ -707,6 +718,168 @@ describe("group-details-page component", () => {
   });
 
   describe("handling error responses for DELETE request to delete group", () => {
-    it.todo("should render ErrorBoundary when server responds with 5xx status");
+    it("should render ErrorBoundary when server responds with 5xx status", async () => {
+      expect.hasAssertions();
+
+      vi.spyOn(console, "error").mockImplementation(() => null);
+      fetchMock.get(serverGroupRoute, {
+        status: 200,
+        body: mockGroupDetails,
+      });
+      fetchMock.delete(serverGroupRoute, {
+        status: 500,
+        body: {
+          error: "Test: server error",
+        },
+      });
+      renderGroupDetails();
+      const deleteButton = await screen.findByRole("button", {
+        name: "Delete Group",
+      });
+      await userEvent.click(deleteButton);
+
+      const confirmButton = screen.getByRole("button", {
+        name: "Confirm",
+      });
+      await userEvent.click(confirmButton);
+      const errorBoundaryHeading = screen.getByRole("heading", {
+        name: "Unexpected error occurred",
+        level: 1,
+      });
+      const errorText = screen.getByText("Test: server error");
+
+      expect(errorBoundaryHeading).toBeInTheDocument();
+      expect(errorText).toBeInTheDocument();
+    });
+
+    it("should call enqueueSnackbar when server responds with 4xx status", async () => {
+      expect.hasAssertions();
+
+      const mockEnqueueSnackbar = vi.fn<() => notistack.SnackbarKey>();
+      vi.spyOn(notistack, "useSnackbar").mockReturnValue({
+        closeSnackbar: vi.fn<() => void>(),
+        enqueueSnackbar: mockEnqueueSnackbar,
+      });
+      fetchMock.get(serverGroupRoute, {
+        status: 200,
+        body: mockGroupDetails,
+      });
+      fetchMock.delete(serverGroupRoute, {
+        status: 403,
+        body: {
+          errors: [
+            {
+              message: "Test: you do not have permission to delete this group.",
+            },
+          ],
+        } satisfies ApiClientError,
+      });
+      renderGroupDetails();
+      const deleteButton = await screen.findByRole("button", {
+        name: "Delete Group",
+      });
+      await userEvent.click(deleteButton);
+
+      const confirmButton = screen.getByRole("button", {
+        name: "Confirm",
+      });
+      await userEvent.click(confirmButton);
+
+      expect(mockEnqueueSnackbar).toHaveBeenCalledExactlyOnceWith<
+        [notistack.SnackbarMessage, notistack.OptionsObject]
+      >("Test: you do not have permission to delete this group.", {
+        variant: "error",
+      });
+    });
+  });
+
+  describe("handling success response for DELETE request to delete group", () => {
+    it("should disable delete button fetch request is pending", async () => {
+      expect.hasAssertions();
+
+      const resolvePromise = manualFetchMock(204);
+      renderGroupDetails();
+      const deleteButton = await screen.findByRole("button", {
+        name: "Delete Group",
+      });
+      await userEvent.click(deleteButton);
+
+      const confirmButton = screen.getByRole("button", {
+        name: "Confirm",
+      });
+      await userEvent.click(confirmButton);
+
+      expect(deleteButton).toBeDisabled();
+
+      resolvePromise(null);
+
+      await waitFor(() => {
+        expect(deleteButton).toBeDisabled();
+      });
+    });
+
+    it("should call enqueueSnackbar with a success message", async () => {
+      expect.hasAssertions();
+
+      const mockEnqueueSnackbar = vi.fn<() => notistack.SnackbarKey>();
+      vi.spyOn(notistack, "useSnackbar").mockReturnValue({
+        closeSnackbar: vi.fn<() => void>(),
+        enqueueSnackbar: mockEnqueueSnackbar,
+      });
+      fetchMock.get(serverGroupRoute, {
+        status: 200,
+        body: mockGroupDetails,
+      });
+      fetchMock.delete(serverGroupRoute, {
+        status: 204,
+      });
+      renderGroupDetails();
+      const deleteButton = await screen.findByRole("button", {
+        name: "Delete Group",
+      });
+      await userEvent.click(deleteButton);
+
+      const confirmButton = screen.getByRole("button", {
+        name: "Confirm",
+      });
+      await userEvent.click(confirmButton);
+
+      expect(mockEnqueueSnackbar).toHaveBeenCalledExactlyOnceWith<
+        [notistack.SnackbarMessage, notistack.OptionsObject]
+      >("Group deleted successfully.", {
+        variant: "success",
+      });
+    });
+
+    it("should navigate to '/groups' route after delete", async () => {
+      expect.hasAssertions();
+
+      fetchMock.get(serverGroupRoute, {
+        status: 200,
+        body: mockGroupDetails,
+      });
+      fetchMock.delete(serverGroupRoute, {
+        status: 204,
+      });
+      renderGroupDetails();
+      const deleteButton = await screen.findByRole("button", {
+        name: "Delete Group",
+      });
+      await userEvent.click(deleteButton);
+
+      const confirmButton = screen.getByRole("button", {
+        name: "Confirm",
+      });
+      await userEvent.click(confirmButton);
+      const groupsPageComponentText = screen.getByText(
+        "Mock: groups page component",
+      );
+
+      expect(groupsPageComponentText).toBeInTheDocument();
+    });
+  });
+
+  describe("rendering group members", () => {
+    it.todo("should render group members");
   });
 });
