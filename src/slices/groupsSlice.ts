@@ -22,6 +22,7 @@ const apiSliceWithGroups = apiSlice.injectEndpoints({
       }),
       getGroupDetails: build.query<GroupDetails, string>({
         query: (groupId) => `/users/me/groups/${groupId}`,
+        providesTags: ["Group"],
       }),
       sendGroupInvite: build.mutation<
         undefined,
@@ -43,6 +44,21 @@ const apiSliceWithGroups = apiSlice.injectEndpoints({
           };
         },
       }),
+      updateGroupName: build.mutation<
+        GroupChat,
+        { groupName: string; groupId: string }
+      >({
+        query: ({ groupId, groupName }) => {
+          return {
+            url: `/users/me/groups/${groupId}`,
+            method: "PATCH",
+            body: {
+              groupName,
+            },
+          };
+        },
+        invalidatesTags: ["Group"],
+      }),
     };
   },
 });
@@ -52,4 +68,5 @@ export const {
   useCreateGroupMutation,
   useGetGroupDetailsQuery,
   useSendGroupInviteMutation,
+  useUpdateGroupNameMutation,
 } = apiSliceWithGroups;
