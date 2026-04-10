@@ -15,7 +15,12 @@ import * as notistack from "notistack";
 import * as localStorageService from "@/services/localStorage";
 import routes from "@/routes/routes";
 import renderWithProviders from "@/utils/test-utils";
-import type { GroupDetails, User, UserFriends } from "@/types/modelsType";
+import type {
+  GroupChat,
+  GroupDetails,
+  User,
+  UserFriends,
+} from "@/types/modelsType";
 import type { ApiClientError } from "@/types/apiResponseTypes";
 
 vi.mock(import("@/components/Header"), () => {
@@ -226,9 +231,7 @@ describe("group-details-page component", () => {
       });
       renderGroupDetails();
 
-      const groupName = await screen.findByRole("heading", {
-        level: 1,
-      });
+      const groupName = await screen.findByDisplayValue("Test: Group name");
 
       expect(groupName).toBeInTheDocument();
     });
@@ -284,6 +287,199 @@ describe("group-details-page component", () => {
 
       expect(userC).toBeInTheDocument();
       expect(userD).toBeInTheDocument();
+    });
+  });
+
+  describe("handling error responses for PATCH request to update group name", () => {
+    it("should render ErrorBoundary when server responds with 5xx status", async () => {
+      expect.hasAssertions();
+
+      vi.spyOn(console, "error").mockImplementation(() => null);
+      fetchMock.get(serverGroupRoute, {
+        status: 200,
+        body: mockGroupDetails,
+      });
+      fetchMock.patch(serverGroupRoute, {
+        status: 500,
+        body: {
+          error: "Test: server error",
+        },
+      });
+      renderGroupDetails();
+      const groupNameInput =
+        await screen.findByDisplayValue("Test: Group name");
+      const updateNameButton = screen.getByRole("button", {
+        name: "Update Name",
+      });
+      await userEvent.type(groupNameInput, "Test: updated group name");
+      await userEvent.click(updateNameButton);
+      const confirmButton = screen.getByRole("button", {
+        name: "Confirm",
+      });
+
+      await userEvent.click(confirmButton);
+      const errorBoundaryHeading = screen.getByRole("heading", {
+        name: "Unexpected error occurred",
+        level: 1,
+      });
+      const errorText = screen.getByText("Test: server error");
+
+      expect(errorBoundaryHeading).toBeInTheDocument();
+      expect(errorText).toBeInTheDocument();
+    });
+
+    it("should call enqueueSnackbar when server responds with 400 status", async () => {
+      expect.hasAssertions();
+
+      const mockEnqueueSnackbar = vi.fn<() => notistack.SnackbarKey>();
+      vi.spyOn(notistack, "useSnackbar").mockReturnValue({
+        closeSnackbar: vi.fn<() => void>(),
+        enqueueSnackbar: mockEnqueueSnackbar,
+      });
+      fetchMock.get(serverGroupRoute, {
+        status: 200,
+        body: mockGroupDetails,
+      });
+      fetchMock.patch(serverGroupRoute, {
+        status: 400,
+        body: {
+          errors: [
+            {
+              message: "Test: Group name cannot be empty.",
+            },
+          ],
+        } satisfies ApiClientError,
+      });
+      renderGroupDetails();
+      const groupNameInput =
+        await screen.findByDisplayValue("Test: Group name");
+      const updateNameButton = screen.getByRole("button", {
+        name: "Update Name",
+      });
+      await userEvent.type(groupNameInput, "Test: updated group name");
+      await userEvent.click(updateNameButton);
+      const confirmButton = screen.getByRole("button", {
+        name: "Confirm",
+      });
+
+      await userEvent.click(confirmButton);
+
+      expect(mockEnqueueSnackbar).toHaveBeenCalledExactlyOnceWith<
+        [notistack.SnackbarMessage, notistack.OptionsObject]
+      >("Test: Group name cannot be empty.", {
+        variant: "error",
+      });
+    });
+  });
+
+  describe("handling success response for PATCH request to update group name", () => {
+    it("should disable update name button while fetch request is loading", async () => {
+      expect.hasAssertions();
+
+      const resolvePromise = manualFetchMock(200);
+      renderGroupDetails();
+      const groupNameInput =
+        await screen.findByDisplayValue("Test: Group name");
+      const updateNameButton = screen.getByRole("button", {
+        name: "Update Name",
+      });
+
+      await userEvent.type(groupNameInput, "Test: updated group name");
+      await userEvent.click(updateNameButton);
+      const confirmButton = screen.getByRole("button", {
+        name: "Confirm",
+      });
+      await userEvent.click(confirmButton);
+
+      expect(updateNameButton).toBeDisabled();
+
+      resolvePromise(null);
+
+      await waitFor(() => {
+        expect(updateNameButton).toBeEnabled();
+      });
+    });
+
+    it("should call enqueueSnackbar with a success message", async () => {
+      expect.hasAssertions();
+
+      const mockEnqueueSnackbar = vi.fn<() => notistack.SnackbarKey>();
+      vi.spyOn(notistack, "useSnackbar").mockReturnValue({
+        closeSnackbar: vi.fn<() => void>(),
+        enqueueSnackbar: mockEnqueueSnackbar,
+      });
+      fetchMock.get(serverGroupRoute, {
+        status: 200,
+        body: mockGroupDetails,
+      });
+      fetchMock.patch(serverGroupRoute, {
+        status: 200,
+        body: {
+          group: {
+            adminId: "Test-UserAId",
+            createdAt: new Date().toISOString(),
+            id: "Test-GroupId",
+            name: "Test: updated group name",
+          },
+        } satisfies { group: GroupChat },
+      });
+      renderGroupDetails();
+      const groupNameInput =
+        await screen.findByDisplayValue("Test: Group name");
+      const updateNameButton = screen.getByRole("button", {
+        name: "Update Name",
+      });
+
+      await userEvent.type(groupNameInput, "Test: updated group name");
+      await userEvent.click(updateNameButton);
+      const confirmButton = screen.getByRole("button", {
+        name: "Confirm",
+      });
+      await userEvent.click(confirmButton);
+
+      expect(mockEnqueueSnackbar).toHaveBeenCalledExactlyOnceWith<
+        [notistack.SnackbarMessage, notistack.OptionsObject]
+      >("Group name updated successfully.", { variant: "success" });
+    });
+
+    it("should call fetch with expected arguments", async () => {
+      expect.hasAssertions();
+
+      fetchMock.get(serverGroupRoute, {
+        status: 200,
+        body: mockGroupDetails,
+      });
+      fetchMock.patch(serverGroupRoute, {
+        status: 200,
+        body: {
+          group: {
+            adminId: "Test-UserAId",
+            createdAt: new Date().toISOString(),
+            id: "Test-GroupId",
+            name: "Test: updated group name",
+          },
+        } satisfies { group: GroupChat },
+      });
+      renderGroupDetails();
+      const groupNameInput =
+        await screen.findByDisplayValue("Test: Group name");
+      const updateNameButton = screen.getByRole("button", {
+        name: "Update Name",
+      });
+
+      await userEvent.clear(groupNameInput);
+      await userEvent.type(groupNameInput, "Test: updated group name");
+      await userEvent.click(updateNameButton);
+      const confirmButton = screen.getByRole("button", {
+        name: "Confirm",
+      });
+      await userEvent.click(confirmButton);
+
+      expect(fetchMock).toHavePatchedTimes(1, serverGroupRoute, {
+        body: {
+          groupName: "Test: updated group name",
+        },
+      });
     });
   });
 
