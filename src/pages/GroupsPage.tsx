@@ -30,6 +30,16 @@ export default function GroupsPage() {
     handleUnexpectedError(error);
   }
 
+  const sortedGroups = data.groups.toSorted((a, b) => {
+    if (a.name > b.name) {
+      return 1;
+    }
+    if (a.name < b.name) {
+      return -1;
+    }
+    return 0;
+  });
+
   return (
     <Box
       component={"main"}
@@ -60,7 +70,7 @@ export default function GroupsPage() {
               title={<Skeleton animation="wave" />}
             />
           </Card>
-        ) : data.groups.length === 0 ? (
+        ) : sortedGroups.length === 0 ? (
           <Typography
             sx={{
               textAlign: "center",
@@ -70,7 +80,7 @@ export default function GroupsPage() {
           </Typography>
         ) : (
           <Stack spacing={5}>
-            {data.groups.map((group) => {
+            {sortedGroups.map((group) => {
               return (
                 <Card key={group.id}>
                   <CustomCardActionArea

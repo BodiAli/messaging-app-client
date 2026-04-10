@@ -27,6 +27,16 @@ export default function FriendsPage() {
     }
   }
 
+  const sortedFriends = data.friends.toSorted((a, b) => {
+    if (a.username > b.username) {
+      return 1;
+    }
+    if (a.username < b.username) {
+      return -1;
+    }
+    return 0;
+  });
+
   return (
     <Box
       component="main"
@@ -57,13 +67,13 @@ export default function FriendsPage() {
               title={<Skeleton animation="wave" />}
             />
           </Card>
-        ) : data.friends.length === 0 ? (
+        ) : sortedFriends.length === 0 ? (
           <Typography textAlign={"center"}>
             You currently have no friends
           </Typography>
         ) : (
           <Stack spacing={5}>
-            {data.friends.map((friend) => {
+            {sortedFriends.map((friend) => {
               return <FriendCard key={friend.id} friend={friend} />;
             })}
           </Stack>
