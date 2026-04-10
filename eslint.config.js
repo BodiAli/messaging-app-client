@@ -12,9 +12,7 @@ import { defineConfig, globalIgnores } from "eslint/config";
 
 export default defineConfig([
   globalIgnores(["dist"]),
-  {
-    ...jestDom.configs["flat/recommended"],
-  },
+
   {
     files: ["**/*.{ts,tsx}"],
     extends: [
@@ -68,11 +66,8 @@ export default defineConfig([
   eslintConfigPrettier,
   {
     files: ["**/*.test.{ts,tsx}"],
-    plugins: {
-      vitest,
-    },
+    extends: [vitest.configs.all, jestDom.configs["flat/recommended"]],
     rules: {
-      ...vitest.configs.all.rules,
       "@typescript-eslint/unbound-method": "off",
       "vitest/no-hooks": "off",
     },
