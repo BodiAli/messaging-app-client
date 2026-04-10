@@ -5,6 +5,7 @@ import { useSnackbar } from "notistack";
 import {
   useGetGroupDetailsQuery,
   useSendGroupInviteMutation,
+  useUpdateGroupNameMutation,
 } from "@/slices/groupsSlice";
 import handleUnexpectedError from "@/utils/handleUnexpectedError";
 import {
@@ -38,8 +39,35 @@ export default function GroupDetailsPage() {
   } = useGetGroupDetailsQuery(groupId);
   const [sendGroupInvite, { isLoading: isSendGroupInviteLoading }] =
     useSendGroupInviteMutation();
+  const [updateGroupName, { isLoading: isUpdateGroupNameLoading }] =
+    useUpdateGroupNameMutation();
   const currentUser = useAppSelector(selectUser);
   assert(currentUser);
+
+  const handleUpdateName = async (groupName: string) => {
+    try {
+      await updateGroupName({ groupName, groupId }).unwrap();
+      enqueueSnackbar("Group name updated successfully.", {
+        variant: "success",
+      });
+    } catch (error) {
+      if (isFetchBaseQueryError(error) && isClientError(error.data)) {
+        error.data.errors.forEach((error) => {
+          enqueueSnackbar(error.message, {
+            variant: "error",
+          });
+        });
+        return;
+      }
+      if (isFetchBaseQueryError(error) && isServerError(error.data)) {
+        setFatalError(error.data.error);
+        return;
+      }
+      if (Error.isError(error)) {
+        setFatalError(error.message);
+      }
+    }
+  };
 
   const handleGroupInvite = async (friendIds: string[]) => {
     try {
@@ -116,6 +144,8 @@ export default function GroupDetailsPage() {
         nonMemberUsers={nonMemberUsers}
         onGroupInvite={handleGroupInvite}
         isSendingInvite={isSendGroupInviteLoading}
+        onUpdateGroupName={handleUpdateName}
+        isUpdatingName={isUpdateGroupNameLoading}
       />
       ;
     </Box>
