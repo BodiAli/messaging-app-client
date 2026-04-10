@@ -59,6 +59,21 @@ const apiSliceWithGroups = apiSlice.injectEndpoints({
         },
         invalidatesTags: ["Group"],
       }),
+      deleteGroup: build.mutation<string, string>({
+        query: (groupId) => {
+          return {
+            url: `/users/me/groups/${groupId}`,
+            method: "DELETE",
+            responseHandler(response) {
+              if (response.ok) {
+                return response.text();
+              }
+              return response.json();
+            },
+          };
+        },
+        invalidatesTags: ["Group"],
+      }),
     };
   },
 });
@@ -69,4 +84,5 @@ export const {
   useGetGroupDetailsQuery,
   useSendGroupInviteMutation,
   useUpdateGroupNameMutation,
+  useDeleteGroupMutation,
 } = apiSliceWithGroups;
