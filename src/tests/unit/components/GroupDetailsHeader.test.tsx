@@ -1,4 +1,4 @@
-import { describe, it, expect, assert } from "vitest";
+import { describe, it, expect, assert, afterEach } from "vitest";
 import {
   screen,
   render,
@@ -34,12 +34,18 @@ describe("group-details-header component", () => {
     },
   ];
 
+  const mockOnGroupInvite = vi.fn<(friendIds: string[]) => Promise<void>>();
+  const mockOnDeleteGroup = vi.fn<() => Promise<void>>();
+  const mockOnUpdateGroupName = vi.fn<(groupName: string) => Promise<void>>();
+
   const renderGroupHeader = (
     currentUserId = "Test-AdminId",
-    onGroupInvite = vi.fn<(friendIds: string[]) => Promise<void>>(),
-    onDeleteGroup = vi.fn<() => Promise<void>>(),
+    onGroupInvite = mockOnGroupInvite,
+    onDeleteGroup = mockOnDeleteGroup,
+    onUpdateGroupName = mockOnUpdateGroupName,
     isSendingInvite = false,
     isDeletingGroup = false,
+    isUpdatingName = false,
   ) => {
     return render(
       <GroupDetailsHeader
@@ -48,17 +54,79 @@ describe("group-details-header component", () => {
         currentUserId={currentUserId}
         onGroupInvite={onGroupInvite}
         onDeleteGroup={onDeleteGroup}
+        onUpdateGroupName={onUpdateGroupName}
         isDeletingGroup={isDeletingGroup}
         isSendingInvite={isSendingInvite}
+        isUpdatingName={isUpdatingName}
       />,
     );
   };
 
-  describe("rendering group data", () => {
-    it("should render group name", () => {
+  afterEach(() => {
+    vi.resetAllMocks();
+  });
+
+  describe("rendering group name as admin", () => {
+    it("should render group name as input with group name as value", () => {
       expect.hasAssertions();
 
       renderGroupHeader();
+
+      const groupNameInput = screen.getByDisplayValue("Test-Group name");
+
+      expect(groupNameInput).toBeInTheDocument();
+    });
+
+    it("should render update name button", () => {
+      expect.hasAssertions();
+
+      renderGroupHeader();
+
+      const updateNameButton = screen.getByRole("button", {
+        name: "Update Name",
+      });
+
+      expect(updateNameButton).toBeInTheDocument();
+    });
+
+    it("should disable update name button when isUpdatingName is true", () => {
+      expect.hasAssertions();
+
+      renderGroupHeader(
+        "Test-AdminId",
+        mockOnGroupInvite,
+        mockOnDeleteGroup,
+        mockOnUpdateGroupName,
+        false,
+        false,
+        true,
+      );
+
+      const updateNameButton = screen.getByRole("button", {
+        name: "Update Name",
+      });
+
+      expect(updateNameButton).toBeDisabled();
+    });
+
+    it("should not disable update name button when isUpdatingName is false", () => {
+      expect.hasAssertions();
+
+      renderGroupHeader();
+
+      const updateNameButton = screen.getByRole("button", {
+        name: "Update Name",
+      });
+
+      expect(updateNameButton).toBeEnabled();
+    });
+  });
+
+  describe("rendering group name as non-admin", () => {
+    it("should render group name as a heading", () => {
+      expect.hasAssertions();
+
+      renderGroupHeader("Test-Non-AdminId");
 
       const groupName = screen.getByRole("heading", {
         level: 1,
@@ -68,6 +136,30 @@ describe("group-details-header component", () => {
       expect(groupName).toBeInTheDocument();
     });
 
+    it("should not render group name as input", () => {
+      expect.hasAssertions();
+
+      renderGroupHeader("Test-Non-AdminId");
+
+      const groupNameInput = screen.queryByDisplayValue("Test-Group name");
+
+      expect(groupNameInput).not.toBeInTheDocument();
+    });
+
+    it("should not render update name button", () => {
+      expect.hasAssertions();
+
+      renderGroupHeader("Test-Non-AdminId");
+
+      const updateNameButton = screen.queryByRole("button", {
+        name: "Update Name",
+      });
+
+      expect(updateNameButton).not.toBeInTheDocument();
+    });
+  });
+
+  describe("rendering group admin and when it was created", () => {
     it("should render when the group was created in a formatted way", () => {
       expect.hasAssertions();
 
@@ -133,8 +225,9 @@ describe("group-details-header component", () => {
 
       renderGroupHeader(
         "Test-AdminId",
-        vi.fn<(friendIds: string[]) => Promise<void>>(),
-        vi.fn<() => Promise<void>>(),
+        mockOnGroupInvite,
+        mockOnDeleteGroup,
+        mockOnUpdateGroupName,
         true,
       );
 
@@ -150,8 +243,9 @@ describe("group-details-header component", () => {
 
       renderGroupHeader(
         "Test-AdminId",
-        vi.fn<(friendIds: string[]) => Promise<void>>(),
-        vi.fn<() => Promise<void>>(),
+        mockOnGroupInvite,
+        mockOnDeleteGroup,
+        mockOnUpdateGroupName,
         false,
       );
 
@@ -167,8 +261,9 @@ describe("group-details-header component", () => {
 
       renderGroupHeader(
         "Test-AdminId",
-        vi.fn<(friendIds: string[]) => Promise<void>>(),
-        vi.fn<() => Promise<void>>(),
+        mockOnGroupInvite,
+        mockOnDeleteGroup,
+        mockOnUpdateGroupName,
         false,
         true,
       );
@@ -185,8 +280,9 @@ describe("group-details-header component", () => {
 
       renderGroupHeader(
         "Test-AdminId",
-        vi.fn<(friendIds: string[]) => Promise<void>>(),
-        vi.fn<() => Promise<void>>(),
+        mockOnGroupInvite,
+        mockOnDeleteGroup,
+        mockOnUpdateGroupName,
         false,
         false,
       );
@@ -255,6 +351,115 @@ describe("group-details-header component", () => {
       });
 
       expect(inviteButton).toBeInTheDocument();
+    });
+  });
+
+  describe("updating group name", () => {
+    it("should display a modal when update name is clicked", async () => {
+      expect.hasAssertions();
+
+      renderGroupHeader();
+      const modalDialogNotShown = screen.queryByRole("dialog");
+      const updateNameButton = screen.getByRole("button", {
+        name: "Update Name",
+      });
+
+      await userEvent.click(updateNameButton);
+      const modalDialogShown = screen.getByRole("dialog");
+
+      expect(modalDialogNotShown).not.toBeInTheDocument();
+      expect(modalDialogShown).toBeInTheDocument();
+    });
+
+    it("should render confirmation message and action buttons inside modal", async () => {
+      expect.hasAssertions();
+
+      renderGroupHeader();
+      const updateNameButton = screen.getByRole("button", {
+        name: "Update Name",
+      });
+      await userEvent.click(updateNameButton);
+      const modal = screen.getByRole("dialog");
+
+      const confirmationMessage = within(modal).getByRole("heading", {
+        name: "Are you sure you want to update this group’s name?",
+      });
+      const cancelButton = within(modal).getByRole("button", {
+        name: "Cancel",
+      });
+      const confirmButton = within(modal).getByRole("button", {
+        name: "Confirm",
+      });
+
+      expect(confirmationMessage).toBeInTheDocument();
+      expect(cancelButton).toBeInTheDocument();
+      expect(confirmButton).toBeInTheDocument();
+    });
+
+    it("should hide modal when cancel button is clicked", async () => {
+      expect.hasAssertions();
+
+      renderGroupHeader();
+      const updateNameButton = screen.getByRole("button", {
+        name: "Update Name",
+      });
+      await userEvent.click(updateNameButton);
+      const modal = screen.getByRole("dialog");
+      const cancelButton = within(modal).getByRole("button", {
+        name: "Cancel",
+      });
+
+      await userEvent.click(cancelButton);
+      await waitForElementToBeRemoved(modal);
+
+      expect(modal).not.toBeInTheDocument();
+    });
+
+    it("should hide modal when confirm button is clicked", async () => {
+      expect.hasAssertions();
+
+      renderGroupHeader();
+      const updateNameButton = screen.getByRole("button", {
+        name: "Update Name",
+      });
+      await userEvent.click(updateNameButton);
+      const modal = screen.getByRole("dialog");
+      const confirmButton = within(modal).getByRole("button", {
+        name: "Confirm",
+      });
+
+      await userEvent.click(confirmButton);
+      await waitForElementToBeRemoved(modal);
+
+      expect(modal).not.toBeInTheDocument();
+    });
+
+    it("should call onUpdateGroupName with expected argument", async () => {
+      expect.hasAssertions();
+
+      renderGroupHeader(
+        "Test-AdminId",
+        mockOnGroupInvite,
+        mockOnDeleteGroup,
+        mockOnUpdateGroupName,
+      );
+      const groupNameInput = screen.getByDisplayValue("Test-Group name");
+      const updateNameButton = screen.getByRole("button", {
+        name: "Update Name",
+      });
+
+      await userEvent.clear(groupNameInput);
+      await userEvent.type(groupNameInput, "Test: Updated group name");
+      await userEvent.click(updateNameButton);
+      const modal = screen.getByRole("dialog");
+      const confirmButton = within(modal).getByRole("button", {
+        name: "Confirm",
+      });
+      await userEvent.click(confirmButton);
+
+      expect(mockOnUpdateGroupName).toHaveBeenCalledExactlyOnceWith<[string]>(
+        "Test: Updated group name",
+      );
     });
   });
 
