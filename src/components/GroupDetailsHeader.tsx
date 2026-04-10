@@ -23,28 +23,35 @@ export default function GroupDetailsHeader({
   onDeleteGroup,
   isSendingInvite,
   isDeletingGroup,
+  isUpdatingName,
+  onUpdateGroupName,
 }: {
   group: Omit<GroupDetails["group"], "users">;
   nonMemberUsers: Pick<User, "id" | "username" | "imageUrl">[];
   currentUserId: string;
   isSendingInvite: boolean;
   isDeletingGroup: boolean;
+  isUpdatingName: boolean;
   onGroupInvite: (friendIds: string[]) => Promise<void>;
   onDeleteGroup: () => Promise<void>;
+  onUpdateGroupName: (groupName: string) => Promise<void>;
 }) {
+  const [groupName, setGroupName] = useState(group.name);
   const [friendsIds, setFriendsIds] = useState<string[]>([]);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [updateNameDialogOpen, setUpdateNameDialogOpen] = useState(false);
 
   let groupActions: ReactElement | null = null;
 
-  if (currentUserId === group.admin.id) {
-    const handleDialogOpen = () => {
-      setDialogOpen(true);
-    };
-    const handleDialogClose = () => {
-      setDialogOpen(false);
-    };
+  const isGroupAdmin = currentUserId === group.admin.id;
 
+  if (isGroupAdmin) {
+    const handleDeleteDialogOpen = () => {
+      setDeleteDialogOpen(true);
+    };
+    const handleDeleteDialogClose = () => {
+      setDeleteDialogOpen(false);
+    };
     groupActions = (
       <>
         <Autocomplete
@@ -87,16 +94,16 @@ export default function GroupDetailsHeader({
         >
           Send Invite
         </Button>
-        <Button onClick={handleDialogOpen} loading={isDeletingGroup}>
+        <Button onClick={handleDeleteDialogOpen} loading={isDeletingGroup}>
           Delete Group
         </Button>
-        <Dialog open={dialogOpen} onClose={handleDialogClose}>
+        <Dialog open={deleteDialogOpen} onClose={handleDeleteDialogClose}>
           <DialogTitle>Are you sure you want to delete this group?</DialogTitle>
           <DialogActions>
-            <Button onClick={handleDialogClose}>Cancel</Button>
+            <Button onClick={handleDeleteDialogClose}>Cancel</Button>
             <Button
               onClick={() => {
-                handleDialogClose();
+                handleDeleteDialogClose();
                 void onDeleteGroup();
               }}
             >
@@ -108,9 +115,52 @@ export default function GroupDetailsHeader({
     );
   }
 
+  const updateGroupName: () => ReactElement = () => {
+    const handleUpdateNameDialogOpen = () => {
+      setUpdateNameDialogOpen(true);
+    };
+
+    const handleUpdateNameDialogClose = () => {
+      setUpdateNameDialogOpen(false);
+    };
+    return (
+      <Box>
+        <TextField
+          value={groupName}
+          onChange={(e) => {
+            setGroupName(e.currentTarget.value);
+          }}
+        />
+        <Button loading={isUpdatingName} onClick={handleUpdateNameDialogOpen}>
+          Update Name
+        </Button>
+        <Dialog open={updateNameDialogOpen}>
+          <DialogTitle>
+            Are you sure you want to update this group’s name?
+          </DialogTitle>
+          <DialogActions>
+            <Button onClick={handleUpdateNameDialogClose}>Cancel</Button>
+            <Button
+              onClick={() => {
+                handleUpdateNameDialogClose();
+                void onUpdateGroupName(groupName);
+              }}
+            >
+              Confirm
+            </Button>
+          </DialogActions>{" "}
+        </Dialog>
+      </Box>
+    );
+  };
   return (
     <Box>
-      <Typography variant="h1">{group.name}</Typography>
+      {isGroupAdmin ? (
+        updateGroupName()
+      ) : (
+        <Typography variant="h1">{group.name}</Typography>
+      )}
+
       <Typography>
         Created at <Box component={"time"}>{formatDate(group.createdAt)}</Box>
       </Typography>
