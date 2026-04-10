@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router";
 import { Box } from "@mui/material";
 import { useSnackbar } from "notistack";
 import {
+  useDeleteGroupMutation,
   useGetGroupDetailsQuery,
   useSendGroupInviteMutation,
   useUpdateGroupNameMutation,
@@ -41,8 +42,28 @@ export default function GroupDetailsPage() {
     useSendGroupInviteMutation();
   const [updateGroupName, { isLoading: isUpdateGroupNameLoading }] =
     useUpdateGroupNameMutation();
+  const [deleteGroup, { isLoading: isDeleteGroupLoading }] =
+    useDeleteGroupMutation();
   const currentUser = useAppSelector(selectUser);
   assert(currentUser);
+
+  useEffect(() => {
+    if (isGroupDetailsError) {
+      if (
+        isFetchBaseQueryError(groupDetailsError) &&
+        isClientError(groupDetailsError.data)
+      ) {
+        groupDetailsError.data.errors.forEach((error) => {
+          enqueueSnackbar(error.message, {
+            variant: "error",
+          });
+        });
+        void navigate("/");
+      } else {
+        handleUnexpectedError(groupDetailsError);
+      }
+    }
+  }, [isGroupDetailsError, groupDetailsError, navigate, enqueueSnackbar]);
 
   const handleUpdateName = async (groupName: string) => {
     try {
@@ -93,23 +114,33 @@ export default function GroupDetailsPage() {
     }
   };
 
-  useEffect(() => {
-    if (isGroupDetailsError) {
-      if (
-        isFetchBaseQueryError(groupDetailsError) &&
-        isClientError(groupDetailsError.data)
-      ) {
-        groupDetailsError.data.errors.forEach((error) => {
+  const handleDeleteGroup = async () => {
+    try {
+      await deleteGroup(groupId).unwrap();
+      enqueueSnackbar("Group deleted successfully.", { variant: "success" });
+      void navigate("/groups", {
+        replace: true,
+      });
+    } catch (error) {
+      if (isFetchBaseQueryError(error) && isClientError(error.data)) {
+        error.data.errors.forEach((error) => {
           enqueueSnackbar(error.message, {
             variant: "error",
           });
         });
-        void navigate("/");
-      } else {
-        handleUnexpectedError(groupDetailsError);
+        return;
+      }
+
+      if (isFetchBaseQueryError(error) && isServerError(error.data)) {
+        setFatalError(error.data.error);
+        return;
+      }
+
+      if (Error.isError(error)) {
+        setFatalError(error.message);
       }
     }
-  }, [isGroupDetailsError, groupDetailsError, navigate, enqueueSnackbar]);
+  };
 
   if (fatalError) {
     throw new Error(fatalError);
@@ -141,11 +172,13 @@ export default function GroupDetailsPage() {
       <GroupDetailsHeader
         group={group}
         currentUserId={currentUser.id}
-        nonMemberUsers={nonMemberUsers}
-        onGroupInvite={handleGroupInvite}
-        isSendingInvite={isSendGroupInviteLoading}
         onUpdateGroupName={handleUpdateName}
+        onGroupInvite={handleGroupInvite}
+        onDeleteGroup={handleDeleteGroup}
+        nonMemberUsers={nonMemberUsers}
         isUpdatingName={isUpdateGroupNameLoading}
+        isSendingInvite={isSendGroupInviteLoading}
+        isDeletingGroup={isDeleteGroupLoading}
       />
       ;
     </Box>
