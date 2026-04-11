@@ -55,6 +55,9 @@ export default function GroupDetailsHeader({
     groupActions = (
       <>
         <Autocomplete
+          sx={{
+            gridColumn: "1 / 3",
+          }}
           multiple
           options={nonMemberUsers}
           disabled={isSendingInvite}
@@ -69,14 +72,33 @@ export default function GroupDetailsHeader({
             const SelectionIcon = selected ? CheckBox : CheckBoxOutlineBlank;
 
             return (
-              <Box key={key} {...optionProps} component={"li"}>
-                <SelectionIcon />
-                <UsersAvatar
-                  imageUrl={option.imageUrl}
-                  username={option.username}
-                />
+              <Box
+                key={key}
+                {...optionProps}
+                component={"li"}
+                sx={{
+                  display: "flex",
+                  alignItems: "centers",
+                  gap: "1rem",
+                }}
+              >
+                <Box>
+                  <SelectionIcon />
+                </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                  }}
+                >
+                  <UsersAvatar
+                    imageUrl={option.imageUrl}
+                    username={option.username}
+                  />
 
-                {option.username}
+                  {option.username}
+                </Box>
               </Box>
             );
           }}
@@ -87,6 +109,10 @@ export default function GroupDetailsHeader({
           }}
         ></Autocomplete>
         <Button
+          variant="outlined"
+          sx={{
+            paddingY: 1.5,
+          }}
           disabled={friendsIds.length === 0}
           onClick={() => {
             void onGroupInvite(friendsIds);
@@ -94,7 +120,15 @@ export default function GroupDetailsHeader({
         >
           Send Invite
         </Button>
-        <Button onClick={handleDeleteDialogOpen} loading={isDeletingGroup}>
+        <Button
+          variant="outlined"
+          color="error"
+          sx={{
+            paddingY: 1.5,
+          }}
+          onClick={handleDeleteDialogOpen}
+          loading={isDeletingGroup}
+        >
           Delete Group
         </Button>
         <Dialog open={deleteDialogOpen} onClose={handleDeleteDialogClose}>
@@ -124,16 +158,33 @@ export default function GroupDetailsHeader({
       setUpdateNameDialogOpen(false);
     };
     return (
-      <Box>
-        <TextField
-          value={groupName}
-          onChange={(e) => {
-            setGroupName(e.currentTarget.value);
+      <>
+        <Box
+          sx={{
+            display: "flex",
           }}
-        />
-        <Button loading={isUpdatingName} onClick={handleUpdateNameDialogOpen}>
-          Update Name
-        </Button>
+        >
+          <TextField
+            value={groupName}
+            onChange={(e) => {
+              setGroupName(e.currentTarget.value);
+            }}
+            label="Update name"
+            sx={{
+              flex: 1,
+            }}
+            slotProps={{
+              htmlInput: {
+                sx: {
+                  fontSize: "2rem",
+                },
+              },
+            }}
+          />
+          <Button loading={isUpdatingName} onClick={handleUpdateNameDialogOpen}>
+            Update Name
+          </Button>
+        </Box>
         <Dialog open={updateNameDialogOpen}>
           <DialogTitle>
             Are you sure you want to update this group’s name?
@@ -150,27 +201,78 @@ export default function GroupDetailsHeader({
             </Button>
           </DialogActions>{" "}
         </Dialog>
-      </Box>
+      </>
     );
   };
   return (
-    <Box>
-      {isGroupAdmin ? (
-        updateGroupName()
-      ) : (
-        <Typography variant="h1">{group.name}</Typography>
-      )}
-
-      <Typography>
-        Created at <Box component={"time"}>{formatDate(group.createdAt)}</Box>
-      </Typography>
-      <UsersAvatar
-        imageUrl={group.admin.imageUrl}
-        username={group.admin.username}
-      />
-      <Typography>Created by: {group.admin.username}</Typography>
-
-      {groupActions}
+    <Box
+      sx={{
+        display: "grid",
+        gridTemplateColumns: "1fr 1fr",
+        gap: "5rem",
+      }}
+    >
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "1rem",
+        }}
+      >
+        {isGroupAdmin ? (
+          updateGroupName()
+        ) : (
+          <Box>
+            <Typography variant="h1">{group.name}</Typography>
+          </Box>
+        )}
+        <Box>
+          <Typography>
+            Created at:{" "}
+            <Box
+              component={"time"}
+              sx={{
+                fontWeight: "500",
+              }}
+            >
+              {formatDate(group.createdAt)}
+            </Box>
+          </Typography>
+        </Box>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          <UsersAvatar
+            imageUrl={group.admin.imageUrl}
+            username={group.admin.username}
+          />
+          <Typography>
+            Created by:{" "}
+            <Box
+              component={"span"}
+              sx={{
+                fontWeight: "500",
+              }}
+            >
+              {group.admin.username}
+            </Box>
+          </Typography>
+        </Box>
+      </Box>
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gridAutoRows: "max-content",
+          gap: "1rem",
+        }}
+      >
+        {groupActions}
+      </Box>
     </Box>
   );
 }
