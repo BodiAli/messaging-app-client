@@ -18,7 +18,7 @@ import type { GroupDetails, User } from "@/types/modelsType";
 export default function GroupDetailsHeader({
   group,
   nonMemberUsers,
-  currentUserId,
+  isGroupAdmin,
   onGroupInvite,
   onDeleteGroup,
   isSendingInvite,
@@ -28,7 +28,7 @@ export default function GroupDetailsHeader({
 }: {
   group: Omit<GroupDetails["group"], "users">;
   nonMemberUsers: Pick<User, "id" | "username" | "imageUrl">[];
-  currentUserId: string;
+  isGroupAdmin: boolean;
   isSendingInvite: boolean;
   isDeletingGroup: boolean;
   isUpdatingName: boolean;
@@ -42,8 +42,6 @@ export default function GroupDetailsHeader({
   const [updateNameDialogOpen, setUpdateNameDialogOpen] = useState(false);
 
   let groupActions: ReactElement | null = null;
-
-  const isGroupAdmin = currentUserId === group.admin.id;
 
   if (isGroupAdmin) {
     const handleDeleteDialogOpen = () => {

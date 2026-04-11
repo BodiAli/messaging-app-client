@@ -39,7 +39,7 @@ describe("group-details-header component", () => {
   const mockOnUpdateGroupName = vi.fn<(groupName: string) => Promise<void>>();
 
   const renderGroupHeader = (
-    currentUserId = "Test-AdminId",
+    isGroupAdmin = true,
     onGroupInvite = mockOnGroupInvite,
     onDeleteGroup = mockOnDeleteGroup,
     onUpdateGroupName = mockOnUpdateGroupName,
@@ -51,7 +51,7 @@ describe("group-details-header component", () => {
       <GroupDetailsHeader
         group={mockGroup}
         nonMemberUsers={mockNonMemberUsers}
-        currentUserId={currentUserId}
+        isGroupAdmin={isGroupAdmin}
         onGroupInvite={onGroupInvite}
         onDeleteGroup={onDeleteGroup}
         onUpdateGroupName={onUpdateGroupName}
@@ -93,7 +93,7 @@ describe("group-details-header component", () => {
       expect.hasAssertions();
 
       renderGroupHeader(
-        "Test-AdminId",
+        true,
         mockOnGroupInvite,
         mockOnDeleteGroup,
         mockOnUpdateGroupName,
@@ -126,7 +126,7 @@ describe("group-details-header component", () => {
     it("should render group name as a heading", () => {
       expect.hasAssertions();
 
-      renderGroupHeader("Test-Non-AdminId");
+      renderGroupHeader(false);
 
       const groupName = screen.getByRole("heading", {
         level: 1,
@@ -139,7 +139,7 @@ describe("group-details-header component", () => {
     it("should not render group name as input", () => {
       expect.hasAssertions();
 
-      renderGroupHeader("Test-Non-AdminId");
+      renderGroupHeader(false);
 
       const groupNameInput = screen.queryByDisplayValue("Test-Group name");
 
@@ -149,7 +149,7 @@ describe("group-details-header component", () => {
     it("should not render update name button", () => {
       expect.hasAssertions();
 
-      renderGroupHeader("Test-Non-AdminId");
+      renderGroupHeader(false);
 
       const updateNameButton = screen.queryByRole("button", {
         name: "Update Name",
@@ -204,7 +204,7 @@ describe("group-details-header component", () => {
     it("should not render invitation elements if current user is not group admin", () => {
       expect.hasAssertions();
 
-      renderGroupHeader("Test-Non-AdminId");
+      renderGroupHeader(false);
 
       const comboBox = screen.queryByRole("combobox");
 
@@ -227,7 +227,7 @@ describe("group-details-header component", () => {
       expect.hasAssertions();
 
       renderGroupHeader(
-        "Test-AdminId",
+        true,
         mockOnGroupInvite,
         mockOnDeleteGroup,
         mockOnUpdateGroupName,
@@ -245,7 +245,7 @@ describe("group-details-header component", () => {
       expect.hasAssertions();
 
       renderGroupHeader(
-        "Test-AdminId",
+        true,
         mockOnGroupInvite,
         mockOnDeleteGroup,
         mockOnUpdateGroupName,
@@ -263,7 +263,7 @@ describe("group-details-header component", () => {
       expect.hasAssertions();
 
       renderGroupHeader(
-        "Test-AdminId",
+        true,
         mockOnGroupInvite,
         mockOnDeleteGroup,
         mockOnUpdateGroupName,
@@ -282,7 +282,7 @@ describe("group-details-header component", () => {
       expect.hasAssertions();
 
       renderGroupHeader(
-        "Test-AdminId",
+        true,
         mockOnGroupInvite,
         mockOnDeleteGroup,
         mockOnUpdateGroupName,
@@ -441,7 +441,7 @@ describe("group-details-header component", () => {
       expect.hasAssertions();
 
       renderGroupHeader(
-        "Test-AdminId",
+        true,
         mockOnGroupInvite,
         mockOnDeleteGroup,
         mockOnUpdateGroupName,
@@ -503,7 +503,7 @@ describe("group-details-header component", () => {
       expect.hasAssertions();
 
       const mockOnGroupInvite = vi.fn<(friendIds: string[]) => Promise<void>>();
-      renderGroupHeader("Test-AdminId", mockOnGroupInvite);
+      renderGroupHeader(true, mockOnGroupInvite);
       const openSelectElementButton = screen.getByRole("button", {
         name: "Open",
       });
@@ -533,7 +533,7 @@ describe("group-details-header component", () => {
     it("should not render delete group button", () => {
       expect.hasAssertions();
 
-      renderGroupHeader("Test-Non-adminId");
+      renderGroupHeader(false);
 
       const deleteButton = screen.queryByRole("button", {
         name: "Delete Group",
@@ -622,7 +622,7 @@ describe("group-details-header component", () => {
 
       const mockOnGroupInvite = vi.fn<() => Promise<void>>();
       const mockOnDeleteGroup = vi.fn<() => Promise<void>>();
-      renderGroupHeader("Test-AdminId", mockOnGroupInvite, mockOnDeleteGroup);
+      renderGroupHeader(true, mockOnGroupInvite, mockOnDeleteGroup);
       const deleteButton = screen.getByRole("button", {
         name: "Delete Group",
       });
