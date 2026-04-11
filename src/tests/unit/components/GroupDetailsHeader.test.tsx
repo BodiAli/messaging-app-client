@@ -165,7 +165,7 @@ describe("group-details-header component", () => {
 
       renderGroupHeader();
 
-      const createdAtElement = screen.getByText("Created at");
+      const createdAtElement = screen.getByText("Created at:");
       const timeElement = within(createdAtElement).getByRole("time");
 
       expect(createdAtElement).toBeInTheDocument();
@@ -177,9 +177,12 @@ describe("group-details-header component", () => {
 
       renderGroupHeader();
 
-      const createdByElement = screen.getByText(
-        "Created by: Test-Admin username",
-      );
+      const createdByElement = screen.getByText((_textContent, element) => {
+        if (element?.tagName === "P") {
+          return element.textContent === "Created by: Test-Admin username";
+        }
+        return false;
+      });
 
       expect(createdByElement).toBeInTheDocument();
     });
