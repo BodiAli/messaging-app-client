@@ -168,7 +168,12 @@ export default function GroupDetailsPage() {
   );
 
   return (
-    <Box>
+    <Box
+      sx={{
+        flex: 1,
+        padding: 3,
+      }}
+    >
       <GroupDetailsHeader
         group={group}
         currentUserId={currentUser.id}
@@ -180,7 +185,6 @@ export default function GroupDetailsPage() {
         isSendingInvite={isSendGroupInviteLoading}
         isDeletingGroup={isDeleteGroupLoading}
       />
-      ;
     </Box>
   );
 }
