@@ -163,9 +163,17 @@ export default function GroupDetailsPage() {
     group: { users, ...group },
   } = groupDetails;
 
-  const nonMemberUsers = userFriends.friends.filter(
-    (_friend, index) => !users[index],
-  );
+  const nonMemberUsers = userFriends.friends
+    .filter((_friend, index) => !users[index])
+    .sort((a, b) => {
+      if (a.username > b.username) {
+        return 1;
+      }
+      if (a.username < b.username) {
+        return -1;
+      }
+      return 0;
+    });
 
   return (
     <Box
@@ -176,7 +184,7 @@ export default function GroupDetailsPage() {
     >
       <GroupDetailsHeader
         group={group}
-        currentUserId={currentUser.id}
+        isGroupAdmin={currentUser.id === group.admin.id}
         onUpdateGroupName={handleUpdateName}
         onGroupInvite={handleGroupInvite}
         onDeleteGroup={handleDeleteGroup}
