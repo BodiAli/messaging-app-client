@@ -53,14 +53,43 @@ export default function GroupMembers({
   };
 
   return (
-    <Box>
+    <Box
+      sx={{
+        marginTop: "3rem",
+        display: "grid",
+        gridTemplateColumns: "1fr",
+        gap: "2rem",
+      }}
+    >
       <Box>
-        <Typography>{groupMembersCount()}</Typography>
+        <Typography
+          variant="h5"
+          sx={{
+            paddingX: 3,
+          }}
+        >
+          {groupMembersCount()}
+        </Typography>
       </Box>
-      <Box>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "2rem",
+        }}
+      >
         {groupMembers.map((member) => {
           return (
-            <Box key={member.id}>
+            <Box
+              key={member.id}
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: "1rem",
+                backgroundColor: "#ffffff73",
+                padding: 3,
+              }}
+            >
               <UsersAvatar
                 imageUrl={member.imageUrl}
                 username={member.username}
@@ -70,6 +99,11 @@ export default function GroupMembers({
                 <Button
                   onClick={handleDialogOpen(member)}
                   loading={isRemovingMember}
+                  sx={{
+                    marginLeft: "auto",
+                    padding: 2,
+                  }}
+                  color="error"
                 >
                   Remove Member
                 </Button>
