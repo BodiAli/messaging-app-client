@@ -6,6 +6,7 @@ const apiSliceWithFriends = apiSlice.injectEndpoints({
     return {
       getFriends: build.query<UserFriends, undefined>({
         query: () => "/users/me/friends",
+        providesTags: ["Friend"],
       }),
       addFriend: build.mutation<{ message: string }, string>({
         query: (receiverId) => {
