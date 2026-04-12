@@ -208,6 +208,7 @@ export default function GroupDetailsHeader({
         display: "grid",
         gridTemplateColumns: "1fr 1fr",
         gap: "5rem",
+        padding: 3,
       }}
     >
       <Box

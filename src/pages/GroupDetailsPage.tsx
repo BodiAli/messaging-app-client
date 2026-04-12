@@ -211,7 +211,6 @@ export default function GroupDetailsPage() {
     <Box
       sx={{
         flex: 1,
-        padding: 3,
       }}
     >
       <GroupDetailsHeader
