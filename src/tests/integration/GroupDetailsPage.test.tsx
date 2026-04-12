@@ -797,7 +797,7 @@ describe("group-details-page component", () => {
     it("should disable delete button fetch request is pending", async () => {
       expect.hasAssertions();
 
-      const resolvePromise = manualFetchMock(204);
+      manualFetchMock(204);
       renderGroupDetails();
       const deleteButton = await screen.findByRole("button", {
         name: "Delete Group",
@@ -810,12 +810,6 @@ describe("group-details-page component", () => {
       await userEvent.click(confirmButton);
 
       expect(deleteButton).toBeDisabled();
-
-      resolvePromise(null);
-
-      await waitFor(() => {
-        expect(deleteButton).toBeDisabled();
-      });
     });
 
     it("should call enqueueSnackbar with a success message", async () => {
@@ -880,6 +874,168 @@ describe("group-details-page component", () => {
   });
 
   describe("rendering group members", () => {
-    it.todo("should render group members");
+    it("should render group members", async () => {
+      expect.hasAssertions();
+
+      fetchMock.get(serverGroupRoute, {
+        status: 200,
+        body: mockGroupDetails,
+      });
+      renderGroupDetails();
+
+      const userB = await screen.findByText("Test: UserB username");
+
+      expect(userB).toBeInTheDocument();
+    });
+  });
+
+  describe("disabling remove member button while DELETE request is pending for removing member", () => {
+    it("should not disable remove member button while request is not pending", async () => {
+      expect.hasAssertions();
+
+      fetchMock.get(serverGroupRoute, {
+        status: 200,
+        body: mockGroupDetails,
+      });
+      renderGroupDetails();
+
+      const removeButton = await screen.findByRole("button", {
+        name: "Remove Member",
+      });
+
+      expect(removeButton).toBeEnabled();
+    });
+
+    it("should disable remove member button while request is pending", async () => {
+      expect.hasAssertions();
+
+      const resolvePromise = manualFetchMock(204);
+      renderGroupDetails();
+      const removeButton = await screen.findByRole("button", {
+        name: "Remove Member",
+      });
+      await userEvent.click(removeButton);
+      const confirmButton = screen.getByRole("button", {
+        name: "Confirm",
+      });
+
+      await userEvent.click(confirmButton);
+
+      expect(removeButton).toBeDisabled();
+
+      resolvePromise(null);
+      await waitFor(() => {
+        expect(removeButton).toBeEnabled();
+      });
+    });
+  });
+
+  describe("handling error responses for DELETE request to remove group member", () => {
+    it("should render ErrorBoundary when server responds with 500 status", async () => {
+      expect.hasAssertions();
+
+      vi.spyOn(console, "error").mockImplementation(() => null);
+      fetchMock.get(serverGroupRoute, {
+        status: 200,
+        body: mockGroupDetails,
+      });
+      fetchMock.delete(serverDeleteGroupMember, {
+        status: 500,
+        body: {
+          error: "Test: server error",
+        },
+      });
+      renderGroupDetails();
+      const removeButton = await screen.findByRole("button", {
+        name: "Remove Member",
+      });
+      await userEvent.click(removeButton);
+      const confirmButton = screen.getByRole("button", {
+        name: "Confirm",
+      });
+
+      await userEvent.click(confirmButton);
+      const errorBoundaryHeading = screen.getByRole("heading", {
+        name: "Unexpected error occurred",
+        level: 1,
+      });
+      const errorText = screen.getByText("Test: server error");
+
+      expect(errorBoundaryHeading).toBeInTheDocument();
+      expect(errorText).toBeInTheDocument();
+    });
+
+    it("should call enqueueSnackbar when server responds with 4xx status", async () => {
+      expect.hasAssertions();
+
+      const mockEnqueueSnackbar = vi.fn<() => notistack.SnackbarKey>();
+      vi.spyOn(notistack, "useSnackbar").mockReturnValue({
+        closeSnackbar: vi.fn<() => void>(),
+        enqueueSnackbar: mockEnqueueSnackbar,
+      });
+      fetchMock.get(serverGroupRoute, {
+        status: 200,
+        body: mockGroupDetails,
+      });
+      fetchMock.delete(serverDeleteGroupMember, {
+        status: 404,
+        body: {
+          errors: [
+            {
+              message: "Test: no member found to remove.",
+            },
+          ],
+        } satisfies ApiClientError,
+      });
+      renderGroupDetails();
+      const removeButton = await screen.findByRole("button", {
+        name: "Remove Member",
+      });
+      await userEvent.click(removeButton);
+      const confirmButton = screen.getByRole("button", {
+        name: "Confirm",
+      });
+
+      await userEvent.click(confirmButton);
+
+      expect(mockEnqueueSnackbar).toHaveBeenCalledExactlyOnceWith<
+        [notistack.SnackbarMessage, notistack.OptionsObject]
+      >("Test: no member found to remove.", {
+        variant: "error",
+      });
+    });
+  });
+
+  describe("handling success response for DELETE request to remove group member", () => {
+    it("should call enqueueSnackbar with success message", async () => {
+      expect.hasAssertions();
+
+      const mockEnqueueSnackbar = vi.fn<() => notistack.SnackbarKey>();
+      vi.spyOn(notistack, "useSnackbar").mockReturnValue({
+        closeSnackbar: vi.fn<() => void>(),
+        enqueueSnackbar: mockEnqueueSnackbar,
+      });
+      fetchMock.get(serverGroupRoute, {
+        status: 200,
+        body: mockGroupDetails,
+      });
+      fetchMock.delete(serverDeleteGroupMember, {
+        status: 204,
+      });
+      renderGroupDetails();
+      const removeButton = await screen.findByRole("button", {
+        name: "Remove Member",
+      });
+      await userEvent.click(removeButton);
+      const confirmButton = screen.getByRole("button", {
+        name: "Confirm",
+      });
+
+      await userEvent.click(confirmButton);
+
+      expect(mockEnqueueSnackbar).toHaveBeenCalledExactlyOnceWith<
+        [notistack.SnackbarMessage, notistack.OptionsObject]
+      >("Test: UserB username removed.", { variant: "success" });
+    });
   });
 });
