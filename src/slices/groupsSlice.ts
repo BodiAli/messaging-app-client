@@ -74,6 +74,24 @@ const apiSliceWithGroups = apiSlice.injectEndpoints({
         },
         invalidatesTags: ["Group"],
       }),
+      removeMember: build.mutation<
+        string,
+        { memberId: string; groupId: string }
+      >({
+        query: ({ groupId, memberId }) => {
+          return {
+            url: `/users/me/groups/${groupId}/members/${memberId}`,
+            method: "DELETE",
+            responseHandler(response) {
+              if (response.ok) {
+                return response.text();
+              }
+              return response.json();
+            },
+          };
+        },
+        invalidatesTags: ["Group"],
+      }),
     };
   },
 });
@@ -85,4 +103,5 @@ export const {
   useSendGroupInviteMutation,
   useUpdateGroupNameMutation,
   useDeleteGroupMutation,
+  useRemoveMemberMutation,
 } = apiSliceWithGroups;
