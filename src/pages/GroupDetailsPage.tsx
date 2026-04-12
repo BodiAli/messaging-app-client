@@ -5,6 +5,7 @@ import { useSnackbar } from "notistack";
 import {
   useDeleteGroupMutation,
   useGetGroupDetailsQuery,
+  useRemoveMemberMutation,
   useSendGroupInviteMutation,
   useUpdateGroupNameMutation,
 } from "@/slices/groupsSlice";
@@ -19,6 +20,7 @@ import Loader from "@/components/Loader/Loader";
 import { useAppSelector } from "@/app/hooks";
 import { selectUser } from "@/slices/authSlice";
 import { useGetFriendsQuery } from "@/slices/friendsSlice";
+import GroupMembers from "@/components/GroupMembers";
 
 export default function GroupDetailsPage() {
   const [fatalError, setFatalError] = useState<string | null>(null);
@@ -44,6 +46,8 @@ export default function GroupDetailsPage() {
     useUpdateGroupNameMutation();
   const [deleteGroup, { isLoading: isDeleteGroupLoading }] =
     useDeleteGroupMutation();
+  const [removeMember, { isLoading: isRemoveMemberLoading }] =
+    useRemoveMemberMutation();
   const currentUser = useAppSelector(selectUser);
   assert(currentUser);
 
@@ -64,6 +68,26 @@ export default function GroupDetailsPage() {
       }
     }
   }, [isGroupDetailsError, groupDetailsError, navigate, enqueueSnackbar]);
+
+  if (
+    isGroupDetailsLoading ||
+    !groupDetails ||
+    isUserFriendsLoading ||
+    !userFriends
+  ) {
+    return <Loader />;
+  }
+  const {
+    group: { users, ...group },
+  } = groupDetails;
+
+  if (fatalError) {
+    throw new Error(fatalError);
+  }
+
+  if (isUserFriendsError) {
+    handleUnexpectedError(userFriendsError);
+  }
 
   const handleUpdateName = async (groupName: string) => {
     try {
@@ -142,26 +166,34 @@ export default function GroupDetailsPage() {
     }
   };
 
-  if (fatalError) {
-    throw new Error(fatalError);
-  }
+  const handleRemoveMember = async (memberId: string) => {
+    const currentMember = users.find((member) => member.id === memberId);
+    assert(currentMember);
+    try {
+      await removeMember({ memberId: currentMember.id, groupId }).unwrap();
+      enqueueSnackbar(`${currentMember.username} removed.`, {
+        variant: "success",
+      });
+    } catch (error) {
+      if (isFetchBaseQueryError(error) && isClientError(error.data)) {
+        error.data.errors.forEach((error) => {
+          enqueueSnackbar(error.message, {
+            variant: "error",
+          });
+        });
+        return;
+      }
 
-  if (isUserFriendsError) {
-    handleUnexpectedError(userFriendsError);
-  }
+      if (isFetchBaseQueryError(error) && isServerError(error.data)) {
+        setFatalError(error.data.error);
+        return;
+      }
 
-  if (
-    isGroupDetailsLoading ||
-    !groupDetails ||
-    isUserFriendsLoading ||
-    !userFriends
-  ) {
-    return <Loader />;
-  }
-
-  const {
-    group: { users, ...group },
-  } = groupDetails;
+      if (Error.isError(error)) {
+        setFatalError(error.message);
+      }
+    }
+  };
 
   const nonMemberUsers = userFriends.friends
     .filter((_friend, index) => !users[index])
@@ -192,6 +224,12 @@ export default function GroupDetailsPage() {
         isUpdatingName={isUpdateGroupNameLoading}
         isSendingInvite={isSendGroupInviteLoading}
         isDeletingGroup={isDeleteGroupLoading}
+      />
+      <GroupMembers
+        groupMembers={users}
+        isGroupAdmin={currentUser.id === group.admin.id}
+        onRemoveMember={handleRemoveMember}
+        isRemovingMember={isRemoveMemberLoading}
       />
     </Box>
   );
