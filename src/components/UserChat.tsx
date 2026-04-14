@@ -25,6 +25,10 @@ import {
   isFetchBaseQueryError,
   isServerError,
 } from "@/types/apiResponseTypes";
+import {
+  useAcceptFriendRequestMutation,
+  useDeclineFriendRequestMutation,
+} from "@/slices/notificationsSlice";
 import UsersAvatar from "./UsersAvatar";
 import Chatting from "./Chatting";
 import SendMessage from "./SendMessage";
@@ -53,10 +57,13 @@ export default function UserChat({ chatData, isFetching }: UserChatProps) {
   const navigate = useNavigate();
   const currentUser = useAppSelector(selectUser);
   const { userId } = useParams<"userId">();
-  const [addFriend, { isLoading: isFriendshipActionLoading }] =
-    useAddFriendMutation();
+  const [addFriend, { isLoading: isAddingFriend }] = useAddFriendMutation();
   const [sendMessage, { isLoading: isSendingMessage }] =
     useSendMessageMutation();
+  const [acceptFriendRequest, { isLoading: isAcceptingRequest }] =
+    useAcceptFriendRequestMutation();
+  const [declineFriendRequest, { isLoading: isDecliningRequest }] =
+    useDeclineFriendRequestMutation();
   assert(currentUser);
   assert(userId);
 
@@ -64,7 +71,10 @@ export default function UserChat({ chatData, isFetching }: UserChatProps) {
     throw new Error(fatalError);
   }
 
-  const handleFriendshipAction = async () => {
+  const isFriendshipActionLoading =
+    isAddingFriend || isAcceptingRequest || isDecliningRequest;
+
+  const handleAddFriend = async () => {
     try {
       const { message } = await addFriend(userId).unwrap();
 
@@ -75,13 +85,76 @@ export default function UserChat({ chatData, isFetching }: UserChatProps) {
       if (isFetchBaseQueryError(error)) {
         if (isServerError(error.data)) {
           setFatalError(error.data.error);
+          return;
         }
 
         if (isClientError(error.data)) {
           error.data.errors.map((error) => {
             enqueueSnackbar(error.message, { variant: "error" });
           });
+          return;
         }
+      }
+
+      if (Error.isError(error)) {
+        setFatalError(error.message);
+      }
+    }
+  };
+
+  const handleAcceptFriendRequest = async (friendRequestId: string) => {
+    try {
+      await acceptFriendRequest(friendRequestId).unwrap();
+      enqueueSnackbar("Friend request accepted.", {
+        variant: "success",
+      });
+    } catch (error) {
+      if (isFetchBaseQueryError(error)) {
+        if (isServerError(error.data)) {
+          setFatalError(error.data.error);
+          return;
+        }
+
+        if (isClientError(error.data)) {
+          error.data.errors.map((error) => {
+            enqueueSnackbar(error.message, { variant: "error" });
+          });
+          return;
+        }
+      }
+
+      if (Error.isError(error)) {
+        setFatalError(error.message);
+      }
+    }
+  };
+
+  const handleDeclineFriendRequest = async (
+    friendRequestId: string,
+    snackbarMessage: string,
+  ) => {
+    try {
+      await declineFriendRequest(friendRequestId).unwrap();
+      enqueueSnackbar(snackbarMessage, {
+        variant: "success",
+      });
+    } catch (error) {
+      if (isFetchBaseQueryError(error)) {
+        if (isServerError(error.data)) {
+          setFatalError(error.data.error);
+          return;
+        }
+
+        if (isClientError(error.data)) {
+          error.data.errors.map((error) => {
+            enqueueSnackbar(error.message, { variant: "error" });
+          });
+          return;
+        }
+      }
+
+      if (Error.isError(error)) {
+        setFatalError(error.message);
       }
     }
   };
@@ -184,7 +257,9 @@ export default function UserChat({ chatData, isFetching }: UserChatProps) {
           currentUserId={currentUser.id}
           recipientId={userId}
           isLoading={isFriendshipActionLoading}
-          onActionClick={handleFriendshipAction}
+          onAddFriend={handleAddFriend}
+          onAcceptFriendRequest={handleAcceptFriendRequest}
+          onDeclineOrDeleteOrCancelFriendRequest={handleDeclineFriendRequest}
         />
       </Stack>
       <Chatting
@@ -202,14 +277,21 @@ interface FriendshipActionProps {
   currentUserId: string;
   recipientId: string;
   isLoading: boolean;
-  onActionClick: () => void;
+  onAddFriend: () => Promise<void>;
+  onAcceptFriendRequest: (friendRequestId: string) => Promise<void>;
+  onDeclineOrDeleteOrCancelFriendRequest: (
+    friendRequestId: string,
+    snackbarMessage: string,
+  ) => Promise<void>;
 }
 
 function FriendshipAction({
   chatData,
   currentUserId,
   recipientId,
-  onActionClick,
+  onAddFriend,
+  onAcceptFriendRequest,
+  onDeclineOrDeleteOrCancelFriendRequest,
   isLoading,
 }: FriendshipActionProps) {
   if (!chatData.friendRequestStatus) {
@@ -217,7 +299,7 @@ function FriendshipAction({
       <Button
         loading={isLoading}
         onClick={() => {
-          onActionClick();
+          void onAddFriend();
         }}
       >
         Add as a friend
@@ -226,18 +308,59 @@ function FriendshipAction({
   }
 
   if (chatData.friendRequestStatus.type === "ACCEPTED") {
-    return null;
+    return (
+      <Button
+        loading={isLoading}
+        onClick={() => {
+          void onDeclineOrDeleteOrCancelFriendRequest(
+            chatData.friendRequestStatus.id,
+            "Friend removed.",
+          );
+        }}
+      >
+        Remove friend
+      </Button>
+    );
   }
 
   if (chatData.friendRequestStatus.senderId === recipientId) {
     return (
       <>
-        <Button>Accept</Button>
-        <Button>Decline</Button>
+        <Button
+          loading={isLoading}
+          onClick={() => {
+            void onAcceptFriendRequest(chatData.friendRequestStatus.id);
+          }}
+        >
+          Accept
+        </Button>
+        <Button
+          loading={isLoading}
+          onClick={() => {
+            void onDeclineOrDeleteOrCancelFriendRequest(
+              chatData.friendRequestStatus.id,
+              "Friend request declined.",
+            );
+          }}
+        >
+          Decline
+        </Button>
       </>
     );
   }
   if (chatData.friendRequestStatus.senderId === currentUserId) {
-    return <Button>Cancel request</Button>;
+    return (
+      <Button
+        loading={isLoading}
+        onClick={() => {
+          void onDeclineOrDeleteOrCancelFriendRequest(
+            chatData.friendRequestStatus.id,
+            "Friend request canceled.",
+          );
+        }}
+      >
+        Cancel request
+      </Button>
+    );
   }
 }
