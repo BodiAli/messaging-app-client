@@ -15,6 +15,10 @@ export interface UserFriends {
   friends: Friend[];
 }
 
+export interface NonFriends {
+  nonFriends: Omit<Friend, "lastSeen">[];
+}
+
 export type Messages = (Omit<
   PrismaMessage,
   "createdAt" | "groupChatId" | "receiverId"
@@ -38,6 +42,7 @@ interface ChatDataIsPendingFriend {
   friendRequestStatus: {
     type: Extract<FriendStatus, "PENDING">;
     senderId: string;
+    id: string;
   };
 }
 
@@ -47,6 +52,7 @@ interface ChatDataIsFriend {
   friendRequestStatus: {
     type: Extract<FriendStatus, "ACCEPTED">;
     senderId: string;
+    id: string;
   };
 }
 
