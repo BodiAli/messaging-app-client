@@ -310,6 +310,7 @@ function FriendshipAction({
   if (chatData.friendRequestStatus.type === "ACCEPTED") {
     return (
       <Button
+        color="error"
         loading={isLoading}
         onClick={() => {
           void onDeclineOrDeleteOrCancelFriendRequest(
@@ -327,6 +328,7 @@ function FriendshipAction({
     return (
       <>
         <Button
+          color="info"
           loading={isLoading}
           onClick={() => {
             void onAcceptFriendRequest(chatData.friendRequestStatus.id);
@@ -335,6 +337,7 @@ function FriendshipAction({
           Accept
         </Button>
         <Button
+          color="error"
           loading={isLoading}
           onClick={() => {
             void onDeclineOrDeleteOrCancelFriendRequest(
