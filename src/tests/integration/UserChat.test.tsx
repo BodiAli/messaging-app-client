@@ -3,6 +3,7 @@ import { describe, it, expect, beforeAll, afterEach, beforeEach } from "vitest";
 import {
   fireEvent,
   screen,
+  waitFor,
   waitForElementToBeRemoved,
   within,
 } from "@testing-library/react";
@@ -23,10 +24,12 @@ import type {
   Messages,
   User,
 } from "@/types/modelsType";
+import type { ApiClientError } from "@/types/apiResponseTypes";
 
 const getUserServerRoute = `${serverUrl}/auth/get-user`;
 const addFriendServerRoute = `${serverUrl}/friendships`;
 const serverMessagesRoute = "/users/userBId/messages";
+const serverRespondToFriendRequestRoute = "/friendships/Test-Friendship-Id";
 
 vi.mock(import("@/components/Chatting"), () => {
   return {
@@ -212,7 +215,11 @@ describe("user-chat component", () => {
 
         renderUserChat({
           ...mockChatData,
-          friendRequestStatus: { type: "ACCEPTED", senderId: "userBId" },
+          friendRequestStatus: {
+            type: "ACCEPTED",
+            senderId: "userBId",
+            id: "Test-Friendship-Id",
+          },
           user: {
             ...mockChatData.user,
             lastSeen,
@@ -233,7 +240,11 @@ describe("user-chat component", () => {
         vi.setSystemTime(new Date("2020-01-01T01:03:00Z"));
         renderUserChat({
           ...mockChatData,
-          friendRequestStatus: { type: "ACCEPTED", senderId: "userBId" },
+          friendRequestStatus: {
+            type: "ACCEPTED",
+            senderId: "userBId",
+            id: "Test-Friendship-Id",
+          },
           user: {
             ...mockChatData.user,
             lastSeen,
@@ -251,7 +262,11 @@ describe("user-chat component", () => {
         vi.setSystemTime(new Date("2020-01-01T01:10:00Z"));
         renderUserChat({
           ...mockChatData,
-          friendRequestStatus: { type: "ACCEPTED", senderId: "userBId" },
+          friendRequestStatus: {
+            type: "ACCEPTED",
+            senderId: "userBId",
+            id: "Test-Friendship-Id",
+          },
           user: {
             ...mockChatData.user,
             lastSeen,
@@ -297,7 +312,11 @@ describe("user-chat component", () => {
 
         renderUserChat({
           ...mockChatData,
-          friendRequestStatus: { type: "PENDING", senderId: "userBId" },
+          friendRequestStatus: {
+            type: "PENDING",
+            senderId: "userBId",
+            id: "Test-Friendship-Id",
+          },
         });
 
         const acceptRequestButton = await screen.findByRole("button", {
@@ -330,7 +349,11 @@ describe("user-chat component", () => {
 
         renderUserChat({
           ...mockChatData,
-          friendRequestStatus: { type: "PENDING", senderId: mockUser.id },
+          friendRequestStatus: {
+            type: "PENDING",
+            senderId: mockUser.id,
+            id: "Test-Friendship-Id",
+          },
         });
 
         const cancelButton = await screen.findByRole("button", {
@@ -350,6 +373,56 @@ describe("user-chat component", () => {
         const onlineBadge = screen.queryByTestId("online-badge");
 
         expect(onlineBadge).toHaveClass(badgeClasses.invisible);
+      });
+    });
+
+    describe("given the two users are already friends", () => {
+      it("should render a 'Remove friend' button", async () => {
+        expect.hasAssertions();
+
+        renderUserChat({
+          messages: [],
+          friendRequestStatus: {
+            type: "ACCEPTED",
+            senderId: mockUser.id,
+            id: "Test-Friendship-Id",
+          },
+          user: {
+            imageUrl: null,
+            lastSeen: new Date().toISOString(),
+            username: "Test: userB username",
+          },
+        });
+
+        const removeFriend = await screen.findByRole("button", {
+          name: "Remove friend",
+        });
+
+        expect(removeFriend).toBeInTheDocument();
+      });
+
+      it("should render an online badge", async () => {
+        expect.hasAssertions();
+
+        vi.setSystemTime(new Date("2020-01-01T01:10:00Z"));
+        renderUserChat({
+          messages: [],
+          friendRequestStatus: {
+            type: "ACCEPTED",
+            senderId: mockUser.id,
+            id: "Test-Friendship-Id",
+          },
+          user: {
+            imageUrl: null,
+            lastSeen: new Date().toISOString(),
+            username: "Test: userB username",
+          },
+        });
+        await waitForElementToBeRemoved(screen.getByTestId("loader"));
+
+        const onlineBadge = screen.getByTestId("online-badge");
+
+        expect(onlineBadge).not.toHaveClass(badgeClasses.invisible);
       });
     });
   });
@@ -469,6 +542,638 @@ describe("user-chat component", () => {
           "Friend request sent to userA",
           { variant: "success" },
         );
+      });
+    });
+
+    describe("given accepting a friend request", () => {
+      it("should render ErrorBoundary when server responds with 500 status", async () => {
+        expect.hasAssertions();
+
+        vi.spyOn(console, "error").mockImplementation(() => null);
+        fetchMock.patch(serverRespondToFriendRequestRoute, {
+          status: 500,
+          body: {
+            error: "Test: server error",
+          },
+        });
+        renderUserChat({
+          messages: [],
+          friendRequestStatus: {
+            senderId: "userBId",
+            type: "PENDING",
+            id: "Test-Friendship-Id",
+          },
+          user: {
+            imageUrl: null,
+            lastSeen: null,
+            username: "Test: userB username",
+          },
+        });
+
+        const acceptButton = await screen.findByRole("button", {
+          name: "Accept",
+        });
+        await userEvent.click(acceptButton);
+
+        const errorBoundaryHeading = screen.getByRole("heading", {
+          name: "Unexpected error occurred",
+          level: 1,
+        });
+        const errorText = screen.getByText("Test: server error");
+
+        expect(errorBoundaryHeading).toBeInTheDocument();
+        expect(errorText).toBeInTheDocument();
+      });
+
+      it("should call mockEnqueueSnackbar when server responds with 4xx status", async () => {
+        expect.hasAssertions();
+
+        const mockEnqueueSnackbar = vi.fn<() => notistack.SnackbarKey>();
+        vi.spyOn(notistack, "useSnackbar").mockReturnValue({
+          closeSnackbar: vi.fn<() => void>(),
+          enqueueSnackbar: mockEnqueueSnackbar,
+        });
+        fetchMock.patch(serverRespondToFriendRequestRoute, {
+          status: 404,
+          body: {
+            errors: [
+              {
+                message: "Test: no friend request found.",
+              },
+            ],
+          } satisfies ApiClientError,
+        });
+        renderUserChat({
+          messages: [],
+          friendRequestStatus: {
+            senderId: "userBId",
+            type: "PENDING",
+            id: "Test-Friendship-Id",
+          },
+          user: {
+            imageUrl: null,
+            lastSeen: null,
+            username: "Test: userB username",
+          },
+        });
+
+        const acceptButton = await screen.findByRole("button", {
+          name: "Accept",
+        });
+        await userEvent.click(acceptButton);
+
+        expect(mockEnqueueSnackbar).toHaveBeenCalledExactlyOnceWith<
+          [notistack.SnackbarMessage, notistack.OptionsObject]
+        >("Test: no friend request found.", { variant: "error" });
+      });
+
+      it("should disable accept button while fetching", async () => {
+        expect.hasAssertions();
+
+        const { promise, resolve } = Promise.withResolvers();
+        vi.spyOn(globalThis, "fetch")
+          .mockResolvedValueOnce(
+            new Response(JSON.stringify({ user: mockUser }), { status: 200 }),
+          )
+          .mockImplementation(async () => {
+            await promise;
+            return Promise.resolve(new Response(null, { status: 204 }));
+          });
+        renderUserChat({
+          messages: [],
+          friendRequestStatus: {
+            senderId: "userBId",
+            type: "PENDING",
+            id: "Test-Friendship-Id",
+          },
+          user: {
+            imageUrl: null,
+            lastSeen: null,
+            username: "Test: userB username",
+          },
+        });
+        const acceptButton = await screen.findByRole("button", {
+          name: "Accept",
+        });
+
+        await userEvent.click(acceptButton);
+
+        expect(acceptButton).toBeDisabled();
+
+        resolve(null);
+
+        await waitFor(() => {
+          expect(acceptButton).toBeEnabled();
+        });
+      });
+
+      it("should call mockEnqueueSnackbar with a success message when server responds with 204", async () => {
+        expect.hasAssertions();
+
+        const mockEnqueueSnackbar = vi.fn<() => notistack.SnackbarKey>();
+        vi.spyOn(notistack, "useSnackbar").mockReturnValue({
+          closeSnackbar: vi.fn<() => void>(),
+          enqueueSnackbar: mockEnqueueSnackbar,
+        });
+        fetchMock.patch(serverRespondToFriendRequestRoute, {
+          status: 204,
+        });
+        renderUserChat({
+          messages: [],
+          friendRequestStatus: {
+            senderId: "userBId",
+            type: "PENDING",
+            id: "Test-Friendship-Id",
+          },
+          user: {
+            imageUrl: null,
+            lastSeen: null,
+            username: "Test: userB username",
+          },
+        });
+        const acceptButton = await screen.findByRole("button", {
+          name: "Accept",
+        });
+
+        await userEvent.click(acceptButton);
+
+        expect(mockEnqueueSnackbar).toHaveBeenCalledExactlyOnceWith<
+          [notistack.SnackbarMessage, notistack.OptionsObject]
+        >("Friend request accepted.", { variant: "success" });
+      });
+    });
+
+    describe("given declining a friend request", () => {
+      it("should render ErrorBoundary when server responds with 500 status", async () => {
+        expect.hasAssertions();
+
+        vi.spyOn(console, "error").mockImplementation(() => null);
+        fetchMock.delete(serverRespondToFriendRequestRoute, {
+          status: 500,
+          body: {
+            error: "Test: server error",
+          },
+        });
+        renderUserChat({
+          messages: [],
+          friendRequestStatus: {
+            senderId: "userBId",
+            type: "PENDING",
+            id: "Test-Friendship-Id",
+          },
+          user: {
+            imageUrl: null,
+            lastSeen: null,
+            username: "Test: userB username",
+          },
+        });
+
+        const declineButton = await screen.findByRole("button", {
+          name: "Decline",
+        });
+        await userEvent.click(declineButton);
+
+        const errorBoundaryHeading = screen.getByRole("heading", {
+          name: "Unexpected error occurred",
+          level: 1,
+        });
+        const errorText = screen.getByText("Test: server error");
+
+        expect(errorBoundaryHeading).toBeInTheDocument();
+        expect(errorText).toBeInTheDocument();
+      });
+
+      it("should call mockEnqueueSnackbar when server responds with 4xx status", async () => {
+        expect.hasAssertions();
+
+        const mockEnqueueSnackbar = vi.fn<() => notistack.SnackbarKey>();
+        vi.spyOn(notistack, "useSnackbar").mockReturnValue({
+          closeSnackbar: vi.fn<() => void>(),
+          enqueueSnackbar: mockEnqueueSnackbar,
+        });
+        fetchMock.delete(serverRespondToFriendRequestRoute, {
+          status: 404,
+          body: {
+            errors: [
+              {
+                message: "Test: no friend request found.",
+              },
+            ],
+          } satisfies ApiClientError,
+        });
+        renderUserChat({
+          messages: [],
+          friendRequestStatus: {
+            senderId: "userBId",
+            type: "PENDING",
+            id: "Test-Friendship-Id",
+          },
+          user: {
+            imageUrl: null,
+            lastSeen: null,
+            username: "Test: userB username",
+          },
+        });
+
+        const declineButton = await screen.findByRole("button", {
+          name: "Decline",
+        });
+        await userEvent.click(declineButton);
+
+        expect(mockEnqueueSnackbar).toHaveBeenCalledExactlyOnceWith<
+          [notistack.SnackbarMessage, notistack.OptionsObject]
+        >("Test: no friend request found.", { variant: "error" });
+      });
+
+      it("should disable decline button while fetching", async () => {
+        expect.hasAssertions();
+
+        const { promise, resolve } = Promise.withResolvers();
+        vi.spyOn(globalThis, "fetch")
+          .mockResolvedValueOnce(
+            new Response(JSON.stringify({ user: mockUser }), { status: 200 }),
+          )
+          .mockImplementation(async () => {
+            await promise;
+            return Promise.resolve(new Response(null, { status: 204 }));
+          });
+        renderUserChat({
+          messages: [],
+          friendRequestStatus: {
+            senderId: "userBId",
+            type: "PENDING",
+            id: "Test-Friendship-Id",
+          },
+          user: {
+            imageUrl: null,
+            lastSeen: null,
+            username: "Test: userB username",
+          },
+        });
+        const declineButton = await screen.findByRole("button", {
+          name: "Decline",
+        });
+
+        await userEvent.click(declineButton);
+
+        expect(declineButton).toBeDisabled();
+
+        resolve(null);
+
+        await waitFor(() => {
+          expect(declineButton).toBeEnabled();
+        });
+      });
+
+      it("should call mockEnqueueSnackbar with a success message when server responds with 204", async () => {
+        expect.hasAssertions();
+
+        const mockEnqueueSnackbar = vi.fn<() => notistack.SnackbarKey>();
+        vi.spyOn(notistack, "useSnackbar").mockReturnValue({
+          closeSnackbar: vi.fn<() => void>(),
+          enqueueSnackbar: mockEnqueueSnackbar,
+        });
+        fetchMock.delete(serverRespondToFriendRequestRoute, {
+          status: 204,
+        });
+        renderUserChat({
+          messages: [],
+          friendRequestStatus: {
+            senderId: "userBId",
+            type: "PENDING",
+            id: "Test-Friendship-Id",
+          },
+          user: {
+            imageUrl: null,
+            lastSeen: null,
+            username: "Test: userB username",
+          },
+        });
+        const declineButton = await screen.findByRole("button", {
+          name: "Decline",
+        });
+
+        await userEvent.click(declineButton);
+
+        expect(mockEnqueueSnackbar).toHaveBeenCalledExactlyOnceWith<
+          [notistack.SnackbarMessage, notistack.OptionsObject]
+        >("Friend request declined.", { variant: "success" });
+      });
+    });
+
+    describe("given removing friend", () => {
+      it("should render ErrorBoundary when server responds with 500 status", async () => {
+        expect.hasAssertions();
+
+        vi.spyOn(console, "error").mockImplementation(() => null);
+        fetchMock.delete(serverRespondToFriendRequestRoute, {
+          status: 500,
+          body: {
+            error: "Test: server error",
+          },
+        });
+        renderUserChat({
+          messages: [],
+          friendRequestStatus: {
+            senderId: "userBId",
+            type: "ACCEPTED",
+            id: "Test-Friendship-Id",
+          },
+          user: {
+            imageUrl: null,
+            lastSeen: new Date().toISOString(),
+            username: "Test: userB username",
+          },
+        });
+
+        const removeFriend = await screen.findByRole("button", {
+          name: "Remove friend",
+        });
+        await userEvent.click(removeFriend);
+
+        const errorBoundaryHeading = screen.getByRole("heading", {
+          name: "Unexpected error occurred",
+          level: 1,
+        });
+        const errorText = screen.getByText("Test: server error");
+
+        expect(errorBoundaryHeading).toBeInTheDocument();
+        expect(errorText).toBeInTheDocument();
+      });
+
+      it("should call mockEnqueueSnackbar when server responds with 4xx status", async () => {
+        expect.hasAssertions();
+
+        const mockEnqueueSnackbar = vi.fn<() => notistack.SnackbarKey>();
+        vi.spyOn(notistack, "useSnackbar").mockReturnValue({
+          closeSnackbar: vi.fn<() => void>(),
+          enqueueSnackbar: mockEnqueueSnackbar,
+        });
+        fetchMock.delete(serverRespondToFriendRequestRoute, {
+          status: 404,
+          body: {
+            errors: [
+              {
+                message: "Test: no friend request found.",
+              },
+            ],
+          } satisfies ApiClientError,
+        });
+        renderUserChat({
+          messages: [],
+          friendRequestStatus: {
+            senderId: "userBId",
+            type: "ACCEPTED",
+            id: "Test-Friendship-Id",
+          },
+          user: {
+            imageUrl: null,
+            lastSeen: new Date().toISOString(),
+            username: "Test: userB username",
+          },
+        });
+
+        const removeFriend = await screen.findByRole("button", {
+          name: "Remove friend",
+        });
+        await userEvent.click(removeFriend);
+
+        expect(mockEnqueueSnackbar).toHaveBeenCalledExactlyOnceWith<
+          [notistack.SnackbarMessage, notistack.OptionsObject]
+        >("Test: no friend request found.", { variant: "error" });
+      });
+
+      it("should disable remove friend button while fetching", async () => {
+        expect.hasAssertions();
+
+        const { promise, resolve } = Promise.withResolvers();
+        vi.spyOn(globalThis, "fetch")
+          .mockResolvedValueOnce(
+            new Response(JSON.stringify({ user: mockUser }), { status: 200 }),
+          )
+          .mockImplementation(async () => {
+            await promise;
+            return Promise.resolve(new Response(null, { status: 204 }));
+          });
+        renderUserChat({
+          messages: [],
+          friendRequestStatus: {
+            senderId: "userBId",
+            type: "ACCEPTED",
+            id: "Test-Friendship-Id",
+          },
+          user: {
+            imageUrl: null,
+            lastSeen: new Date().toISOString(),
+            username: "Test: userB username",
+          },
+        });
+        const removeFriend = await screen.findByRole("button", {
+          name: "Remove friend",
+        });
+
+        await userEvent.click(removeFriend);
+
+        expect(removeFriend).toBeDisabled();
+
+        resolve(null);
+
+        await waitFor(() => {
+          expect(removeFriend).toBeEnabled();
+        });
+      });
+
+      it("should call mockEnqueueSnackbar with a success message when server responds with 204", async () => {
+        expect.hasAssertions();
+
+        const mockEnqueueSnackbar = vi.fn<() => notistack.SnackbarKey>();
+        vi.spyOn(notistack, "useSnackbar").mockReturnValue({
+          closeSnackbar: vi.fn<() => void>(),
+          enqueueSnackbar: mockEnqueueSnackbar,
+        });
+        fetchMock.delete(serverRespondToFriendRequestRoute, {
+          status: 204,
+        });
+        renderUserChat({
+          messages: [],
+          friendRequestStatus: {
+            senderId: "userBId",
+            type: "ACCEPTED",
+            id: "Test-Friendship-Id",
+          },
+          user: {
+            imageUrl: null,
+            lastSeen: new Date().toISOString(),
+            username: "Test: userB username",
+          },
+        });
+        const removeFriend = await screen.findByRole("button", {
+          name: "Remove friend",
+        });
+
+        await userEvent.click(removeFriend);
+
+        expect(mockEnqueueSnackbar).toHaveBeenCalledExactlyOnceWith<
+          [notistack.SnackbarMessage, notistack.OptionsObject]
+        >("Friend removed.", { variant: "success" });
+      });
+    });
+
+    describe("given canceling a friend request", () => {
+      it("should render ErrorBoundary when server responds with 500 status", async () => {
+        expect.hasAssertions();
+
+        vi.spyOn(console, "error").mockImplementation(() => null);
+        fetchMock.delete(serverRespondToFriendRequestRoute, {
+          status: 500,
+          body: {
+            error: "Test: server error",
+          },
+        });
+        renderUserChat({
+          messages: [],
+          friendRequestStatus: {
+            senderId: mockUser.id,
+            type: "PENDING",
+            id: "Test-Friendship-Id",
+          },
+          user: {
+            imageUrl: null,
+            lastSeen: null,
+            username: "Test: userB username",
+          },
+        });
+
+        const cancelButton = await screen.findByRole("button", {
+          name: "Cancel request",
+        });
+        await userEvent.click(cancelButton);
+
+        const errorBoundaryHeading = screen.getByRole("heading", {
+          name: "Unexpected error occurred",
+          level: 1,
+        });
+        const errorText = screen.getByText("Test: server error");
+
+        expect(errorBoundaryHeading).toBeInTheDocument();
+        expect(errorText).toBeInTheDocument();
+      });
+
+      it("should call mockEnqueueSnackbar when server responds with 4xx status", async () => {
+        expect.hasAssertions();
+
+        const mockEnqueueSnackbar = vi.fn<() => notistack.SnackbarKey>();
+        vi.spyOn(notistack, "useSnackbar").mockReturnValue({
+          closeSnackbar: vi.fn<() => void>(),
+          enqueueSnackbar: mockEnqueueSnackbar,
+        });
+        fetchMock.delete(serverRespondToFriendRequestRoute, {
+          status: 404,
+          body: {
+            errors: [
+              {
+                message: "Test: no friend request found.",
+              },
+            ],
+          } satisfies ApiClientError,
+        });
+        renderUserChat({
+          messages: [],
+          friendRequestStatus: {
+            senderId: mockUser.id,
+            type: "PENDING",
+            id: "Test-Friendship-Id",
+          },
+          user: {
+            imageUrl: null,
+            lastSeen: null,
+            username: "Test: userB username",
+          },
+        });
+
+        const cancelButton = await screen.findByRole("button", {
+          name: "Cancel request",
+        });
+        await userEvent.click(cancelButton);
+
+        expect(mockEnqueueSnackbar).toHaveBeenCalledExactlyOnceWith<
+          [notistack.SnackbarMessage, notistack.OptionsObject]
+        >("Test: no friend request found.", { variant: "error" });
+      });
+
+      it("should disable cancel request button while fetching", async () => {
+        expect.hasAssertions();
+
+        const { promise, resolve } = Promise.withResolvers();
+        vi.spyOn(globalThis, "fetch")
+          .mockResolvedValueOnce(
+            new Response(JSON.stringify({ user: mockUser }), { status: 200 }),
+          )
+          .mockImplementation(async () => {
+            await promise;
+            return Promise.resolve(new Response(null, { status: 204 }));
+          });
+        renderUserChat({
+          messages: [],
+          friendRequestStatus: {
+            senderId: mockUser.id,
+            type: "PENDING",
+            id: "Test-Friendship-Id",
+          },
+          user: {
+            imageUrl: null,
+            lastSeen: null,
+            username: "Test: userB username",
+          },
+        });
+
+        const cancelButton = await screen.findByRole("button", {
+          name: "Cancel request",
+        });
+        await userEvent.click(cancelButton);
+
+        expect(cancelButton).toBeDisabled();
+
+        resolve(null);
+
+        await waitFor(() => {
+          expect(cancelButton).toBeEnabled();
+        });
+      });
+
+      it("should call mockEnqueueSnackbar with a success message when server responds with 204", async () => {
+        expect.hasAssertions();
+
+        const mockEnqueueSnackbar = vi.fn<() => notistack.SnackbarKey>();
+        vi.spyOn(notistack, "useSnackbar").mockReturnValue({
+          closeSnackbar: vi.fn<() => void>(),
+          enqueueSnackbar: mockEnqueueSnackbar,
+        });
+        fetchMock.delete(serverRespondToFriendRequestRoute, {
+          status: 204,
+        });
+        renderUserChat({
+          messages: [],
+          friendRequestStatus: {
+            senderId: mockUser.id,
+            type: "PENDING",
+            id: "Test-Friendship-Id",
+          },
+          user: {
+            imageUrl: null,
+            lastSeen: null,
+            username: "Test: userB username",
+          },
+        });
+
+        const cancelButton = await screen.findByRole("button", {
+          name: "Cancel request",
+        });
+        await userEvent.click(cancelButton);
+
+        expect(mockEnqueueSnackbar).toHaveBeenCalledExactlyOnceWith<
+          [notistack.SnackbarMessage, notistack.OptionsObject]
+        >("Friend request canceled.", { variant: "success" });
       });
     });
   });
