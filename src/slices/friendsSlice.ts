@@ -1,5 +1,5 @@
 import apiSlice from "./apiSlice";
-import type { UserFriends } from "@/types/modelsType";
+import type { NonFriends, UserFriends } from "@/types/modelsType";
 
 const apiSliceWithFriends = apiSlice.injectEndpoints({
   endpoints(build) {
@@ -18,9 +18,18 @@ const apiSliceWithFriends = apiSlice.injectEndpoints({
             },
           };
         },
+        invalidatesTags: ["Message"],
+      }),
+      getNonFriends: build.query<NonFriends, undefined>({
+        query: () => "/users/me/anonymous",
+        providesTags: ["Non-friend"],
       }),
     };
   },
 });
 
-export const { useGetFriendsQuery, useAddFriendMutation } = apiSliceWithFriends;
+export const {
+  useGetFriendsQuery,
+  useAddFriendMutation,
+  useGetNonFriendsQuery,
+} = apiSliceWithFriends;
