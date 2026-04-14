@@ -66,6 +66,12 @@ const routes: RouteObject[] = [
               {
                 path: "/non-friends",
                 Component: NonFriendsPage,
+                children: [
+                  {
+                    path: ":userId",
+                    Component: TwoUsersChatPage,
+                  },
+                ],
               },
               {
                 path: "/profile",
