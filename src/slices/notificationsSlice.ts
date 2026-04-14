@@ -53,7 +53,7 @@ const apiSliceWithNotifications = apiSlice.injectEndpoints({
             },
           };
         },
-        invalidatesTags: ["Notification"],
+        invalidatesTags: ["Notification", "Friend", "Non-friend", "Message"],
       }),
       acceptFriendRequest: build.mutation<undefined, string>({
         query: (friendRequestId) => {
@@ -68,7 +68,7 @@ const apiSliceWithNotifications = apiSlice.injectEndpoints({
             },
           };
         },
-        invalidatesTags: ["Notification", "Friend"],
+        invalidatesTags: ["Notification", "Friend", "Non-friend", "Message"],
       }),
     };
   },
