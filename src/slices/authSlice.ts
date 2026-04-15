@@ -23,6 +23,7 @@ const apiSliceWithAuth = apiSlice.injectEndpoints({
             },
           };
         },
+        providesTags: ["Current-User"],
       }),
       login: build.mutation<
         { user: User; token: string },
