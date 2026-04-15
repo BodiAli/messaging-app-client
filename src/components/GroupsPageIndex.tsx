@@ -2,13 +2,16 @@ import { Box, Button, List, TextField, Typography } from "@mui/material";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { useSnackbar } from "notistack";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useNavigate } from "react-router";
+import { useEffect, type ReactElement } from "react";
 import { GroupSchema } from "@/libs/schemas";
 import { useCreateGroupMutation } from "@/slices/groupsSlice";
 import { isClientError, isFetchBaseQueryError } from "@/types/apiResponseTypes";
 import handleClientError from "@/utils/handleClientError";
 import handleUnexpectedError from "@/utils/handleUnexpectedError";
+import { useAppSelector } from "@/app/hooks";
+import { selectUser } from "@/slices/authSlice";
 import type { z } from "zod";
-import type { ReactElement } from "react";
 
 type FormFields = z.infer<typeof GroupSchema>;
 
@@ -22,7 +25,19 @@ export default function GroupsPageIndex() {
   } = useForm({
     resolver: zodResolver(GroupSchema),
   });
+  const currentUser = useAppSelector(selectUser);
+  assert(currentUser);
+  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
+
+  useEffect(() => {
+    if (currentUser.isGuest) {
+      enqueueSnackbar("You must have an account to complete this request.", {
+        variant: "error",
+      });
+      void navigate("/");
+    }
+  }, [currentUser.isGuest, enqueueSnackbar, navigate]);
 
   let errorsList: ReactElement[] | null = null;
 
@@ -119,4 +134,10 @@ export default function GroupsPageIndex() {
       </Box>
     </Box>
   );
+}
+
+function assert(value: unknown): asserts value {
+  if (!value) {
+    throw new Error("Value is not defined");
+  }
 }
