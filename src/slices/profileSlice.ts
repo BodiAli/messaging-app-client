@@ -7,11 +7,12 @@ const apiSliceWithProfile = apiSlice.injectEndpoints({
       updateProfilePicture: build.mutation<{ user: User }, FormData>({
         query: (formData) => {
           return {
-            url: "/me",
+            url: "/users/me",
             method: "PATCH",
             body: formData,
           };
         },
+        invalidatesTags: ["Current-User"],
       }),
     };
   },
