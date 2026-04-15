@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterEach } from "vitest";
+import { describe, it, expect, beforeAll, afterEach, beforeEach } from "vitest";
 import { createMemoryRouter, Outlet, RouterProvider } from "react-router";
 import fetchMock, { manageFetchMockGlobally } from "@fetch-mock/vitest";
 import * as notistack from "notistack";
@@ -6,13 +6,14 @@ import userEvent from "@testing-library/user-event";
 import { screen, waitFor, within } from "@testing-library/react";
 import routes from "@/routes/routes";
 import renderWithProviders from "@/utils/test-utils";
-import type { GroupChat } from "@/types/modelsType";
+import * as localStorageService from "@/services/localStorage";
+import type { GroupChat, User } from "@/types/modelsType";
 
 const serverCreateGroupRoute = "/users/me/groups";
 
-vi.mock(import("@/app/AppLayout"), () => {
+vi.mock(import("@/components/Header"), () => {
   return {
-    default: () => <Outlet />,
+    default: () => <p>Mock: header component</p>,
   };
 });
 
@@ -34,12 +35,28 @@ describe("groups-page-index component", () => {
     manageFetchMockGlobally();
   });
 
+  beforeEach(() => {
+    vi.spyOn(localStorageService, "getJwtToken").mockReturnValue("Mock-JWT");
+    fetchMock.get("/auth/get-user", {
+      status: 200,
+      body: {
+        user: {
+          id: "Test-UserA-Id",
+          imageUrl: null,
+          isGuest: false,
+          lastSeen: new Date().toISOString(),
+          username: "Test: userA username",
+        },
+      } satisfies { user: User },
+    });
+  });
+
   afterEach(() => {
     vi.resetAllMocks();
   });
 
   describe("rendering heading", () => {
-    it("should render a heading describing the component", () => {
+    it("should render a heading describing the component", async () => {
       expect.hasAssertions();
 
       const router = createMemoryRouter(routes, {
@@ -47,7 +64,7 @@ describe("groups-page-index component", () => {
       });
       renderWithProviders(<RouterProvider router={router} />);
 
-      const headingElement = screen.getByRole("heading", {
+      const headingElement = await screen.findByRole("heading", {
         level: 1,
         name: "Create a new group",
       });
@@ -57,7 +74,7 @@ describe("groups-page-index component", () => {
   });
 
   describe("rendering form element", () => {
-    it("should render a form element", () => {
+    it("should render a form element", async () => {
       expect.hasAssertions();
 
       const router = createMemoryRouter(routes, {
@@ -65,7 +82,7 @@ describe("groups-page-index component", () => {
       });
       renderWithProviders(<RouterProvider router={router} />);
 
-      const formElement = screen.getByRole("form", {
+      const formElement = await screen.findByRole("form", {
         name: "create new group",
       });
 
@@ -74,7 +91,7 @@ describe("groups-page-index component", () => {
   });
 
   describe("rendering form fields", () => {
-    it("should render group name text input", () => {
+    it("should render group name text input", async () => {
       expect.hasAssertions();
 
       const router = createMemoryRouter(routes, {
@@ -82,14 +99,14 @@ describe("groups-page-index component", () => {
       });
       renderWithProviders(<RouterProvider router={router} />);
 
-      const groupNameInput = screen.getByRole("textbox", {
+      const groupNameInput = await screen.findByRole("textbox", {
         name: "Group name",
       });
 
       expect(groupNameInput).toBeInTheDocument();
     });
 
-    it("should render group name as required", () => {
+    it("should render group name as required", async () => {
       expect.hasAssertions();
 
       const router = createMemoryRouter(routes, {
@@ -97,14 +114,17 @@ describe("groups-page-index component", () => {
       });
       renderWithProviders(<RouterProvider router={router} />);
 
-      const groupNameInput = screen.getByRole<HTMLInputElement>("textbox", {
-        name: "Group name",
-      });
+      const groupNameInput = await screen.findByRole<HTMLInputElement>(
+        "textbox",
+        {
+          name: "Group name",
+        },
+      );
 
       expect(groupNameInput).toBeRequired();
     });
 
-    it("should render a submit button", () => {
+    it("should render a submit button", async () => {
       expect.hasAssertions();
 
       const router = createMemoryRouter(routes, {
@@ -112,9 +132,12 @@ describe("groups-page-index component", () => {
       });
       renderWithProviders(<RouterProvider router={router} />);
 
-      const submitButton = screen.getByRole<HTMLButtonElement>("button", {
-        name: "Create group",
-      });
+      const submitButton = await screen.findByRole<HTMLButtonElement>(
+        "button",
+        {
+          name: "Create group",
+        },
+      );
 
       expect(submitButton).toBeInTheDocument();
       expect(submitButton.type).toBe("submit");
@@ -129,7 +152,7 @@ describe("groups-page-index component", () => {
         initialEntries: ["/groups"],
       });
       renderWithProviders(<RouterProvider router={router} />);
-      const groupNameInput = screen.getByRole("textbox", {
+      const groupNameInput = await screen.findByRole("textbox", {
         name: "Group name",
       });
       const submitButton = screen.getByRole("button", {
@@ -158,7 +181,7 @@ describe("groups-page-index component", () => {
         initialEntries: ["/groups"],
       });
       renderWithProviders(<RouterProvider router={router} />);
-      const groupNameInput = screen.getByRole("textbox", {
+      const groupNameInput = await screen.findByRole("textbox", {
         name: "Group name",
       });
       const submitButton = screen.getByRole("button", {
@@ -187,7 +210,7 @@ describe("groups-page-index component", () => {
         initialEntries: ["/groups"],
       });
       renderWithProviders(<RouterProvider router={router} />);
-      const groupNameInput = screen.getByRole("textbox", {
+      const groupNameInput = await screen.findByRole("textbox", {
         name: "Group name",
       });
       const submitButton = screen.getByRole("button", {
@@ -212,29 +235,44 @@ describe("groups-page-index component", () => {
       expect.hasAssertions();
 
       const { promise, resolve } = Promise.withResolvers();
-      vi.spyOn(globalThis, "fetch").mockImplementationOnce(async () => {
-        await promise;
+      vi.spyOn(globalThis, "fetch")
+        .mockResolvedValueOnce(
+          new Response(
+            JSON.stringify({
+              user: {
+                id: "Test-UserA-Id",
+                imageUrl: null,
+                isGuest: false,
+                lastSeen: new Date().toISOString(),
+                username: "Test: userA username",
+              },
+            }),
+            { status: 200 },
+          ),
+        )
+        .mockImplementationOnce(async () => {
+          await promise;
 
-        const groupResponse: { group: GroupChat } = {
-          group: {
-            adminId: "adminId",
-            createdAt: "2020-01-01T01:30:00Z",
-            id: "groupId",
-            name: "group name",
-          },
-        };
-        return new Response(JSON.stringify(groupResponse), {
-          status: 201,
-          headers: {
-            "Content-type": "application/json",
-          },
+          const groupResponse: { group: GroupChat } = {
+            group: {
+              adminId: "adminId",
+              createdAt: "2020-01-01T01:30:00Z",
+              id: "groupId",
+              name: "group name",
+            },
+          };
+          return new Response(JSON.stringify(groupResponse), {
+            status: 201,
+            headers: {
+              "Content-type": "application/json",
+            },
+          });
         });
-      });
       const router = createMemoryRouter(routes, {
         initialEntries: ["/groups"],
       });
       renderWithProviders(<RouterProvider router={router} />);
-      const groupNameInput = screen.getByRole("textbox", {
+      const groupNameInput = await screen.findByRole("textbox", {
         name: "Group name",
       });
       const submitButton = screen.getByRole("button", {
@@ -277,7 +315,7 @@ describe("groups-page-index component", () => {
         initialEntries: ["/groups"],
       });
       renderWithProviders(<RouterProvider router={router} />);
-      const groupNameInput = screen.getByRole("textbox", {
+      const groupNameInput = await screen.findByRole("textbox", {
         name: "Group name",
       });
       const submitButton = screen.getByRole("button", {
