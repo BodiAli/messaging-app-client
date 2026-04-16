@@ -64,11 +64,15 @@ export default function SendMessage({
   return (
     <Box
       sx={{
-        display: "flex",
-        alignItems: "start",
         gap: 1,
-        paddingX: 3,
+        paddingX: {
+          sm: 3,
+          xs: 1,
+        },
         marginTop: 1,
+        display: "grid",
+        gridTemplateColumns: "1fr auto auto",
+        alignItems: "center",
       }}
       component={"form"}
       aria-label="send message form"
@@ -80,9 +84,6 @@ export default function SendMessage({
         required
         disabled={isLoading}
         placeholder="Message"
-        sx={{
-          flex: 1,
-        }}
       />
       <IconButton
         component="label"
@@ -112,6 +113,7 @@ export default function SendMessage({
             width: "200px",
             height: "200px",
             objectFit: "contain",
+            border: "2px solid white",
           }}
         />
       )}
