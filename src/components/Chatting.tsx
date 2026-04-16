@@ -28,7 +28,10 @@ export default function Chatting({
   return (
     <Box
       sx={{
-        paddingX: 3,
+        paddingX: {
+          sm: 3,
+          xs: 1,
+        },
       }}
     >
       <Box
@@ -37,7 +40,10 @@ export default function Chatting({
           display: "flex",
           flexDirection: "column",
           gap: 4,
-          padding: 3,
+          padding: {
+            xs: 2,
+            sm: 3,
+          },
           backgroundColor: "#ffffff73",
           minHeight: "500px",
           maxHeight: "700px",
@@ -87,7 +93,10 @@ function Message({
         display: "flex",
         flexDirection: "column",
         gap: 1,
-        maxWidth: "400px",
+        maxWidth: {
+          xs: "300px",
+          sm: "400px",
+        },
         opacity: isLoading ? 0.5 : "initial",
       }}
     >
@@ -118,7 +127,10 @@ function Message({
             alt="user sent image"
             src={message.imageUrl}
             sx={{
-              width: "300px",
+              width: {
+                xs: "200px",
+                sm: "300px",
+              },
             }}
           />
         </Box>
