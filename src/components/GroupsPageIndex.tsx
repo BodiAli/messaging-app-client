@@ -73,7 +73,15 @@ export default function GroupsPageIndex() {
           justifyContent: "center",
         }}
       >
-        <Typography variant="h2" component={"h1"}>
+        <Typography
+          variant="h2"
+          component={"h1"}
+          sx={{
+            fontSize: {
+              xs: "3rem",
+            },
+          }}
+        >
           Create a new group
         </Typography>
       </Box>
@@ -83,8 +91,15 @@ export default function GroupsPageIndex() {
         onSubmit={handleSubmit(onSubmit)}
         sx={{
           display: "flex",
-          alignItems: "center",
+          alignItems: {
+            xs: "stretch",
+            sm: "center",
+          },
           gap: 2,
+          flexDirection: {
+            xs: "column",
+            sm: "row",
+          },
         }}
       >
         {errorsList && (
@@ -123,7 +138,6 @@ export default function GroupsPageIndex() {
           loading={isLoading}
           variant="contained"
           sx={{
-            alignSelf: "start",
             flex: 1,
             backgroundColor: (theme) => theme.palette.success.dark,
             paddingY: 2,
