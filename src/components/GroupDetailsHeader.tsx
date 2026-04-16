@@ -206,7 +206,10 @@ export default function GroupDetailsHeader({
     <Box
       sx={{
         display: "grid",
-        gridTemplateColumns: "1fr 1fr",
+        gridTemplateColumns: {
+          xs: "1fr",
+          md: "1fr 1fr",
+        },
         gap: "5rem",
         padding: 3,
       }}
@@ -222,7 +225,9 @@ export default function GroupDetailsHeader({
           updateGroupName()
         ) : (
           <Box>
-            <Typography variant="h1">{group.name}</Typography>
+            <Typography variant="h2" component={"h1"}>
+              {group.name}
+            </Typography>
           </Box>
         )}
         <Box>
