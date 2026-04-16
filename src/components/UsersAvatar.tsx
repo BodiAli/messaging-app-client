@@ -8,8 +8,35 @@ export default function UsersAvatar({
   username: string;
 }) {
   return imageUrl ? (
-    <Avatar src={imageUrl} alt={`${username}'s profile picture`} />
+    <Avatar
+      sx={{
+        width: "80px",
+        height: "80px",
+      }}
+      slotProps={{
+        img: {
+          sx: {
+            objectPosition: "top",
+          },
+        },
+      }}
+      src={imageUrl}
+      alt={`${username}'s profile picture`}
+    />
   ) : (
-    <Avatar title={`${username} no profile picture`} />
+    <Avatar
+      sx={{
+        width: "60px",
+        height: "60px",
+      }}
+      slotProps={{
+        img: {
+          sx: {
+            objectPosition: "top",
+          },
+        },
+      }}
+      title={`${username} no profile picture`}
+    />
   );
 }
