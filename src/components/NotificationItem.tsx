@@ -171,7 +171,13 @@ export default function NotificationItem({
             imageUrl={notificationData.imageUrl}
             username={notificationData.username}
           />
-          <Typography>{notificationData.message}</Typography>
+          <Typography
+            sx={{
+              textWrap: "wrap",
+            }}
+          >
+            {notificationData.message}
+          </Typography>
         </StyledStack>
         <StyledButtonStack>
           <StyledButton
