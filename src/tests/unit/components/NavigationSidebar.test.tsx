@@ -1,6 +1,6 @@
 import { createMemoryRouter, Outlet, RouterProvider } from "react-router";
 import { render, screen, within } from "@testing-library/react";
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, assert } from "vitest";
 import userEvent from "@testing-library/user-event";
 import routes from "@/routes/routes";
 
@@ -75,7 +75,7 @@ describe("navigation-sidebar component", () => {
       const friendsLinkElement = within(navElement).getByRole("link", {
         name: "Friends",
       });
-      const friendsIcon = screen.getByTestId("PeopleIcon");
+      const friendsIcon = within(navElement).getByTestId("PeopleIcon");
 
       expect(friendsLinkElement).toBeInTheDocument();
       expect(friendsIcon).toBeInTheDocument();
@@ -86,9 +86,13 @@ describe("navigation-sidebar component", () => {
 
       renderWithRouter();
 
-      const friendsLinkElement = screen.getByRole<HTMLAnchorElement>("link", {
-        name: "Friends",
-      });
+      const friendsLinkElement = screen.getAllByRole<HTMLAnchorElement>(
+        "link",
+        {
+          name: "Friends",
+        },
+      )[0];
+      assert(friendsLinkElement);
 
       await userEvent.click(friendsLinkElement);
 
@@ -109,7 +113,7 @@ describe("navigation-sidebar component", () => {
       const groupsLinkElement = within(navElement).getByRole("link", {
         name: "Groups",
       });
-      const groupsIcon = screen.getByTestId("GroupsIcon");
+      const groupsIcon = within(navElement).getByTestId("GroupsIcon");
 
       expect(groupsLinkElement).toBeInTheDocument();
       expect(groupsIcon).toBeInTheDocument();
@@ -119,9 +123,10 @@ describe("navigation-sidebar component", () => {
       expect.hasAssertions();
 
       renderWithRouter();
-      const groupsLinkElement = screen.getByRole<HTMLAnchorElement>("link", {
+      const groupsLinkElement = screen.getAllByRole<HTMLAnchorElement>("link", {
         name: "Groups",
-      });
+      })[0];
+      assert(groupsLinkElement);
       await userEvent.click(groupsLinkElement);
 
       expect(groupsLinkElement.pathname).toBe("/groups");
@@ -140,7 +145,7 @@ describe("navigation-sidebar component", () => {
       const nonFriendsLinkElement = within(navElement).getByRole("link", {
         name: "Non friends",
       });
-      const nonFriendsIcon = screen.getByTestId("PermIdentityIcon");
+      const nonFriendsIcon = within(navElement).getByTestId("PermIdentityIcon");
 
       expect(nonFriendsLinkElement).toBeInTheDocument();
       expect(nonFriendsIcon).toBeInTheDocument();
@@ -150,12 +155,13 @@ describe("navigation-sidebar component", () => {
       expect.hasAssertions();
 
       renderWithRouter();
-      const nonFriendsLinkElement = screen.getByRole<HTMLAnchorElement>(
+      const nonFriendsLinkElement = screen.getAllByRole<HTMLAnchorElement>(
         "link",
         {
           name: "Non friends",
         },
-      );
+      )[0];
+      assert(nonFriendsLinkElement);
       await userEvent.click(nonFriendsLinkElement);
 
       expect(nonFriendsLinkElement.pathname).toBe("/non-friends");
@@ -174,7 +180,7 @@ describe("navigation-sidebar component", () => {
       const profileLinkElement = within(navElement).getByRole("link", {
         name: "Profile",
       });
-      const profileIcon = screen.getByTestId("AccountBoxIcon");
+      const profileIcon = within(navElement).getByTestId("AccountBoxIcon");
 
       expect(profileLinkElement).toBeInTheDocument();
       expect(profileIcon).toBeInTheDocument();
@@ -184,9 +190,13 @@ describe("navigation-sidebar component", () => {
       expect.hasAssertions();
 
       renderWithRouter();
-      const profileLinkElement = screen.getByRole<HTMLAnchorElement>("link", {
-        name: "Profile",
-      });
+      const profileLinkElement = screen.getAllByRole<HTMLAnchorElement>(
+        "link",
+        {
+          name: "Profile",
+        },
+      )[0];
+      assert(profileLinkElement);
 
       await userEvent.click(profileLinkElement);
 
