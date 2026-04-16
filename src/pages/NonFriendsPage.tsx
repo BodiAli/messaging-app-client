@@ -1,8 +1,11 @@
+import { useState } from "react";
 import {
   Box,
+  Button,
   Card,
   CardActionArea,
   CardHeader,
+  Drawer,
   Skeleton,
   Stack,
   Typography,
@@ -20,6 +23,7 @@ const CustomActionArea = (
 };
 
 export default function NonFriendsPage() {
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const {
     data: { nonFriends } = { nonFriends: [] },
     isLoading,
@@ -30,6 +34,10 @@ export default function NonFriendsPage() {
   if (isError) {
     handleUnexpectedError(error);
   }
+
+  const toggleDrawer = () => {
+    setIsDrawerOpen(!isDrawerOpen);
+  };
 
   const sortedNonFriends = nonFriends.toSorted((a, b) => {
     if (a.username > b.username) {
@@ -44,14 +52,119 @@ export default function NonFriendsPage() {
   return (
     <Box
       component={"main"}
-      sx={{ display: "grid", gridTemplateColumns: "0.3fr 1fr", flex: 1 }}
+      sx={{
+        display: "grid",
+        gridTemplateColumns: {
+          xs: "1fr",
+          lg: "0.3fr 1fr",
+        },
+        flex: 1,
+        paddingBottom: {
+          xs: 9,
+          md: "initial",
+        },
+      }}
     >
+      <Button
+        sx={{
+          paddingY: "1rem",
+          display: {
+            xs: "block",
+            lg: "none",
+          },
+        }}
+        onClick={toggleDrawer}
+      >
+        Open Non-friends drawer
+      </Button>
+      <Drawer
+        sx={{
+          display: {
+            xs: "block",
+            lg: "none",
+          },
+        }}
+        open={isDrawerOpen}
+        onClose={() => {
+          setIsDrawerOpen(false);
+        }}
+        slotProps={{
+          paper: {
+            sx: {
+              padding: "1rem",
+            },
+          },
+        }}
+      >
+        <Typography
+          variant="h2"
+          sx={{ paddingY: 3, textAlign: "center", fontSize: "3rem" }}
+        >
+          Non-friends
+        </Typography>
+        {isLoading ? (
+          <Card data-testid="skeleton">
+            <CardHeader
+              avatar={
+                <Skeleton
+                  height={40}
+                  width={40}
+                  variant="circular"
+                  animation="wave"
+                />
+              }
+              title={<Skeleton animation="wave" />}
+            />
+          </Card>
+        ) : sortedNonFriends.length === 0 ? (
+          <Typography textAlign={"center"}>This list is empty,</Typography>
+        ) : (
+          <Stack spacing={5}>
+            {sortedNonFriends.map((nonFriend) => {
+              return (
+                <Card key={nonFriend.id}>
+                  <CustomActionArea
+                    aria-label={`Chat with ${nonFriend.username}`}
+                    LinkComponent={NavLink}
+                    to={nonFriend.id}
+                    sx={{
+                      "&.active": {
+                        backgroundColor: "action.selected",
+                      },
+                    }}
+                  >
+                    <CardHeader
+                      avatar={
+                        <UsersAvatar
+                          imageUrl={nonFriend.imageUrl}
+                          username={nonFriend.username}
+                        />
+                      }
+                      title={nonFriend.username}
+                    />
+                  </CustomActionArea>
+                </Card>
+              );
+            })}
+          </Stack>
+        )}
+      </Drawer>
       <Box
         component={"section"}
         sx={{
-          maxHeight: "700px",
-          overflowY: "auto",
-          scrollbarColor: "gray transparent",
+          display: {
+            xs: "none",
+            lg: "block",
+          },
+          maxHeight: {
+            lg: "700px",
+          },
+          overflowY: {
+            lg: "auto",
+          },
+          scrollbarColor: {
+            lg: "gray transparent",
+          },
         }}
       >
         <Typography variant="h2" sx={{ paddingY: 3, textAlign: "center" }}>
