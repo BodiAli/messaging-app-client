@@ -120,8 +120,21 @@ export default function Header() {
     >
       <Stack
         direction={"row"}
-        justifyContent={"space-between"}
         alignItems={"center"}
+        sx={{
+          flexWrap: {
+            xs: "wrap",
+            sm: "initial",
+          },
+          gap: {
+            xs: "1rem",
+            sm: "initial",
+          },
+          justifyContent: {
+            xs: "center",
+            sm: "space-between",
+          },
+        }}
       >
         <Stack
           direction={"row"}
