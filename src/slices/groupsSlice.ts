@@ -22,7 +22,6 @@ const apiSliceWithGroups = apiSlice.injectEndpoints({
       }),
       getGroupDetails: build.query<GroupDetails, string>({
         query: (groupId) => `/users/me/groups/${groupId}`,
-        providesTags: ["Group"],
       }),
       sendGroupInvite: build.mutation<
         undefined,
