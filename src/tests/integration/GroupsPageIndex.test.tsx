@@ -7,9 +7,10 @@ import { screen, waitFor, within } from "@testing-library/react";
 import routes from "@/routes/routes";
 import renderWithProviders from "@/utils/test-utils";
 import * as localStorageService from "@/services/localStorage";
+import serverUrl from "@/utils/serverUrl";
 import type { GroupChat, User } from "@/types/modelsType";
 
-const serverCreateGroupRoute = "/users/me/groups";
+const serverCreateGroupRoute = `${serverUrl}/users/me/groups`;
 
 vi.mock(import("@/components/Header"), () => {
   return {
@@ -37,7 +38,7 @@ describe("groups-page-index component", () => {
 
   beforeEach(() => {
     vi.spyOn(localStorageService, "getJwtToken").mockReturnValue("Mock-JWT");
-    fetchMock.get("/auth/get-user", {
+    fetchMock.get(`${serverUrl}/auth/get-user`, {
       status: 200,
       body: {
         user: {

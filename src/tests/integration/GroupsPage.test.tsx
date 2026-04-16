@@ -8,9 +8,10 @@ import GroupsPage from "@/pages/GroupsPage";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import GroupChatPage from "@/pages/GroupChatPage";
 import GroupsPageIndex from "@/components/GroupsPageIndex";
+import serverUrl from "@/utils/serverUrl";
 import type { GroupChat } from "@/types/modelsType";
 
-const serverUserGroupsRoute = "/users/me/groups";
+const serverUserGroupsRoute = `${serverUrl}/users/me/groups`;
 
 vi.mock(import("@/components/GroupsPageIndex"), () => {
   return {

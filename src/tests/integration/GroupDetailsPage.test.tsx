@@ -15,6 +15,7 @@ import * as notistack from "notistack";
 import * as localStorageService from "@/services/localStorage";
 import routes from "@/routes/routes";
 import renderWithProviders from "@/utils/test-utils";
+import serverUrl from "@/utils/serverUrl";
 import type {
   GroupChat,
   GroupDetails,
@@ -47,13 +48,11 @@ vi.mock(import("@/pages/GroupsPage"), () => {
   };
 });
 
-const serverGetUserRoute = "/auth/get-user";
-const serverGroupRoute = "/users/me/groups/Test-GroupId";
-const serverGroupInvitationsRoute =
-  "/users/me/groups/Test-GroupId/notifications";
-const serverDeleteGroupMember =
-  "/users/me/groups/Test-GroupId/members/Test-UserBId";
-const serverGetUserFriends = "/users/me/friends";
+const serverGetUserRoute = `${serverUrl}/auth/get-user`;
+const serverGroupRoute = `${serverUrl}/users/me/groups/Test-GroupId`;
+const serverGroupInvitationsRoute = `${serverUrl}/users/me/groups/Test-GroupId/notifications`;
+const serverDeleteGroupMember = `${serverUrl}/users/me/groups/Test-GroupId/members/Test-UserBId`;
+const serverGetUserFriends = `${serverUrl}/users/me/friends`;
 
 describe("group-details-page component", () => {
   const mockUserFriends: UserFriends = {

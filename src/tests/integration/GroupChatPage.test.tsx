@@ -16,10 +16,11 @@ import * as notistack from "notistack";
 import routes from "@/routes/routes";
 import renderWithProviders from "@/utils/test-utils";
 import * as jwtTokenService from "@/services/localStorage";
+import serverUrl from "@/utils/serverUrl";
 import type { ApiClientError } from "@/types/apiResponseTypes";
 import type { GroupMessages, Message, User } from "@/types/modelsType";
 
-const serverGroupMessagesRoute = "/users/me/groups/Test-GroupId/messages";
+const serverGroupMessagesRoute = `${serverUrl}/users/me/groups/Test-GroupId/messages`;
 
 vi.mock(import("@/components/Header"), () => {
   return {
@@ -105,7 +106,7 @@ describe("group-chat-page component", () => {
 
   beforeEach(() => {
     vi.spyOn(jwtTokenService, "getJwtToken").mockReturnValue("jwtToken");
-    fetchMock.get("/auth/get-user", {
+    fetchMock.get(`${serverUrl}/auth/get-user`, {
       status: 200,
       body: {
         user: mockCurrentUser,

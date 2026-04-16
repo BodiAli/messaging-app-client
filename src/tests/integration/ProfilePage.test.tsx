@@ -15,6 +15,7 @@ import * as notistack from "notistack";
 import routes from "@/routes/routes";
 import renderWithProviders from "@/utils/test-utils";
 import * as localStorageService from "@/services/localStorage";
+import serverUrl from "@/utils/serverUrl";
 import type { GroupChat, User } from "@/types/modelsType";
 import type { ApiClientError } from "@/types/apiResponseTypes";
 
@@ -84,7 +85,7 @@ describe("profile-page component", () => {
 
   beforeEach(() => {
     vi.spyOn(localStorageService, "getJwtToken").mockReturnValue("Mock-JWT");
-    fetchMock.get("/auth/get-user", {
+    fetchMock.get(`${serverUrl}/auth/get-user`, {
       status: 200,
       body: mockCurrentUser,
     });
@@ -98,7 +99,7 @@ describe("profile-page component", () => {
     it("should render current user's profile picture and username", async () => {
       expect.hasAssertions();
 
-      fetchMock.get("/users/me/groups", {
+      fetchMock.get(`${serverUrl}/users/me/groups`, {
         status: 200,
         body: {
           groups: [],
@@ -122,7 +123,7 @@ describe("profile-page component", () => {
     it("should render an edit profile picture file input", async () => {
       expect.hasAssertions();
 
-      fetchMock.get("/users/me/groups", {
+      fetchMock.get(`${serverUrl}/users/me/groups`, {
         status: 200,
         body: {
           groups: [],
@@ -217,13 +218,13 @@ describe("profile-page component", () => {
       expect.hasAssertions();
 
       vi.spyOn(console, "error").mockImplementation(() => null);
-      fetchMock.get("/users/me/groups", {
+      fetchMock.get(`${serverUrl}/users/me/groups`, {
         status: 200,
         body: {
           groups: [],
         },
       });
-      fetchMock.patch("/users/me", {
+      fetchMock.patch(`${serverUrl}/users/me`, {
         status: 500,
         body: {
           error: "Test: server error",
@@ -256,13 +257,13 @@ describe("profile-page component", () => {
         closeSnackbar: vi.fn<() => void>(),
         enqueueSnackbar: mockEnqueueSnackbar,
       });
-      fetchMock.get("/users/me/groups", {
+      fetchMock.get(`${serverUrl}/users/me/groups`, {
         status: 200,
         body: {
           groups: [],
         },
       });
-      fetchMock.patch("/users/me", {
+      fetchMock.patch(`${serverUrl}/users/me`, {
         status: 400,
         body: {
           errors: [
@@ -304,13 +305,13 @@ describe("profile-page component", () => {
         closeSnackbar: vi.fn<() => void>(),
         enqueueSnackbar: mockEnqueueSnackbar,
       });
-      fetchMock.get("/users/me/groups", {
+      fetchMock.get(`${serverUrl}/users/me/groups`, {
         status: 200,
         body: {
           groups: [],
         },
       });
-      fetchMock.patch("/users/me", {
+      fetchMock.patch(`${serverUrl}/users/me`, {
         status: 200,
         body: mockCurrentUser,
       });
@@ -336,7 +337,7 @@ describe("profile-page component", () => {
     it("should render a heading with 'Your Created Groups' text", async () => {
       expect.hasAssertions();
 
-      fetchMock.get("/users/me/groups", {
+      fetchMock.get(`${serverUrl}/users/me/groups`, {
         status: 200,
         body: {
           groups: [],
@@ -410,7 +411,7 @@ describe("profile-page component", () => {
       expect.hasAssertions();
 
       vi.spyOn(console, "error").mockImplementation(() => null);
-      fetchMock.get("/users/me/groups", {
+      fetchMock.get(`${serverUrl}/users/me/groups`, {
         status: 500,
         body: {
           error: "Test: server error",
@@ -433,7 +434,7 @@ describe("profile-page component", () => {
     it("should render only the groups where current user is admin of", async () => {
       expect.hasAssertions();
 
-      fetchMock.getOnce("/users/me/groups", {
+      fetchMock.getOnce(`${serverUrl}/users/me/groups`, {
         status: 200,
         body: mockUserGroups,
       });
@@ -451,7 +452,7 @@ describe("profile-page component", () => {
     it("should render groups as anchor tags that link to group details page", async () => {
       expect.hasAssertions();
 
-      fetchMock.getOnce("/users/me/groups", {
+      fetchMock.getOnce(`${serverUrl}/users/me/groups`, {
         status: 200,
         body: mockUserGroups,
       });
@@ -470,7 +471,7 @@ describe("profile-page component", () => {
     it("should navigate to group details page when group link is clicked", async () => {
       expect.hasAssertions();
 
-      fetchMock.getOnce("/users/me/groups", {
+      fetchMock.getOnce(`${serverUrl}/users/me/groups`, {
         status: 200,
         body: mockUserGroups,
       });

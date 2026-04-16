@@ -28,8 +28,8 @@ import type { ApiClientError } from "@/types/apiResponseTypes";
 
 const getUserServerRoute = `${serverUrl}/auth/get-user`;
 const addFriendServerRoute = `${serverUrl}/friendships`;
-const serverMessagesRoute = "/users/userBId/messages";
-const serverRespondToFriendRequestRoute = "/friendships/Test-Friendship-Id";
+const serverMessagesRoute = `${serverUrl}/users/userBId/messages`;
+const serverRespondToFriendRequestRoute = `${serverUrl}/friendships/Test-Friendship-Id`;
 
 vi.mock(import("@/components/Chatting"), () => {
   return {

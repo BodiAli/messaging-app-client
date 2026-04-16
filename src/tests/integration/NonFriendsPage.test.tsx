@@ -10,6 +10,7 @@ import fetchMock, { manageFetchMockGlobally } from "@fetch-mock/vitest";
 import userEvent from "@testing-library/user-event";
 import renderWithProviders from "@/utils/test-utils";
 import routes from "@/routes/routes";
+import serverUrl from "@/utils/serverUrl";
 import type { NonFriends } from "@/types/modelsType";
 
 vi.mock(import("@/app/AppLayout"), () => {
@@ -41,7 +42,7 @@ vi.mock(import("@/pages/TwoUsersChatPage"), () => {
 });
 
 describe("non-friends-page component", () => {
-  const serverGetNonFriendsRoute = "/users/me/anonymous";
+  const serverGetNonFriendsRoute = `${serverUrl}/users/me/anonymous`;
 
   const mockNonFriends: NonFriends = {
     nonFriends: [
