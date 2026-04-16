@@ -58,9 +58,13 @@ export default function SignupPage() {
       <Typography
         variant="h2"
         component="h1"
-        sx={{
+        sx={(theme) => ({
           textAlign: "center",
-        }}
+          fontSize: {
+            xs: theme.typography.h4.fontSize,
+            sm: theme.typography.h2.fontSize,
+          },
+        })}
       >
         Create a new account
       </Typography>
@@ -69,7 +73,10 @@ export default function SignupPage() {
         aria-label="Sign up form"
         onSubmit={handleSubmit(onSubmit)}
         sx={{
-          width: "60%",
+          width: {
+            xs: "90%",
+            sm: "60%",
+          },
           backgroundColor: "#efefef9c",
           padding: 4,
           borderRadius: "4px",

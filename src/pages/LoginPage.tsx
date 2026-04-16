@@ -77,7 +77,18 @@ export default function LoginPage() {
         gap: 4,
       }}
     >
-      <Typography variant="h2" component="h1" align="center">
+      <Typography
+        variant="h2"
+        component="h1"
+        align="center"
+        sx={(theme) => ({
+          textAlign: "center",
+          fontSize: {
+            xs: theme.typography.h4.fontSize,
+            sm: theme.typography.h2.fontSize,
+          },
+        })}
+      >
         Log in to your account
       </Typography>
       <Box
@@ -85,7 +96,10 @@ export default function LoginPage() {
         aria-label="Login form"
         onSubmit={handleLogin}
         sx={{
-          width: "60%",
+          width: {
+            xs: "90%",
+            sm: "60%",
+          },
           backgroundColor: "#efefef9c",
           padding: 4,
           borderRadius: "4px",
@@ -148,7 +162,11 @@ export default function LoginPage() {
               sx={{
                 justifySelf: "center",
                 paddingX: 5,
-                width: "25%",
+                width: {
+                  xs: "100%",
+                  sm: "50%",
+                  lg: "25%",
+                },
               }}
               type="submit"
               loading={isLoading}
@@ -160,7 +178,11 @@ export default function LoginPage() {
               sx={{
                 justifySelf: "center",
                 paddingX: 5,
-                width: "25%",
+                width: {
+                  xs: "100%",
+                  sm: "50%",
+                  lg: "25%",
+                },
                 backgroundColor: (theme) => theme.palette.secondary.dark,
               }}
               type="button"
