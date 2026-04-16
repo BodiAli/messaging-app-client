@@ -29,6 +29,7 @@ export default function IndexPage() {
           gap: 4,
           borderRadius: "5px",
           flex: 1,
+          paddingX: "1rem",
         }}
       >
         <Box
