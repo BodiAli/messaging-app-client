@@ -1,7 +1,6 @@
 import { screen, within } from "@testing-library/react";
 import { createRoutesStub } from "react-router";
 import { describe, it, expect, afterEach, beforeEach, beforeAll } from "vitest";
-import fetchMock, { manageFetchMockGlobally } from "@fetch-mock/vitest";
 import userEvent from "@testing-library/user-event";
 import SendMessage from "@/components/SendMessage";
 import renderWithProviders from "@/utils/test-utils";
@@ -41,8 +40,6 @@ describe("send-message component", () => {
       },
       writable: true,
     });
-    fetchMock.mockGlobal();
-    manageFetchMockGlobally();
   });
 
   beforeEach(() => {
