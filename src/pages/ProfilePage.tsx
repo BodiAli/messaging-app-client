@@ -7,9 +7,9 @@ import {
   InputLabel,
   Link,
   Typography,
+  type AvatarProps,
 } from "@mui/material";
 import { useSnackbar } from "notistack";
-import styled from "@emotion/styled";
 import { useAppSelector } from "@/app/hooks";
 import { selectUser } from "@/slices/authSlice";
 import { useUpdateProfilePictureMutation } from "@/slices/profileSlice";
@@ -22,12 +22,30 @@ import { useGetGroupsQuery } from "@/slices/groupsSlice";
 import Loader from "@/components/Loader/Loader";
 import handleUnexpectedError from "@/utils/handleUnexpectedError";
 
-const CustomAvatar = styled(Avatar)(() => {
-  return {
-    width: "10rem",
-    height: "10rem",
-  };
-});
+const CustomAvatar = (props: AvatarProps) => {
+  return (
+    <Avatar
+      {...props}
+      sx={{
+        width: {
+          xs: "6rem",
+          sm: "10rem",
+        },
+        height: {
+          xs: "6rem",
+          sm: "10rem",
+        },
+      }}
+      slotProps={{
+        img: {
+          sx: {
+            objectPosition: "top",
+          },
+        },
+      }}
+    />
+  );
+};
 
 export default function ProfilePage() {
   const [fatalError, setFatalError] = useState<null | string>(null);
@@ -102,7 +120,8 @@ export default function ProfilePage() {
     <Box
       sx={{
         flex: 1,
-        paddingY: "2rem",
+        paddingTop: "2rem",
+        paddingBottom: 9,
       }}
     >
       <Box
@@ -115,13 +134,27 @@ export default function ProfilePage() {
         }}
       >
         <Box>
-          <Typography variant="h1">{currentUser.username}</Typography>
+          <Typography
+            variant="h1"
+            sx={(theme) => {
+              return {
+                fontSize: {
+                  xs: theme.typography.h3.fontSize,
+                  sm: theme.typography.h1.fontSize,
+                },
+              };
+            }}
+          >
+            {currentUser.username}
+          </Typography>
         </Box>
         <Box>
           <InputLabel
             component={"label"}
             sx={{
-              textAlign: "center",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
             }}
           >
             {userAvatar}
@@ -145,7 +178,19 @@ export default function ProfilePage() {
           textAlign: "center",
         }}
       >
-        <Typography variant="h2">Your Created Groups</Typography>
+        <Typography
+          variant="h2"
+          sx={(theme) => {
+            return {
+              fontSize: {
+                xs: theme.typography.h3.fontSize,
+                sm: theme.typography.h2.fontSize,
+              },
+            };
+          }}
+        >
+          Your Created Groups
+        </Typography>
       </Box>
       {isGettingUserGroupsLoading ? (
         <Loader />
