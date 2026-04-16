@@ -76,6 +76,7 @@ export default function GroupMembers({
           display: "flex",
           flexDirection: "column",
           gap: "2rem",
+          paddingBottom: 9,
         }}
       >
         {groupMembers.map((member) => {
