@@ -153,6 +153,7 @@ export default function GroupChatPage() {
         messages={data.messages}
       />
       <SendMessage
+        key={groupId}
         isLoading={isSendingMessage}
         onSubmit={handleMessageSubmit}
       />
