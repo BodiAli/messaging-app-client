@@ -204,12 +204,15 @@ export default function UserChat({ chatData, isFetching }: UserChatProps) {
   return (
     <Box>
       <Stack
-        direction={"row"}
         sx={{
           alignItems: "center",
           gap: "1rem",
           padding: 3,
           justifyContent: "center",
+          flexDirection: {
+            xs: "column",
+            sm: "row",
+          },
         }}
       >
         <IconButton
@@ -247,7 +250,9 @@ export default function UserChat({ chatData, isFetching }: UserChatProps) {
           variant="h4"
           component={"h2"}
           sx={{
-            marginRight: "auto",
+            marginRight: {
+              sm: "auto",
+            },
           }}
         >
           Chatting with {chatData.user.username}
@@ -267,7 +272,11 @@ export default function UserChat({ chatData, isFetching }: UserChatProps) {
         isFetching={isFetching}
         currentUserId={currentUser.id}
       />
-      <SendMessage isLoading={isSendingMessage} onSubmit={handleSubmit} />
+      <SendMessage
+        key={userId}
+        isLoading={isSendingMessage}
+        onSubmit={handleSubmit}
+      />
     </Box>
   );
 }
